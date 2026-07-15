@@ -32,16 +32,6 @@ import { cn } from '@/lib/utils'
 import { adminService } from '@/services/admin/admin.service'
 import { UserStatus } from '@/services/admin/admin.types'
 import { UserRoleLabel } from '@/services/auth/auth.types'
-import {
-    ArrowDownTrayIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    EyeIcon,
-    LockClosedIcon,
-    LockOpenIcon,
-    MagnifyingGlassIcon,
-    XMarkIcon,
-} from '@heroicons/react/24/outline'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { AnimatePresence, m } from 'framer-motion'
@@ -49,8 +39,15 @@ import {
     Activity,
     Check,
     CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
     ChevronsUpDown,
+    Download,
+    Eye,
     Filter,
+    Lock,
+    LockOpen,
+    Search,
     Shield,
     Sparkles,
     User,
@@ -204,7 +201,7 @@ export default function UsersPage() {
 	const statuses = [
 		{ value: 'all', label: 'All statuses', icon: Activity },
 		{ value: 'ACTIVE', label: 'Active', icon: CheckCircle2 },
-		{ value: 'BLOCKED', label: 'Blocked', icon: LockClosedIcon },
+		{ value: 'BLOCKED', label: 'Blocked', icon: Lock },
 	]
 
 	const limits = [
@@ -255,7 +252,7 @@ export default function UsersPage() {
 							disabled={filteredUsers.length === 0}
 							className='bg-white text-black hover:bg-white/80 font-semibold rounded-xl px-5 h-11 shadow-lg transition-all active:scale-[0.98] disabled:opacity-50'
 						>
-							<ArrowDownTrayIcon className='w-5 h-5 mr-2' />
+							<Download className='w-5 h-5 mr-2' />
 							Export CSV
 						</Button>
 					</m.div>
@@ -269,7 +266,7 @@ export default function UsersPage() {
 						{/* Search Input */}
 						<div className='relative flex-1 group'>
 							<div className='absolute inset-y-0 left-4 flex items-center pointer-events-none'>
-								<MagnifyingGlassIcon className='w-5 h-5 text-white/40 group-focus-within:text-white/60 transition-colors' />
+								<Search className='w-5 h-5 text-white/40 group-focus-within:text-white/60 transition-colors' />
 							</div>
 							<input
 								type='text'
@@ -286,7 +283,7 @@ export default function UsersPage() {
 									onClick={() => setSearch('')}
 									className='absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors'
 								>
-									<XMarkIcon className='w-4 h-4' />
+									<X className='w-4 h-4' />
 								</button>
 							)}
 						</div>
@@ -542,7 +539,7 @@ export default function UsersPage() {
 															{user.status === UserStatus.ACTIVE ? (
 																<CheckCircle2 className='w-3 h-3' />
 															) : (
-																<LockClosedIcon className='w-3 h-3' />
+																<Lock className='w-3 h-3' />
 															)}
 															{user.status === UserStatus.ACTIVE
 																? 'Active'
@@ -560,7 +557,7 @@ export default function UsersPage() {
 																		href={`/dashboard/admin/users/${user.id}`}
 																		className='p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors'
 																	>
-																		<EyeIcon className='w-4.5 h-4.5' />
+																		<Eye className='w-4.5 h-4.5' />
 																	</Link>
 																</TooltipTrigger>
 																<TooltipContent className='bg-[#0E172B] border-white/10 text-white text-xs'>
@@ -586,9 +583,9 @@ export default function UsersPage() {
 																		)}
 																	>
 																		{user.status === UserStatus.BLOCKED ? (
-																			<LockOpenIcon className='w-4.5 h-4.5' />
+																			<LockOpen className='w-4.5 h-4.5' />
 																		) : (
-																			<LockClosedIcon className='w-4.5 h-4.5' />
+																			<Lock className='w-4.5 h-4.5' />
 																		)}
 																	</button>
 																</TooltipTrigger>
@@ -670,7 +667,7 @@ export default function UsersPage() {
 											disabled={currentPage === 1}
 											className='h-9 w-9 rounded-lg hover:bg-white/10 disabled:opacity-20 text-white transition-all active:scale-95'
 										>
-											<ChevronLeftIcon className='w-4.5 h-4.5' />
+											<ChevronLeft className='w-4.5 h-4.5' />
 										</Button>
 										<Button
 											variant='ghost'
@@ -681,7 +678,7 @@ export default function UsersPage() {
 											disabled={currentPage === totalPages}
 											className='h-9 w-9 rounded-lg hover:bg-white/10 disabled:opacity-20 text-white transition-all active:scale-95'
 										>
-											<ChevronRightIcon className='w-4.5 h-4.5' />
+											<ChevronRight className='w-4.5 h-4.5' />
 										</Button>
 									</div>
 								</div>

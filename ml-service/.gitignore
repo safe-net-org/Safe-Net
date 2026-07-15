@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+data/synthetic.csv
+data/model.json
+data/metrics.json
+.pytest_cache/
+.DS_Store

@@ -23,3 +23,12 @@ dist/
 # and password hashes, so this must never be tracked.
 _archive/
 
+
+# python virtualenv (ml-service)
+.venv/
+__pycache__/
+*.pyc
+
+# extension build artifacts (wxt)
+.output/
+.wxt/

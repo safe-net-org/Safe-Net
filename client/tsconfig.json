@@ -19,7 +19,8 @@
 			}
 		],
 		"paths": {
-			"@/*": ["./*"]
+			"@/*": ["./*"],
+			"@safe-net/guard-core": ["../packages/guard-core/src/index.ts"]
 		}
 	},
 	"include": [

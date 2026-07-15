@@ -44,3 +44,42 @@ jobs:
       - name: Test
         working-directory: server
         run: bun run test
+
+  guard:
+    name: Guard engine — tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # The rule engine is pure and dependency-free, so it needs no install.
+      # These tests are the contract between what the courses teach and what
+      # the extension actually blocks.
+      - name: Test the shared rule engine
+        working-directory: packages/guard-core
+        run: bun test
+
+  extension:
+    name: Extension — typecheck & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: extension
+        run: bun install
+
+      - name: Typecheck
+        working-directory: extension
+        run: bun run type-check
+
+      - name: Build
+        working-directory: extension
+        run: bun run build

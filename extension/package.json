@@ -1,0 +1,29 @@
+{
+  "name": "safe-net-guard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "postinstall": "wxt prepare",
+    "zip": "wxt zip",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@safe-net/guard-core": "file:../packages/guard-core",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "overrides": {
+    "@vitejs/plugin-react": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/webextension-polyfill": "^0.10.7",
+    "@wxt-dev/module-react": "^1.1.0",
+    "typescript": "^5.5.3",
+    "wxt": "^0.19.0"
+  }
+}

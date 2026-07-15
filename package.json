@@ -1,0 +1,36 @@
+{
+	"name": "safe-net",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Safe-Net — cybersecurity LMS, phishing simulator, and the SafeNet Guard browser extension",
+	"license": "MIT",
+	"scripts": {
+		"dev": "bun run db:up && concurrently -n api,web,ml -c cyan,magenta,yellow --kill-others-on-fail \"bun:dev:api\" \"bun:dev:web\" \"bun:dev:ml\"",
+		"dev:no-ml": "bun run db:up && concurrently -n api,web -c cyan,magenta --kill-others-on-fail \"bun:dev:api\" \"bun:dev:web\"",
+		"dev:api": "cd server && bun run dev",
+		"dev:web": "cd client && bun run dev",
+		"dev:ml": "cd ml-service && { [ -x .venv/bin/python ] || { echo '[ml] no .venv — run \\\"bun run setup:ml\\\", or use \\\"bun run dev:no-ml\\\"'; exit 0; }; } && exec .venv/bin/python -m uvicorn app.main:app --port 8000 --reload",
+		"dev:ext": "cd extension && bun run dev",
+		"db:up": "docker compose up -d --wait",
+		"db:down": "docker compose down",
+		"db:reset": "docker compose down -v && docker compose up -d --wait && cd server && bunx prisma migrate deploy && bunx prisma db seed",
+		"setup": "bun run install:all && bun run db:up && cd server && bunx prisma generate && bunx prisma migrate deploy && bunx prisma db seed",
+		"setup:ml": "cd ml-service && python3.12 -m venv .venv && .venv/bin/pip install -q -U pip && .venv/bin/pip install -r requirements.txt",
+		"install:all": "bun install && cd server && bun install && cd ../client && bun install && cd ../extension && bun install",
+		"build": "concurrently -n api,web,ext -c cyan,magenta,green \"bun:build:api\" \"bun:build:web\" \"bun:build:ext\"",
+		"build:api": "cd server && bun run build",
+		"build:web": "cd client && bun run build",
+		"build:ext": "cd extension && bun run build",
+		"typecheck": "concurrently -n api,web -c cyan,magenta \"bun:typecheck:api\" \"bun:typecheck:web\"",
+		"typecheck:api": "cd server && bun run typecheck",
+		"typecheck:web": "cd client && bunx tsc --noEmit",
+		"test": "concurrently -n api,guard -c cyan,green \"bun:test:api\" \"bun:test:guard\"",
+		"test:api": "cd server && bun run test",
+		"test:guard": "cd packages/guard-core && bun test",
+		"validate:content": "cd server && bun run validate:content",
+		"clean:ports": "lsof -ti:3000,4200,8000 2>/dev/null | xargs kill -9 2>/dev/null || true"
+	},
+	"devDependencies": {
+		"concurrently": "^9.1.0"
+	}
+}
