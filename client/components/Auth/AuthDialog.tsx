@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { Eye, EyeOff } from 'lucide-react'
@@ -193,6 +194,16 @@ export function AuthDialog({
 								<Eye className='w-5 h-5' />
 							)}
 						</button>
+						{isLogin && (
+							<div className='pt-1 text-right'>
+								<Link
+									href='/forgot-password'
+									className='text-xs text-slate-400 hover:text-indigo-400 transition-colors'
+								>
+									Forgot password?
+								</Link>
+							</div>
+						)}
 					</div>
 					{!isLogin && (
 						<div className='flex items-start space-x-3 pt-2'>

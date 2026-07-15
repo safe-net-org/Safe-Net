@@ -11,6 +11,11 @@ import { Throttle } from '@nestjs/throttler'
 import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto'
+import {
+	ForgotPasswordDto,
+	ResetPasswordDto,
+} from './dto/password-reset.dto'
+import { PasswordResetService } from './password-reset.service'
 
 const ONE_MINUTE_MS = 60_000
 /** Credential endpoints are the brute-force target, so they get their own cap. */
@@ -18,7 +23,10 @@ const AUTH_ATTEMPTS_PER_MINUTE = 5
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(
+		private readonly authService: AuthService,
+		private readonly passwordResetService: PasswordResetService
+	) {}
 	// ValidationPipe is now global (see main.ts) — the per-route @UsePipes it
 	// replaced was the reason every other DTO went unvalidated.
 	@Throttle({ default: { ttl: ONE_MINUTE_MS, limit: AUTH_ATTEMPTS_PER_MINUTE } })
@@ -68,5 +76,21 @@ export class AuthController {
 	async logout(@Res({ passthrough: true }) res: Response) {
 		this.authService.removeRefreshTokenFromResponse(res)
 		return { message: 'Logout success' }
+	}
+
+	// Rate-limited hard: these are the surface for account enumeration and
+	// token guessing.
+	@Throttle({ default: { ttl: ONE_MINUTE_MS, limit: AUTH_ATTEMPTS_PER_MINUTE } })
+	@HttpCode(200)
+	@Post('password/forgot')
+	async forgotPassword(@Body() dto: ForgotPasswordDto) {
+		return this.passwordResetService.requestReset(dto.email)
+	}
+
+	@Throttle({ default: { ttl: ONE_MINUTE_MS, limit: AUTH_ATTEMPTS_PER_MINUTE } })
+	@HttpCode(200)
+	@Post('password/reset')
+	async resetPassword(@Body() dto: ResetPasswordDto) {
+		return this.passwordResetService.resetPassword(dto.token, dto.password)
 	}
 }

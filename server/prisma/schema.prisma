@@ -78,8 +78,27 @@ model User {
   certificates     Certificate[]
   testResults      TestResult[]
   completedLessons CompletedLesson[]
+  passwordResets   PasswordResetToken[]
 
   @@map("users")
+}
+
+/// A single-use, expiring password-reset token. Only the SHA-256 hash of the
+/// token is stored, so a leaked database row cannot be used to reset anyone's
+/// password — the raw token exists only in the reset link sent to the user.
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 /// Learning structure: stages → courses → lessons → tasks

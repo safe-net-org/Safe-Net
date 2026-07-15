@@ -43,5 +43,19 @@ class AuthService {
 		if (response.data) removeFromStorage()
 		return response
 	}
+	async forgotPassword(email: string) {
+		const response = await axiosClassic.post<{ message: string }>(
+			'/auth/password/forgot',
+			{ email }
+		)
+		return response.data
+	}
+	async resetPassword(token: string, password: string) {
+		const response = await axiosClassic.post<{ message: string }>(
+			'/auth/password/reset',
+			{ token, password }
+		)
+		return response.data
+	}
 }
 export default new AuthService()
