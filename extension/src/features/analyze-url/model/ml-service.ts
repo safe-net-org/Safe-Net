@@ -1,3 +1,4 @@
+import { applyMlBlend } from '@/src/entities/analysis'
 import type { AnalysisResult, RiskSignal } from '@/src/entities/analysis'
 import { getSettings } from '@/src/shared/lib/settings'
 
@@ -17,6 +18,10 @@ export interface MlResponse {
   level: 'safe' | 'suspicious' | 'danger'
   probability: number
   signals: MlSignal[]
+  /** Raw neural-net probability, before server-side blending. */
+  ml_probability?: number
+  rule_score?: number
+  method?: string
 }
 
 export async function queryMlService(url: string): Promise<MlResponse | null> {
@@ -44,16 +49,6 @@ export async function queryMlService(url: string): Promise<MlResponse | null> {
 }
 
 export function mergeWithMl(local: AnalysisResult, ml: MlResponse): AnalysisResult {
-  const hasLocalSignals = local.signals.length > 0 && local.score >= 15
-  let merged: number
-  if (!hasLocalSignals) {
-    merged = Math.min(35, Math.round(ml.score * 0.35))
-  } else {
-    const weighted = Math.round(local.score * 0.4 + ml.score * 0.6)
-    merged = Math.max(local.score, weighted)
-  }
-  const level = merged >= 70 ? 'danger' : merged >= 40 ? 'suspicious' : 'safe'
-
   const mlSignals: RiskSignal[] = ml.signals
     .filter((s) => Math.abs(s.shap_value) > 0.05)
     .slice(0, 5)
@@ -63,14 +58,12 @@ export function mergeWithMl(local: AnalysisResult, ml: MlResponse): AnalysisResu
       severity: s.severity,
     }))
 
-  const mlKeys = new Set(mlSignals.map((s) => s.key.replace(/^ml_/, '')))
-  const filteredLocal = local.signals.filter((s) => !mlKeys.has(s.key))
-
-  return {
-    ...local,
-    score: merged,
-    level,
-    signals: [...filteredLocal, ...mlSignals],
-    mlEnhanced: true,
-  }
+  // Blend with the shared guard-core function, not a second ad-hoc weighting:
+  // the ml-service already blends server-side with the same rules, and doing a
+  // *different* blend here would double-count them. `ml_probability` is the raw
+  // net output; the extension trusts its own local rule score and applies the
+  // one canonical blend. Falls back to the pre-blend probability for older
+  // service versions that did not return ml_probability.
+  const mlProbability = ml.ml_probability ?? ml.probability
+  return applyMlBlend(local, mlProbability, mlSignals)
 }

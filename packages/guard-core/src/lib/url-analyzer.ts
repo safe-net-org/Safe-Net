@@ -4,9 +4,11 @@ import {
 	SUSPICIOUS_SCHEMES,
 	SUSPICIOUS_TLDS,
 	SUSPICIOUS_WORDS,
+	TOP_RU_BRANDS,
 	URL_SHORTENERS,
 } from '../shared/brands'
 import { punycodeToUnicode } from '../shared/punycode'
+import { transliterate } from '../shared/text'
 import {
 	detectBrandToken,
 	detectLeetSquat,
@@ -55,6 +57,17 @@ function getRegistrableDomain(hostname: string): string {
 	return parts.length >= 2 ? parts.slice(-2).join('.') : hostname
 }
 
+const BRAND_SET = new Set<string>(TOP_RU_BRANDS)
+
+/** True when the second-level label of a registrable domain is a known brand. */
+function isKnownBrandDomain(registrableDomain: string): boolean {
+	const sld = registrableDomain.split('.')[0] ?? ''
+	const core = transliterate(sld)
+		.toLowerCase()
+		.replace(/[^a-z0-9]/g, '')
+	return BRAND_SET.has(core)
+}
+
 function hasFreeHostingDomain(hostname: string): boolean {
 	return FREE_HOSTING_DOMAINS.some(h => hostname.endsWith(h))
 }
@@ -76,7 +89,7 @@ function createDefaultFeatures(rawUrl: string): UrlFeatures {
 		levenshteinDistance: 999, nearestBrand: '', idnHomograph: false,
 		idnDetails: null, isTyposquat: false, tldSuspicion: 0,
 		hasDataUri: false, hasMultipleDomains: false,
-		registrableDomain: '', brandImpersonation: false, impersonatedBrand: '',
+		registrableDomain: '', registrableIsBrand: false, brandImpersonation: false, impersonatedBrand: '',
 		impersonationDetail: null, isUrlShortener: false,
 		hasDangerousExtension: false, dangerousExtension: null,
 		hasSuspiciousScheme: false, isEncodedIp: false, mixedScript: false,
@@ -119,6 +132,7 @@ export function analyzeUrl(rawUrl: string): UrlFeatures {
 	const brandTokenResult = detectBrandToken(unicodeHost)
 
 	const registrableDomain = getRegistrableDomain(unicodeHost)
+	const registrableIsBrand = isKnownBrandDomain(registrableDomain)
 	const tld = getTld(unicodeHost)
 	const tldSuspicious = SUSPICIOUS_TLDS.has('.' + tld)
 
@@ -175,6 +189,7 @@ export function analyzeUrl(rawUrl: string): UrlFeatures {
 		hasDataUri: false,
 		hasMultipleDomains: hasMultipleDomainsInUrl(fullUrl),
 		registrableDomain,
+		registrableIsBrand,
 		brandImpersonation: brandResult.brandImpersonation,
 		impersonatedBrand: brandResult.impersonatedBrand,
 		impersonationDetail: brandResult.impersonationDetail,

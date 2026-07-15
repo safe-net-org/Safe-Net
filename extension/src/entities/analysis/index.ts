@@ -23,6 +23,8 @@ export type {
 
 export {
 	analyzeUrl,
+	applyMlBlend,
+	blendWithMl,
 	detectIdnHomograph,
 	detectTyposquatting,
 	scoreUrl,

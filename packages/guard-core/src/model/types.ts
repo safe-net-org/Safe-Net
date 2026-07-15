@@ -35,6 +35,10 @@ export interface UrlFeatures {
   hasMultipleDomains: boolean
   // extended detection
   registrableDomain: string
+  /** The registrable domain is itself a recognised brand (github.com,
+   *  google.com). Lets the ML blend refuse to let a nervous net block a site
+   *  everyone uses. */
+  registrableIsBrand: boolean
   brandImpersonation: boolean
   impersonatedBrand: string
   impersonationDetail: string | null
