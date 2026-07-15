@@ -6,6 +6,7 @@ import { CoursesController } from './controllers/courses.controller'
 import { ProgressController } from './controllers/progress.controller'
 import { StagesController } from './controllers/stages.controller'
 import { TestsController } from './controllers/tests.controller'
+import { AchievementStatsCollector } from './achievements/achievement-stats.collector'
 import { AchievementsService } from './services/achievements.service'
 import { CertificatesService } from './services/certificates.service'
 import { CoursesService } from './services/courses.service'
@@ -30,6 +31,7 @@ import { TestsService } from './services/tests.service'
 		ProgressService,
 		CertificatesService,
 		AchievementsService,
+		AchievementStatsCollector,
 	],
 	exports: [
 		StagesService,

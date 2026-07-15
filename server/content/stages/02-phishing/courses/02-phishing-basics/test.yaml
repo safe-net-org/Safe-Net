@@ -1,0 +1,115 @@
+title: "Final Test: Phishing"
+description: "Testing your phishing recognition skills."
+passingScore: 80
+questions:
+  - text: "Which sign definitely indicates a phishing email?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "An email from a friend"
+        isCorrect: false
+      - text: "A personal greeting"
+        isCorrect: false
+      - text: "An urgent demand to enter your password via a link"
+        isCorrect: true
+      - text: "A short subject line"
+        isCorrect: false
+
+  - text: "What is the correct way to check a link in an email?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Click it right away"
+        isCorrect: false
+      - text: "Hover over it and check the URL"
+        isCorrect: true
+      - text: "Paste it into a search engine"
+        isCorrect: false
+      - text: "Forward it to a friend to check"
+        isCorrect: false
+
+  - text: "A call claims to be your bank's fraud team and asks you to read back a text-message code. What is this called?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A standard verification procedure"
+        isCorrect: false
+      - text: "Vishing"
+        isCorrect: true
+      - text: "Whaling"
+        isCorrect: false
+      - text: "A legitimate bank request"
+        isCorrect: false
+
+  - text: "Which of these describe spear phishing or whaling specifically, not just ordinary mass phishing?"
+    type: MULTI_CHOICE
+    options:
+      - text: "An email personalized with your real job title and a real project name"
+        isCorrect: true
+      - text: "An email impersonating the CEO, urgently asking the CFO to wire funds"
+        isCorrect: true
+      - text: "A mass email offering a prize to millions of random addresses"
+        isCorrect: false
+      - text: "A routine company-wide newsletter"
+        isCorrect: false
+      - text: "A generic smishing text sent to random phone numbers"
+        isCorrect: false
+
+  - text: "According to Verizon's 2025 DBIR, roughly what share of breaches began with phishing directly?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 90%"
+        isCorrect: false
+      - text: "About 16%"
+        isCorrect: true
+      - text: "About 50%"
+        isCorrect: false
+      - text: "About 2%"
+        isCorrect: false
+
+  - text: "\"Dear customer! Your card has been blocked, follow this link to confirm your details.\" What's the clearest tell?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It mentions a blocked card at all"
+        isCorrect: false
+      - text: "It addresses you as \"customer\" instead of by name"
+        isCorrect: true
+      - text: "It says \"Dear\""
+        isCorrect: false
+      - text: "It has an exclamation point"
+        isCorrect: false
+
+  - text: "A tax refund email asks you to enter your card number to receive the money. Select every reason this is phishing."
+    type: MULTI_CHOICE
+    options:
+      - text: "Tax authorities don't request card details by email"
+        isCorrect: true
+      - text: "Refunds go through your account on file, not a form in an email"
+        isCorrect: true
+      - text: "The dollar amount mentioned is unrealistic"
+        isCorrect: false
+      - text: "Government agencies never send email"
+        isCorrect: false
+      - text: "The email uses the word \"refund\""
+        isCorrect: false
+
+  - text: "In the 2017 Google Docs phishing worm, what made it spread so quickly?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A single unusually large bulk email blast"
+        isCorrect: false
+      - text: "Granting the fake app permission let it auto-email the victim's real contacts"
+        isCorrect: true
+      - text: "A flaw in Gmail's spam filter"
+        isCorrect: false
+      - text: "Paid advertising"
+        isCorrect: false
+
+  - text: "Why couldn't \"check whether the sender is someone you know\" catch the Google Docs worm?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Because the sender genuinely was a real, already-compromised contact"
+        isCorrect: true
+      - text: "Because the emails were sent from unknown addresses"
+        isCorrect: false
+      - text: "Because it only targeted strangers"
+        isCorrect: false
+      - text: "Because it didn't actually involve email at all"
+        isCorrect: false

@@ -8,7 +8,8 @@ interface UseTestReturn {
 	isLoading: boolean
 	error: Error | null
 	refetch: () => void
-	updateTest: (data: Partial<ITest>) => Promise<void>
+	/** Resolves with the payload that was sent — used by the optimistic update. */
+	updateTest: (data: Partial<ITest>) => Promise<Partial<ITest>>
 	isUpdating: boolean
 }
 

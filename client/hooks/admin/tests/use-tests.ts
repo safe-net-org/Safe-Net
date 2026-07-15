@@ -16,7 +16,8 @@ interface UseTestsReturn {
 	isLoading: boolean
 	error: Error | null
 	refetch: () => void
-	deleteTest: (testId: string) => Promise<void>
+	/** Resolves with the deleted id — the optimistic cache update needs it. */
+	deleteTest: (testId: string) => Promise<string>
 	isDeleting: boolean
 }
 

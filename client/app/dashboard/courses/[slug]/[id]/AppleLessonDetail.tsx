@@ -4,15 +4,21 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Markdown } from '@/components/ui/markdown'
 import { cn } from '@/lib/utils'
-import { ILesson } from '@/services/learning/learning.types'
+import {
+	ILesson,
+	ITaskAnswerResponse,
+} from '@/services/learning/learning.types'
 import { m } from 'framer-motion'
 import { BookOpen, CheckCircle2, PlayCircle, Target } from 'lucide-react'
 import { useState } from 'react'
-import { TaskModal } from './TaskModal'
+import { AnswerPayload, TaskModal } from './TaskModal'
 
 interface AppleLessonDetailProps {
 	lesson: ILesson & { courseTitle: string }
-	answerTask: (taskId: string, selectedOptionIds: string[]) => void
+	answerTask: (
+		taskId: string,
+		payload: AnswerPayload
+	) => Promise<ITaskAnswerResponse>
 	isAnswering: boolean
 	hasNextLesson?: boolean
 	hasPrevLesson?: boolean

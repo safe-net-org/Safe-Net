@@ -15,15 +15,14 @@ import { CreateLessonBlockDto } from '../dto/create-lesson-block.dto'
 import { UpdateLessonBlockDto } from '../dto/update-lesson-block.dto'
 import { LessonsService } from '../services/lessons.service'
 
+// `GET :id` used to live here too, duplicating ProgressController's
+// `GET learning/lessons/:id`. Both matched the same path, ProgressController
+// won, and this one was dead code that silently diverged — a fix applied here
+// had no effect on the route the client actually calls.
 @Auth()
 @Controller('learning/lessons')
 export class LessonsController {
 	constructor(private readonly lessonsService: LessonsService) {}
-
-	@Get(':id')
-	async getLessonDetails(@Param('id') id: string) {
-		return this.lessonsService.getLessonDetails(id)
-	}
 
 	@Get(':id/blocks')
 	async getBlocks(@Param('id') lessonId: string) {

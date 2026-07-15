@@ -77,10 +77,12 @@ export function useLessonDetail() {
 			taskId: string
 			selectedOptionIds: string[]
 			textAnswer?: string
+			selectedSpans?: { location: string; text: string }[]
 		}) =>
 			learningService.answerTask(payload.taskId, {
 				selectedOptionIds: payload.selectedOptionIds,
 				textAnswer: payload.textAnswer,
+				selectedSpans: payload.selectedSpans,
 			}),
 		onSuccess: (res: ITaskAnswerResponse, variables) => {
 			// ✅ Save to localStorage if the answer is correct
@@ -134,15 +136,13 @@ export function useLessonDetail() {
 	// ✅ Return a Promise with the result (including the explanation)
 	const answerTask = async (
 		taskId: string,
-		selectedOptionIds: string[],
-		textAnswer?: string
+		payload: {
+			selectedOptionIds: string[]
+			textAnswer?: string
+			selectedSpans?: { location: string; text: string }[]
+		}
 	): Promise<ITaskAnswerResponse> => {
-		const result = await answerMutation.mutateAsync({
-			taskId,
-			selectedOptionIds,
-			textAnswer,
-		})
-		return result
+		return answerMutation.mutateAsync({ taskId, ...payload })
 	}
 
 	// Navigation between lessons

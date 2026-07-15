@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { adminService } from '@/services/admin/admin.service'
-import { TaskType } from '@/services/admin/admin.types'
+import { ITestQuestion, TaskType } from '@/services/admin/admin.types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, m } from 'framer-motion'
 import {
@@ -19,7 +19,7 @@ import {
     Trash2,
     X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -56,6 +56,12 @@ interface CreateQuestionDialogProps {
 	testId: string
 	nextOrder: number
 	onSuccess: () => void
+	/**
+	 * When set, the dialog edits this question instead of creating one.
+	 * questions-list already passed this prop, but it did not exist here — so
+	 * "edit question" silently created a duplicate instead.
+	 */
+	editQuestion?: ITestQuestion
 }
 
 export default function CreateQuestionDialog({
@@ -64,8 +70,10 @@ export default function CreateQuestionDialog({
 	testId,
 	nextOrder,
 	onSuccess,
+	editQuestion,
 }: CreateQuestionDialogProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const isEditing = Boolean(editQuestion)
 
 	const {
 		register,
@@ -97,16 +105,56 @@ export default function CreateQuestionDialog({
 	const hasOptions =
 		taskType === TaskType.SINGLE_CHOICE || taskType === TaskType.MULTI_CHOICE
 
+	// Repopulate whenever a different question is opened for editing; without
+	// this the form keeps whatever the previous open left behind.
+	useEffect(() => {
+		if (!open) return
+
+		reset(
+			editQuestion
+				? {
+						testId,
+						order: editQuestion.order,
+						text: editQuestion.text,
+						type: editQuestion.type,
+						options: editQuestion.options?.map(option => ({
+							text: option.text,
+							isCorrect: option.isCorrect ?? false,
+						})) ?? [
+							{ text: '', isCorrect: false },
+							{ text: '', isCorrect: false },
+						],
+					}
+				: {
+						testId,
+						order: nextOrder,
+						text: '',
+						type: TaskType.SINGLE_CHOICE,
+						options: [
+							{ text: '', isCorrect: false },
+							{ text: '', isCorrect: false },
+						],
+					}
+		)
+	}, [open, editQuestion, testId, nextOrder, reset])
+
 	const onSubmit = async (data: QuestionFormData) => {
 		setIsSubmitting(true)
 		try {
-			await adminService.createTestQuestion(data)
-			toast.success('Question added')
+			if (editQuestion) {
+				await adminService.updateTestQuestion(editQuestion.id, data)
+				toast.success('Question updated')
+			} else {
+				await adminService.createTestQuestion(data)
+				toast.success('Question added')
+			}
 			reset()
 			onOpenChange(false)
 			onSuccess()
 		} catch (error) {
-			toast.error('Error creating question')
+			toast.error(
+				isEditing ? 'Error updating question' : 'Error creating question'
+			)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -125,9 +173,13 @@ export default function CreateQuestionDialog({
 					<div className='border-b border-white/10 bg-[#0A0F1D]/80 backdrop-blur-xl'>
 						<div className='mx-auto flex max-w-4xl items-center justify-between px-6 py-4'>
 							<div>
-								<h3 className='text-2xl font-bold text-white'>Add Question</h3>
+								<h3 className='text-2xl font-bold text-white'>
+									{isEditing ? 'Edit Question' : 'Add Question'}
+								</h3>
 								<p className='mt-1 text-sm text-gray-500'>
-									Create a question to test knowledge
+									{isEditing
+										? 'Update this question'
+										: 'Create a question to test knowledge'}
 								</p>
 							</div>
 							<m.button

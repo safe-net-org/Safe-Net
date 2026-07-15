@@ -1,0 +1,101 @@
+title: "Final Test: VPN and Encryption"
+description: "Testing your knowledge of VPN fundamentals and the Hola VPN case."
+passingScore: 80
+questions:
+  - text: "A VPN's main purpose is to:"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Speed up the internet"
+        isCorrect: false
+      - text: "Encrypt traffic and hide your IP address"
+        isCorrect: true
+      - text: "Block ads"
+        isCorrect: false
+      - text: "Increase download speed"
+        isCorrect: false
+
+  - text: "What does your internet provider (ISP) see while you're connected to a VPN?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Only that you're connected to a VPN server, not which sites you visit"
+        isCorrect: true
+      - text: "Every website you visit, in plain, unencrypted form"
+        isCorrect: false
+      - text: "Nothing at all, including whether you're online"
+        isCorrect: false
+      - text: "Your saved passwords"
+        isCorrect: false
+
+  - text: "Which of these are legitimate, realistic reasons to use a VPN?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Protecting your traffic on public Wi-Fi"
+        isCorrect: true
+      - text: "Hiding your browsing activity from your ISP"
+        isCorrect: true
+      - text: "Guaranteeing complete, permanent anonymity online"
+        isCorrect: false
+      - text: "Making illegal activity completely untraceable"
+        isCorrect: false
+      - text: "Eliminating browser fingerprinting and all other forms of tracking"
+        isCorrect: false
+
+  - text: "Which of these is the most important criterion when choosing a paid VPN provider?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "An independently audited no-logs policy"
+        isCorrect: true
+      - text: "Having the most visually appealing app icon"
+        isCorrect: false
+      - text: "Being the first result in a search engine ad"
+        isCorrect: false
+      - text: "Offering the absolute lowest price, regardless of reputation"
+        isCorrect: false
+
+  - text: "Which of these should make you cautious about a VPN provider?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It's bundled with an unrelated, suspicious app"
+        isCorrect: true
+      - text: "It has a published, independently audited no-logs policy"
+        isCorrect: false
+      - text: "It offers a paid tier with unlimited data"
+        isCorrect: false
+      - text: "It supports multiple devices per subscription"
+        isCorrect: false
+
+  - text: "Starting in late 2014, what did Hola VPN begin doing with its free users' internet connections?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Selling access to their bandwidth and IP addresses as exit nodes through a paid service called Luminati"
+        isCorrect: true
+      - text: "Donating their spare bandwidth to charitable organizations"
+        isCorrect: false
+      - text: "Using it exclusively to improve Hola's own app performance"
+        isCorrect: false
+      - text: "Nothing -- this is a myth with no factual basis"
+        isCorrect: false
+
+  - text: "What event brought Hola's exit-node scheme to public attention in May 2015?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "8chan's founder called out Hola after the site was attacked using Hola's own network"
+        isCorrect: true
+      - text: "Hola voluntarily disclosed it in a press release"
+        isCorrect: false
+      - text: "A government investigation exposed it first"
+        isCorrect: false
+      - text: "It was never actually publicly exposed"
+        isCorrect: false
+
+  - text: "What specific risk did Hola's scheme create for its free users?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Other people's traffic could exit through an ordinary user's home IP address"
+        isCorrect: true
+      - text: "Their physical devices could be permanently damaged"
+        isCorrect: false
+      - text: "Their Hola accounts were automatically deleted"
+        isCorrect: false
+      - text: "No meaningful risk was created by this arrangement"
+        isCorrect: false

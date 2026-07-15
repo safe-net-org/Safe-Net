@@ -1,0 +1,117 @@
+title: "Final Test: Digital Safety Basics"
+description: "Testing your knowledge of digital safety basics, antivirus, and updates."
+passingScore: 70
+questions:
+  - text: "What is antivirus software's main function?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Speeding up the computer"
+        isCorrect: false
+      - text: "Protection against malware"
+        isCorrect: true
+      - text: "Increasing internet speed"
+        isCorrect: false
+      - text: "Deleting unnecessary files"
+        isCorrect: false
+
+  - text: "How do you identify a secure connection to a website?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A lock icon and https:// in the address bar"
+        isCorrect: true
+      - text: "A nice-looking website design"
+        isCorrect: false
+      - text: "A page that loads quickly"
+        isCorrect: false
+      - text: "A very long domain name"
+        isCorrect: false
+
+  - text: "Ransomware has already encrypted your files. What is the only preparation that guarantees you get them back without paying?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Running antivirus after noticing the encryption"
+        isCorrect: false
+      - text: "A strong, unique login password"
+        isCorrect: false
+      - text: "A backup made beforehand, stored somewhere the ransomware can't reach"
+        isCorrect: true
+      - text: "Two-factor authentication on your email"
+        isCorrect: false
+
+  - text: "Which of these count as the 'human element' in a breach, rather than a purely technical failure?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Clicking a phishing link"
+        isCorrect: true
+      - text: "Reusing a password across sites"
+        isCorrect: true
+      - text: "Misconfiguring a cloud storage bucket to be public"
+        isCorrect: true
+      - text: "A zero-day vulnerability nobody knew about"
+        isCorrect: false
+      - text: "A hard drive failing after years of use"
+        isCorrect: false
+      - text: "A data center losing power in a storm"
+        isCorrect: false
+
+  - text: "What does installing a security update primarily accomplish?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A nicer-looking interface"
+        isCorrect: false
+      - text: "Closing a specific vulnerability attackers could exploit"
+        isCorrect: true
+      - text: "A faster processor"
+        isCorrect: false
+      - text: "New emoji"
+        isCorrect: false
+
+  - text: "Which of these is a real warning sign of a possible infection?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Unusually slow performance with no clear cause"
+        isCorrect: true
+      - text: "Your antivirus keeps turning itself off"
+        isCorrect: true
+      - text: "A routine OS update notification appears"
+        isCorrect: false
+      - text: "Battery drains slightly faster in cold weather"
+        isCorrect: false
+      - text: "Your browser opens to the homepage you configured"
+        isCorrect: false
+
+  - text: "Roughly how long was a patch for the vulnerability WannaCry exploited (EternalBlue) available before the attack happened?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 2 months"
+        isCorrect: true
+      - text: "About 2 years"
+        isCorrect: false
+      - text: "About 2 days"
+        isCorrect: false
+      - text: "It was never available -- WannaCry used an unknown flaw"
+        isCorrect: false
+
+  - text: "Your antivirus is current, but your OS hasn't been patched in 8 months. How protected are you from a known, already-patched vulnerability?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Fully protected by the antivirus alone"
+        isCorrect: false
+      - text: "Not protected against that hole -- antivirus doesn't patch the OS"
+        isCorrect: true
+      - text: "Protected, as long as you avoid attachments"
+        isCorrect: false
+      - text: "Protected, since updates run automatically regardless of settings"
+        isCorrect: false
+
+  - text: "You have 20 minutes to spend improving your digital safety today. Which action gives the best return?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Buy a premium antivirus subscription"
+        isCorrect: false
+      - text: "Turn on two-factor authentication on your primary email"
+        isCorrect: true
+      - text: "Memorize a longer password for one site"
+        isCorrect: false
+      - text: "Read an app's terms of service"
+        isCorrect: false

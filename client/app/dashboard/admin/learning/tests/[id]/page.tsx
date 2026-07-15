@@ -272,7 +272,7 @@ export default function TestEditPage() {
 										transition={{ duration: 0.3 }}
 									>
 										<QuestionsList
-											questions={test.questions}
+											questions={test.questions ?? []}
 											testId={test.id}
 											onUpdate={refetch}
 										/>
@@ -318,7 +318,7 @@ export default function TestEditPage() {
 				onOpenChange={setShowCreateQuestion}
 				testId={test.id}
 				onSuccess={refetch}
-				existingQuestionsCount={stats.questionsCount}
+				nextOrder={stats.questionsCount + 1}
 			/>
 
 			<DeleteTestDialog

@@ -1,0 +1,9 @@
+# Mirrors the existing "phishing" stage already seeded in seed.ts (stages[1]).
+# subtitle bumped from "3 courses" to "4 courses" to account for the new
+# email-phishing-anatomy example course below -- update this by hand if you
+# don't merge that course in.
+order: 2
+slug: phishing
+title: "Phishing & Fraud"
+subtitle: "Recognizing threats • 4 courses"
+icon: fish

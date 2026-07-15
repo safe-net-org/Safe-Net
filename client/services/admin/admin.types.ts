@@ -5,11 +5,18 @@ export enum UserStatus {
 	BLOCKED = 'BLOCKED',
 }
 
-export enum Difficulty {
-	EASY = 'EASY',
-	MEDIUM = 'MEDIUM',
-	HARD = 'HARD',
-}
+/**
+ * A const object plus a union type rather than a TS enum: values arriving from
+ * forms and the API are plain strings, and a string literal is not assignable
+ * to an enum member. `Difficulty.EASY` still works for callers that want it.
+ */
+export const Difficulty = {
+	EASY: 'EASY',
+	MEDIUM: 'MEDIUM',
+	HARD: 'HARD',
+} as const
+
+export type Difficulty = (typeof Difficulty)[keyof typeof Difficulty]
 
 export enum TaskType {
 	SINGLE_CHOICE = 'SINGLE_CHOICE',
@@ -169,6 +176,8 @@ export interface IUserDetailTestResult {
 	totalQuestions: number
 	correctAnswers: number
 	passed: boolean
+	/** Seconds taken. Returned by the API; the type was simply missing it. */
+	time: number
 	completedAt: string
 }
 
@@ -196,7 +205,9 @@ export interface IUserAchievement {
 	title: string
 	description: string
 	icon: string
-	unlockedAt: string
+	/** The API returns `earnedAt`; this was typed as a `unlockedAt` field that
+	 * no endpoint has ever sent. */
+	earnedAt: string
 }
 
 export interface IUserCertificate {
@@ -292,6 +303,9 @@ export interface ITest {
 	title: string
 	description?: string
 	courseId?: string
+	/** Included by both admin test endpoints via `include: { course }`. */
+	course?: { id?: string; title: string; slug?: string }
+	passingScore: number
 	questions?: ITestQuestion[]
 }
 

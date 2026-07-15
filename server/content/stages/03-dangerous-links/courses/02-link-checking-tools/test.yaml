@@ -1,0 +1,105 @@
+title: "Final Test: Link Checking Tools"
+description: "Testing your knowledge of link-safety services and QR-code phishing."
+passingScore: 75
+questions:
+  - text: "Which service is NOT meant for checking link safety?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "VirusTotal"
+        isCorrect: false
+      - text: "URLScan.io"
+        isCorrect: false
+      - text: "PhishTank"
+        isCorrect: false
+      - text: "Instagram"
+        isCorrect: true
+
+  - text: "What should you keep in mind before pasting a link into a public checker like VirusTotal?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Submissions are completely private"
+        isCorrect: false
+      - text: "The link can become visible to others once submitted"
+        isCorrect: true
+      - text: "It deletes the link automatically after checking"
+        isCorrect: false
+      - text: "Only paid accounts can use it"
+        isCorrect: false
+
+  - text: "Which of these are genuine signals a domain might be suspicious?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Registered less than a month ago"
+        isCorrect: true
+      - text: "Ownership hidden despite claiming to be a known brand"
+        isCorrect: true
+      - text: "Already has multiple phishing reports filed against it"
+        isCorrect: true
+      - text: "Uses https"
+        isCorrect: false
+      - text: "Has a professional-looking logo"
+        isCorrect: false
+      - text: "Loads quickly"
+        isCorrect: false
+
+  - text: "What free Google-owned service checks a URL against 90+ antivirus engines at once?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "VirusTotal"
+        isCorrect: true
+      - text: "Google Docs"
+        isCorrect: false
+      - text: "Gmail"
+        isCorrect: false
+      - text: "Chrome Sync"
+        isCorrect: false
+
+  - text: "A fake PayPal login page uses the domain paypal-account-secure-verify.com. What makes this domain suspicious?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It's too long to be a real domain"
+        isCorrect: false
+      - text: "It isn't paypal.com -- the extra words only make it look official"
+        isCorrect: true
+      - text: "It uses a hyphen, which is never allowed in real domains"
+        isCorrect: false
+      - text: "It loads slower than the real site"
+        isCorrect: false
+
+  - text: "Why did QR-code phishing (\"quishing\") increase so sharply through 2025?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "QR codes are illegal to scan in most countries"
+        isCorrect: false
+      - text: "Scanning a code takes you to a destination you never actually read first"
+        isCorrect: true
+      - text: "QR codes always contain malware directly"
+        isCorrect: false
+      - text: "Email providers stopped filtering phishing entirely"
+        isCorrect: false
+
+  - text: "What's the right response after identifying a fake login page?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Close the tab without entering anything"
+        isCorrect: true
+      - text: "Report the URL to a safe-browsing service or the real brand's abuse team"
+        isCorrect: true
+      - text: "Enter a fake password to see what happens"
+        isCorrect: false
+      - text: "Bookmark it to revisit later"
+        isCorrect: false
+      - text: "Forward it to a friend for their opinion"
+        isCorrect: false
+
+  - text: "Which tool would you use specifically to see who registered a domain and when?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "WHOIS"
+        isCorrect: true
+      - text: "Google Safe Browsing"
+        isCorrect: false
+      - text: "VirusTotal"
+        isCorrect: false
+      - text: "PhishTank"
+        isCorrect: false

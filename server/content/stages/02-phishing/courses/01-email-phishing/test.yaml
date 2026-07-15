@@ -1,0 +1,109 @@
+title: "Final Test: Email Phishing Anatomy"
+description: "Checks whether you can spot manufactured pressure, read a real domain, and recall the course's central case and statistic."
+passingScore: 80
+questions:
+  - text: "In billing@paypal-secure.info, what is the actual domain the message came from?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "paypal.com"
+        isCorrect: false
+      - text: "paypal-secure.info"
+        isCorrect: true
+      - text: "billing.paypal.com"
+        isCorrect: false
+      - text: "secure.info"
+        isCorrect: false
+
+  - text: "Which combination is the strongest indicator of a phishing email?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A slightly unfamiliar logo"
+        isCorrect: false
+      - text: "A request to confirm your password by link, plus an urgent deadline"
+        isCorrect: true
+      - text: "An email sent outside business hours"
+        isCorrect: false
+      - text: "A long, formal signature block"
+        isCorrect: false
+
+  - text: "Read this line: \"Congratulations! You've been selected for a refund. Confirm your card number within 1 hour at irs-gov-refunds.net.\" Select every red flag actually present."
+    type: MULTI_CHOICE
+    options:
+      - text: "An unearned reward ('selected for a refund')"
+        isCorrect: true
+      - text: "A 1-hour deadline"
+        isCorrect: true
+      - text: "A domain that isn't a real government domain (irs-gov-refunds.net)"
+        isCorrect: true
+      - text: "A request tied to taxes"
+        isCorrect: false
+      - text: "The word 'Congratulations'"
+        isCorrect: false
+      - text: "Asking for a card number in order to receive money"
+        isCorrect: true
+      - text: "The message is written in English"
+        isCorrect: false
+
+  - text: "An inbox shows the display name 'Bank Support'. What does that name guarantee about the real sender address?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Nothing -- the sender chose that text freely and it isn't verified"
+        isCorrect: true
+      - text: "It guarantees the domain belongs to the bank"
+        isCorrect: false
+      - text: "It guarantees the connection is encrypted"
+        isCorrect: false
+      - text: "It guarantees the sender's identity was checked"
+        isCorrect: false
+
+  - text: "In the case against Google and Facebook (Evaldas Rimasauskas, 2013-2015), what technique got roughly $120 million wired out?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A ransomware attack that encrypted finance department files"
+        isCorrect: false
+      - text: "Forged invoices and contracts impersonating a real hardware vendor"
+        isCorrect: true
+      - text: "A SIM-swap attack on finance executives' phones"
+        isCorrect: false
+      - text: "A fake login page for the corporate VPN"
+        isCorrect: false
+
+  - text: "You get an unexpected, urgent request to click a link and log in. Select every appropriate response."
+    type: MULTI_CHOICE
+    options:
+      - text: "Hover over the link first to see the real destination"
+        isCorrect: true
+      - text: "Verify the request through a channel you already trust, not one the message provides"
+        isCorrect: true
+      - text: "Call the phone number printed in the message to double-check"
+        isCorrect: false
+      - text: "Click through and see what the page looks like"
+        isCorrect: false
+      - text: "Report it if it turns out to be fake"
+        isCorrect: true
+      - text: "Trust it because it uses your correct full name"
+        isCorrect: false
+
+  - text: "A site shows a padlock icon and https in the address bar. What does that actually tell you?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The site is safe to enter your password into"
+        isCorrect: false
+      - text: "The connection to that site is encrypted -- it says nothing about whether the destination is trustworthy"
+        isCorrect: true
+      - text: "The domain has been verified as legitimate"
+        isCorrect: false
+      - text: "Phishing sites are technically unable to use https"
+        isCorrect: false
+
+  - text: "According to the 2025 Verizon Data Breach Investigations Report, roughly what share of breaches began with phishing?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 2%"
+        isCorrect: false
+      - text: "About 16%"
+        isCorrect: true
+      - text: "About 50%"
+        isCorrect: false
+      - text: "About 90%"
+        isCorrect: false

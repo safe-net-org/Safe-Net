@@ -7,6 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useAchievements } from '@/hooks/learning/useAchievements'
 import { cn } from '@/lib/utils'
+import type {
+	AchievementTier,
+	IAchievement,
+} from '@/services/learning/learning.types'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { AnimatePresence, m } from 'framer-motion'
 import { icons, Lock, LucideIcon, Sparkles, Trophy } from 'lucide-react'
@@ -15,6 +19,38 @@ import { useState } from 'react'
 // Apple-style easing curves
 const appleEasing = [0.42, 0, 0.58, 1] as const
 const appleEaseOut = [0.16, 1, 0.3, 1] as const
+
+// Rarity is the whole point of tiers, so each one gets a visibly different
+// treatment rather than the single purple every card used to share.
+const TIER_STYLES: Record<
+	AchievementTier,
+	{ label: string; icon: string; card: string; badge: string }
+> = {
+	BRONZE: {
+		label: 'Bronze',
+		icon: 'text-amber-600',
+		card: 'from-amber-600/5 to-amber-700/5 border-amber-600/20',
+		badge: 'bg-amber-600/15 text-amber-500 ring-amber-600/30',
+	},
+	SILVER: {
+		label: 'Silver',
+		icon: 'text-slate-300',
+		card: 'from-slate-300/5 to-slate-400/5 border-slate-300/20',
+		badge: 'bg-slate-300/15 text-slate-200 ring-slate-300/30',
+	},
+	GOLD: {
+		label: 'Gold',
+		icon: 'text-yellow-400',
+		card: 'from-yellow-500/5 to-orange-500/5 border-yellow-500/25',
+		badge: 'bg-yellow-500/15 text-yellow-400 ring-yellow-500/30',
+	},
+	PLATINUM: {
+		label: 'Platinum',
+		icon: 'text-cyan-300',
+		card: 'from-cyan-400/5 to-violet-500/10 border-cyan-400/25',
+		badge: 'bg-cyan-400/15 text-cyan-300 ring-cyan-400/30',
+	},
+}
 
 // Function to get an icon by slug
 const getIconBySlug = (slug: string): LucideIcon => {
@@ -37,6 +73,11 @@ export default function AchievementsPage() {
 	const earnedCount = earnedIds.size
 	const totalCount = achievements?.length || 0
 	const hasAchievements = earnedCount > 0
+	const earnedXp =
+		userAchievements?.reduce(
+			(total, ua) => total + (ua.achievement.xpReward ?? 0),
+			0
+		) ?? 0
 
 	// Sort: completed first, then by date received
 	const sortedAchievements = achievements?.slice().sort((a, b) => {
@@ -185,8 +226,8 @@ export default function AchievementsPage() {
 								/>
 								<StatCard
 									icon={Sparkles}
-									label='Rewards received'
-									value={earnedCount}
+									label='Bonus XP earned'
+									value={earnedXp}
 									color='purple'
 									delay={0.2}
 								/>
@@ -292,14 +333,22 @@ function AchievementCard({
 	isHovered,
 	onHover,
 }: {
-	achievement: any
+	achievement: IAchievement
 	earnedAt?: string
 	isEarned: boolean
 	index: number
 	isHovered: boolean
 	onHover: (id: string | null) => void
 }) {
+	// A secret achievement's reveal is its reward, so an unearned one shows
+	// neither its name nor how to get it.
+	const isHiddenSecret = achievement.isSecret && !isEarned
+	const tier = TIER_STYLES[achievement.tier] ?? TIER_STYLES.BRONZE
 	const IconComponent = getIconBySlug(achievement.icon || 'trophy')
+	const title = isHiddenSecret ? 'Secret achievement' : achievement.title
+	const description = isHiddenSecret
+		? 'Keep exploring to reveal this one.'
+		: achievement.description
 
 	return (
 		<m.div
@@ -334,7 +383,7 @@ function AchievementCard({
 				className={cn(
 					'relative h-full overflow-hidden rounded-2xl border backdrop-blur-xl p-4 cursor-pointer sm:p-6',
 					isEarned
-						? 'bg-gradient-to-br from-purple-500/5 to-purple-600/5 border-purple-500/20'
+						? cn('bg-gradient-to-br', tier.card)
 						: 'bg-gradient-to-br from-white/[0.02] to-white/[0.01] border-white/10 opacity-60'
 				)}
 			>
@@ -386,7 +435,10 @@ function AchievementCard({
 					>
 						{isEarned ? (
 							<IconComponent
-								className='w-9 h-9 sm:w-11 sm:h-11 text-purple-400 transition-all duration-500'
+								className={cn(
+									'w-9 h-9 sm:w-11 sm:h-11 transition-all duration-500',
+									tier.icon
+								)}
 								strokeWidth={1.5}
 							/>
 						) : (
@@ -397,6 +449,32 @@ function AchievementCard({
 						)}
 					</m.div>
 
+					{/* Tier + XP reward */}
+					<div className='mb-2 flex flex-wrap items-center gap-1.5'>
+						<span
+							className={cn(
+								'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1',
+								isEarned
+									? tier.badge
+									: 'bg-white/5 text-white/40 ring-white/10'
+							)}
+						>
+							{tier.label}
+						</span>
+						{!isHiddenSecret && (
+							<span
+								className={cn(
+									'rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ring-1',
+									isEarned
+										? 'bg-purple-500/15 text-purple-300 ring-purple-500/30'
+										: 'bg-white/5 text-white/40 ring-white/10'
+								)}
+							>
+								+{achievement.xpReward} XP
+							</span>
+						)}
+					</div>
+
 					{/* Title */}
 					<h3
 						className={cn(
@@ -406,7 +484,7 @@ function AchievementCard({
 								: 'text-white/50'
 						)}
 					>
-						{achievement.title}
+						{title}
 					</h3>
 
 					{/* Description */}
@@ -418,7 +496,7 @@ function AchievementCard({
 								: 'text-white/40'
 						)}
 					>
-						{achievement.description}
+						{description}
 					</p>
 
 					{/* Date with subtle fade */}

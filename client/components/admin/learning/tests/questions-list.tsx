@@ -135,7 +135,7 @@ export default function QuestionsList({
         testId={testId}
         onSuccess={handleEditSuccess}
         editQuestion={editDialog.question || undefined}
-        existingQuestionsCount={questions.length}
+        nextOrder={questions.length + 1}
       />
 
       {/* Delete Dialog */}

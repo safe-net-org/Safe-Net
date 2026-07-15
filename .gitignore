@@ -13,3 +13,11 @@ node_modules/
 # builds
 .next/
 dist/
+
+# certificates / keys — never commit, generate locally (mkcert)
+*.pem
+*.key
+
+# local-only: retired code and database dumps. Dumps contain real user rows
+# and password hashes, so this must never be tracked.
+_archive/

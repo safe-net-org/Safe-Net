@@ -2,7 +2,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { AnimatePresence, m, useAnimation, usePresence } from 'framer-motion'
+import {
+	AnimatePresence,
+	m,
+	Transition,
+	useAnimation,
+	usePresence,
+} from 'framer-motion'
 
 import { ChevronDown, LogOut, Menu, Shield, ShieldCheck, X } from 'lucide-react'
 
@@ -72,14 +78,18 @@ export default function DashboardSidebar() {
 			}
 		}, [isOpen, controls, isPresent, safeToRemove])
 
+		// `transition` is typed explicitly because returning it from a function
+		// widens `ease` to number[], which framer-motion's Easing type rejects.
+		const transition: Transition = {
+			duration: 0.25,
+			ease: [0.4, 0, 0.2, 1],
+			height: { duration: 0.25 },
+		}
+
 		return {
 			controls,
 			initial: { opacity: 0, height: 0 },
-			transition: {
-				duration: 0.25,
-				ease: [0.4, 0, 0.2, 1],
-				height: { duration: 0.25 },
-			},
+			transition,
 		}
 	}
 

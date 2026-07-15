@@ -166,7 +166,7 @@ export default function CertificatePage() {
 						<DetailCard
 							icon={Calendar}
 							label='Issue Date'
-							value={formatDate(certificate.issuedAt)}
+							value={formatDate(certificate.issuedAt) ?? '—'}
 						/>
 						<DetailCard
 							icon={CheckCircle2}

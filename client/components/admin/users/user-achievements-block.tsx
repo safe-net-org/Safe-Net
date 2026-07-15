@@ -18,8 +18,10 @@ interface UserAchievementsBlockProps {
 }
 
 // Apple-style easing curves
-const appleEasing = [0.42, 0, 0.58, 1]
-const appleEaseOut = [0.16, 1, 0.3, 1]
+// `as const` matters: without it these widen to number[], which framer-motion's
+// Easing type rejects — it wants a fixed 4-tuple.
+const appleEasing = [0.42, 0, 0.58, 1] as const
+const appleEaseOut = [0.16, 1, 0.3, 1] as const
 
 // Get an icon component by slug
 const getIconBySlug = (slug: string): LucideIcon => {
@@ -28,8 +30,11 @@ const getIconBySlug = (slug: string): LucideIcon => {
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 		.join('')
 
-	const icon = (icons as Record<string, LucideIcon>)[pascalCase]
-	return icon || Trophy
+	// Indexed off lucide's own export map rather than cast through
+	// Record<string, LucideIcon>: the module also exports non-icon members, so
+	// that cast is a lie TypeScript rightly rejects.
+	const icon = icons[pascalCase as keyof typeof icons]
+	return (icon as LucideIcon) || Trophy
 }
 
 export default function UserAchievementsBlock({

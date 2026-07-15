@@ -74,17 +74,43 @@ export interface ILesson {
 	tasks?: Array<ITask>
 }
 
+export type TaskType =
+	| 'SINGLE_CHOICE'
+	| 'MULTI_CHOICE'
+	| 'TEXT_INPUT'
+	| 'SHORT_ANSWER'
+	| 'PHISHING_EMAIL'
+	| 'PHISHING_SITE'
+
+/** The simulated message a phishing task asks about, minus its red flags. */
+export interface ISimulatedEmail {
+	from: string
+	displayName?: string
+	subject: string
+	body: string
+}
+
+export interface ISimulatedSite {
+	url: string
+	title?: string
+	page: string
+}
+
 export interface ITask {
 	id: string
 	order: number
-	type: 'SINGLE_CHOICE' | 'MULTI_CHOICE' | 'TEXT_INPUT' | 'SHORT_ANSWER'
+	type: TaskType
 	title: string
 	question: string
 	points: number
 	difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-	explanation?: string // ✅ Added
+	explanation?: string
 	options: Array<ITaskOption>
 	completed?: boolean
+	/** Present only on PHISHING_EMAIL tasks. */
+	email?: ISimulatedEmail
+	/** Present only on PHISHING_SITE tasks. */
+	site?: ISimulatedSite
 }
 
 export interface ITaskOption {
@@ -109,6 +135,19 @@ export interface ITaskAnswerResponse {
 		description: string
 		icon: string
 	}>
+
+	/**
+	 * Only on PHISHING_EMAIL / PHISHING_SITE. Revealed after the attempt — the
+	 * spans and reasons are the answer key, so they are never sent with the
+	 * lesson content itself.
+	 */
+	redFlagFeedback?: Array<{
+		id: string
+		span: string
+		reason: string
+		found: boolean
+	}>
+	falsePositives?: Array<{ location: string; text: string }>
 }
 
 export interface ITestQuestion {
@@ -189,12 +228,27 @@ export interface ICertificate {
 	}
 }
 
+export type AchievementCategory =
+	| 'SKILL'
+	| 'PRECISION'
+	| 'MASTERY'
+	| 'PERSISTENCE'
+	| 'MILESTONE'
+	| 'SECRET'
+
+export type AchievementTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'
+
 export interface IAchievement {
 	id: string
 	code: string
 	title: string
 	description: string
 	icon: string
+	category: AchievementCategory
+	tier: AchievementTier
+	xpReward: number
+	isSecret: boolean
+	order: number
 	createdAt: string
 }
 
@@ -207,5 +261,8 @@ export interface IUserAchievement {
 		title: string
 		description: string
 		icon: string
+		category: AchievementCategory
+		tier: AchievementTier
+		xpReward: number
 	}
 }

@@ -1,0 +1,103 @@
+title: "Final Test: URL Analysis"
+description: "Testing your ability to read URLs and recognize lookalike domains."
+passingScore: 75
+questions:
+  - text: "What is the real domain in https://amazon.fake-store.com/products?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "amazon"
+        isCorrect: false
+      - text: "fake-store.com"
+        isCorrect: true
+      - text: "amazon.fake-store.com"
+        isCorrect: false
+      - text: "products"
+        isCorrect: false
+
+  - text: "In https://mail.google.com/inbox, what is the actual domain?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "mail"
+        isCorrect: false
+      - text: "google.com"
+        isCorrect: true
+      - text: "inbox"
+        isCorrect: false
+      - text: "mail.google"
+        isCorrect: false
+
+  - text: "Which of these use the decoy-subdomain trick, burying a familiar name in front of an unrelated real domain?"
+    type: MULTI_CHOICE
+    options:
+      - text: "apple.com.fake-site.com"
+        isCorrect: true
+      - text: "secure-paypal.phishing.net"
+        isCorrect: true
+      - text: "mail.google.com"
+        isCorrect: false
+      - text: "online.yourbank.com, from a bank that owns yourbank.com"
+        isCorrect: false
+      - text: "A shortened bit.ly link"
+        isCorrect: false
+
+  - text: "What encoding turns Unicode domain characters into an ASCII string starting with \"xn--\"?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Base64"
+        isCorrect: false
+      - text: "Punycode"
+        isCorrect: true
+      - text: "ROT13"
+        isCorrect: false
+      - text: "UTF-16"
+        isCorrect: false
+
+  - text: "Why did several major browsers display a Cyrillic lookalike domain as \"apple.com\" in 2017?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It was a bug in one obscure browser only"
+        isCorrect: false
+      - text: "Some Cyrillic letters are visually identical to Latin letters, and browsers render them as typed"
+        isCorrect: true
+      - text: "Apple authorized the registration"
+        isCorrect: false
+      - text: "It required modifying the browser's source code"
+        isCorrect: false
+
+  - text: "Which of these is a genuine defense against a homograph-style lookalike domain?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Checking whether an odd domain decodes to an \"xn--\" punycode string"
+        isCorrect: true
+      - text: "Typing important domains directly instead of clicking a link"
+        isCorrect: true
+      - text: "Trusting a domain because it visually matches the brand"
+        isCorrect: false
+      - text: "Assuming HTTPS rules this trick out"
+        isCorrect: false
+      - text: "Assuming your browser always catches this automatically"
+        isCorrect: false
+
+  - text: "What does a raw IP address in a link, like http://192.168.1.1/login, usually suggest?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It's a normal way for legitimate services to present a login page"
+        isCorrect: false
+      - text: "It's unusual -- legitimate sites almost always use a registered domain, not a bare IP"
+        isCorrect: true
+      - text: "It guarantees the link is safe because IPs can't be spoofed"
+        isCorrect: false
+      - text: "It means the site uses extra encryption"
+        isCorrect: false
+
+  - text: "Which part of a URL is the single most important one to verify before trusting a link?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The path after the domain"
+        isCorrect: false
+      - text: "The registered domain itself"
+        isCorrect: true
+      - text: "The URL parameters"
+        isCorrect: false
+      - text: "The anchor after the # symbol"
+        isCorrect: false

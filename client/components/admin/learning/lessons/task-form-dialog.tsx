@@ -293,7 +293,11 @@ export default function CreateTaskDialog({
 													type='button'
 													className='flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white transition-colors hover:bg-white/10'
 												>
-													<span>{DifficultyLabels[field.value]}</span>
+													{/* difficulty is optional in the schema, so field.value can be
+											    undefined before the user picks one. */}
+											<span>
+												{DifficultyLabels[field.value ?? Difficulty.MEDIUM]}
+											</span>
 													<ChevronDown className='h-4 w-4 text-gray-400' />
 												</button>
 											</DropdownMenuTrigger>

@@ -1,0 +1,101 @@
+title: "Final Test: Device Protection"
+description: "Testing your knowledge of screen locks and biometric security."
+passingScore: 75
+questions:
+  - text: "Which lock method is the most secure?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Pattern lock"
+        isCorrect: false
+      - text: "A simple PIN like 1234"
+        isCorrect: false
+      - text: "Fingerprint alone"
+        isCorrect: false
+      - text: "Biometrics plus a strong PIN"
+        isCorrect: true
+
+  - text: "Why can't you \"reset\" a compromised fingerprint the way you reset a password?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Fingerprints expire after a few years"
+        isCorrect: false
+      - text: "It's a fixed physical trait, not a secret you can change"
+        isCorrect: true
+      - text: "It requires a store visit"
+        isCorrect: false
+      - text: "Apple's policy forbids it"
+        isCorrect: false
+
+  - text: "Which of these are real, documented limitations of fingerprint biometrics?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Someone can press your finger to the sensor while you sleep"
+        isCorrect: true
+      - text: "A lifted print can sometimes be replicated"
+        isCorrect: true
+      - text: "They make PIN brute-forcing impossible"
+        isCorrect: false
+      - text: "They automatically encrypt your files"
+        isCorrect: false
+      - text: "Face ID and Touch ID use identical sensor hardware"
+        isCorrect: false
+
+  - text: "What group bypassed Touch ID within 48 hours of the iPhone 5S's 2013 launch?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The Chaos Computer Club"
+        isCorrect: true
+      - text: "Anonymous"
+        isCorrect: false
+      - text: "Lazarus Group"
+        isCorrect: false
+      - text: "APT28"
+        isCorrect: false
+
+  - text: "What did the CCC's Touch ID bypass actually use to fool the sensor?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A stolen fingerprint database"
+        isCorrect: false
+      - text: "A photographed print, printed and cast into a fake finger"
+        isCorrect: true
+      - text: "A software exploit in iOS"
+        isCorrect: false
+      - text: "A brute-force PIN attack"
+        isCorrect: false
+
+  - text: "What does the Touch ID bypass demonstrate about fingerprint sensors used alone?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "They are effectively unbreakable"
+        isCorrect: false
+      - text: "A convincing physical copy of a print can substitute for the real finger"
+        isCorrect: true
+      - text: "Only government labs can replicate a print"
+        isCorrect: false
+      - text: "It only ever worked on the 2013 iPhone"
+        isCorrect: false
+
+  - text: "What's the strongest realistic lock setup for a phone holding banking apps?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Fingerprint only, for speed"
+        isCorrect: false
+      - text: "A plain 4-digit PIN alone"
+        isCorrect: false
+      - text: "Biometrics for daily unlock, backed by a strong PIN as fallback"
+        isCorrect: true
+      - text: "No lock, since you rarely leave home"
+        isCorrect: false
+
+  - text: "Which of these device-lock methods is most vulnerable to someone simply watching over your shoulder?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A pattern lock, which leaves a visible smudge trail"
+        isCorrect: true
+      - text: "Face ID"
+        isCorrect: false
+      - text: "A fingerprint sensor"
+        isCorrect: false
+      - text: "A hardware security key"
+        isCorrect: false

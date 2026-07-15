@@ -38,11 +38,13 @@ const getIconBySlug = (slug: string): LucideIcon => {
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 		.join('')
 
-	// Try to find the icon in lucide-react
-	const icon = (icons as Record<string, LucideIcon>)[pascalCase]
+	// Indexed off lucide's own export map rather than cast through
+	// Record<string, LucideIcon>: the module also exports non-icon members, so
+	// that cast is a lie TypeScript rightly rejects.
+	const icon = icons[pascalCase as keyof typeof icons]
 
 	// Return the found icon or Shield as a fallback
-	return icon || Shield
+	return (icon as LucideIcon) || Shield
 }
 
 export default function Topics() {

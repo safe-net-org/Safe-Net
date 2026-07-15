@@ -8,11 +8,9 @@ import {
     Patch,
     Post,
     Put,
-    UseGuards,
 } from '@nestjs/common'
+import { Role } from '@prisma/client'
 import { Auth } from 'src/auth/decorators/auth.decorator'
-import { Roles } from 'src/auth/decorators/roles.decorator'
-import { RolesGuard } from 'src/auth/guard/roles.guard'
 import { CreateBlockDto } from '../dto/create-block.dto'
 import { CreateCourseDto } from '../dto/create-course.dto'
 import { CreateLessonDto } from '../dto/create-lesson.dto'
@@ -22,9 +20,7 @@ import { CreateTestDto } from '../dto/create-test.dto'
 import { AdminLearningService } from '../services/admin-learning.service'
 
 @Controller('admin/learning')
-@UseGuards(RolesGuard)
-@Auth()
-@Roles('ADMIN')
+@Auth(Role.ADMIN)
 export class AdminLearningController {
 	constructor(private readonly adminLearningService: AdminLearningService) {}
 

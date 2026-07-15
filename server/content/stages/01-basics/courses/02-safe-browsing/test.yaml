@@ -1,0 +1,103 @@
+title: "Final Test: Safe Web Browsing"
+description: "Testing your knowledge of HTTPS, public Wi-Fi risk, and session security."
+passingScore: 75
+questions:
+  - text: "What sign indicates a secure connection to a site?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The site loads quickly"
+        isCorrect: false
+      - text: "A lock icon and https:// in the address bar"
+        isCorrect: true
+      - text: "A nice site design"
+        isCorrect: false
+      - text: "The site is in your language"
+        isCorrect: false
+
+  - text: "A site shows https and a padlock. What does that actually guarantee?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The operator is trustworthy"
+        isCorrect: false
+      - text: "The connection to that server is encrypted in transit"
+        isCorrect: true
+      - text: "The site has been checked for scams"
+        isCorrect: false
+      - text: "The site cannot host a phishing form"
+        isCorrect: false
+
+  - text: "Which of these are genuinely safer habits on public Wi-Fi?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Using a VPN before logging into anything sensitive"
+        isCorrect: true
+      - text: "Waiting for cellular data before doing any banking"
+        isCorrect: true
+      - text: "Turning off auto-connect to open networks"
+        isCorrect: true
+      - text: "Connecting to any network sharing the cafe's name"
+        isCorrect: false
+      - text: "Disabling your firewall for better speed"
+        isCorrect: false
+      - text: "Assuming a padlock icon means the Wi-Fi network itself is safe"
+        isCorrect: false
+
+  - text: "What did the 2010 tool Firesheep actually capture to hijack accounts?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The user's typed password"
+        isCorrect: false
+      - text: "The session cookie sent after login, unencrypted"
+        isCorrect: true
+      - text: "The Wi-Fi router's password"
+        isCorrect: false
+      - text: "The user's saved contacts"
+        isCorrect: false
+
+  - text: "What was the actual, lasting fix to the problem Firesheep exposed?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Sites encrypting the entire session, not just the login page"
+        isCorrect: true
+      - text: "Everyone choosing longer passwords"
+        isCorrect: false
+      - text: "Logging out immediately after logging in"
+        isCorrect: false
+      - text: "Clearing the browser cache daily"
+        isCorrect: false
+
+  - text: "Roughly how did HTTPS adoption across the web change between 2010 and today?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It stayed flat around 30%"
+        isCorrect: false
+      - text: "It rose from about 30% to over 95%"
+        isCorrect: true
+      - text: "It fell as sites moved back to HTTP"
+        isCorrect: false
+      - text: "HTTPS didn't exist before 2010"
+        isCorrect: false
+
+  - text: "Which of these situations is HTTPS specifically designed to protect against?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Someone intercepting your data as it travels between your browser and the server"
+        isCorrect: true
+      - text: "A site owner selling your data to advertisers"
+        isCorrect: false
+      - text: "A site having a fake or scam purpose"
+        isCorrect: false
+      - text: "A weak password on your own account"
+        isCorrect: false
+
+  - text: "Why is a public Wi-Fi network specifically risky even when the sites you visit use HTTPS?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "HTTPS doesn't protect metadata like which sites you visit and when"
+        isCorrect: true
+      - text: "HTTPS is automatically disabled on public networks"
+        isCorrect: false
+      - text: "Public Wi-Fi always blocks HTTPS traffic"
+        isCorrect: false
+      - text: "It isn't risky if the site uses HTTPS -- nothing else matters"
+        isCorrect: false

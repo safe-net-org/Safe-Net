@@ -1,0 +1,101 @@
+title: "Final Test: Advanced Threats"
+description: "Testing your knowledge of APT groups and the Salt Typhoon case."
+passingScore: 80
+questions:
+  - text: "What is characteristic of APT attacks?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Mass spam distribution"
+        isCorrect: false
+      - text: "A quick hack lasting a few hours"
+        isCorrect: false
+      - text: "Long-term, hidden infiltration of a network"
+        isCorrect: true
+      - text: "Displaying ads"
+        isCorrect: false
+
+  - text: "Why doesn't the average individual typically need to worry about being personally targeted by an APT group?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "APTs focus their resources on governments, corporations, and infrastructure, not individuals"
+        isCorrect: true
+      - text: "APT groups don't actually exist"
+        isCorrect: false
+      - text: "Antivirus software makes APT attacks impossible"
+        isCorrect: false
+      - text: "APT groups only operate within a single country"
+        isCorrect: false
+
+  - text: "Which of these are named, real-world APT groups tracked by security researchers?"
+    type: MULTI_CHOICE
+    options:
+      - text: "APT28 (Fancy Bear)"
+        isCorrect: true
+      - text: "Lazarus Group"
+        isCorrect: true
+      - text: "Norton Shield"
+        isCorrect: false
+      - text: "CleanBot"
+        isCorrect: false
+      - text: "SafeGuard Collective"
+        isCorrect: false
+
+  - text: "What did the Stuxnet and SolarWinds incidents have in common?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Both were sophisticated attacks attributed to state-level actors, targeting infrastructure or a trusted software supply chain"
+        isCorrect: true
+      - text: "Both were simple phishing emails sent to random recipients"
+        isCorrect: false
+      - text: "Both exclusively targeted individual social media accounts"
+        isCorrect: false
+      - text: "Neither incident caused any real, lasting damage"
+        isCorrect: false
+
+  - text: "The Salt Typhoon intrusions, publicized in late 2024, involved Chinese state-linked hackers breaching what kind of organizations?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Major U.S. telecommunications companies, including AT&T, Verizon, and T-Mobile"
+        isCorrect: true
+      - text: "Only small, regional retail businesses"
+        isCorrect: false
+      - text: "Exclusively video game companies"
+        isCorrect: false
+      - text: "Only companies located outside the United States"
+        isCorrect: false
+
+  - text: "Roughly when did the Salt Typhoon intrusion campaign reportedly begin, according to investigators?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "As early as 2022, though it wasn't publicized until late 2024"
+        isCorrect: true
+      - text: "It began and was publicized on the same day in 2024"
+        isCorrect: false
+      - text: "In the 1990s"
+        isCorrect: false
+      - text: "It has never been dated at all"
+        isCorrect: false
+
+  - text: "What made the Salt Typhoon intrusions especially significant, beyond simply breaching telecom companies?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Attackers accessed systems built for law-enforcement wiretaps, potentially learning who U.S. authorities were surveilling"
+        isCorrect: true
+      - text: "They only accessed publicly available marketing data"
+        isCorrect: false
+      - text: "No data of any kind was accessed"
+        isCorrect: false
+      - text: "They targeted only telecom billing systems, unrelated to communications"
+        isCorrect: false
+
+  - text: "By August 2025, how far had researchers found Salt Typhoon's activity to extend?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "More than 200 companies across roughly 80 countries"
+        isCorrect: true
+      - text: "Exactly the original nine U.S. telecoms, with no further spread"
+        isCorrect: false
+      - text: "A single company in one country"
+        isCorrect: false
+      - text: "It had been fully contained by early 2025"
+        isCorrect: false

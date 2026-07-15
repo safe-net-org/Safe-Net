@@ -7,7 +7,7 @@ import { ROUTES } from '@/config/pages-url.config'
 import { useAdminStats } from '@/hooks/admin/useAdminStats'
 import { toTime } from '@/utils/date-time/dateFormatter'
 
-import { m } from 'framer-motion'
+import { m, Variants } from 'framer-motion'
 import {
     ArrowRight,
     BookOpen,
@@ -32,15 +32,17 @@ const containerVariants = {
 	},
 }
 
-const itemVariants = {
+// Typed as Variants (and `ease` kept literal): a bare object widens `ease` to
+// string, which framer-motion's Easing union rejects.
+const itemVariants: Variants = {
 	hidden: { opacity: 0, y: 10 },
 	show: {
 		opacity: 1,
 		y: 0,
 		transition: {
 			duration: 0.3,
-			ease: 'easeOut'
-		}
+			ease: 'easeOut',
+		},
 	},
 }
 

@@ -2,16 +2,30 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, m } from 'framer-motion'
 import { CheckCircle2, ChevronRight, RotateCcw, X, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import {
+	PhishingSimulator,
+	RedFlagFeedback,
+	SelectedSpan,
+} from './PhishingSimulator'
+
+type TaskType =
+	| 'SINGLE_CHOICE'
+	| 'MULTI_CHOICE'
+	| 'SHORT_ANSWER'
+	| 'TEXT_INPUT'
+	| 'PHISHING_EMAIL'
+	| 'PHISHING_SITE'
 
 interface Task {
 	id: string
 	order: number
-	type: 'SINGLE_CHOICE' | 'MULTI_CHOICE'
+	type: TaskType
 	title: string
 	question?: string
 	explanation?: string
@@ -19,6 +33,21 @@ interface Task {
 	difficulty: 'EASY' | 'MEDIUM' | 'HARD'
 	options: Array<{ id: string; text: string }>
 	completed?: boolean
+	/** Present only on PHISHING_EMAIL tasks — never includes the red flags. */
+	email?: {
+		from: string
+		displayName?: string
+		subject: string
+		body: string
+	}
+	/** Present only on PHISHING_SITE tasks. */
+	site?: { url: string; title?: string; page: string }
+}
+
+export interface AnswerPayload {
+	selectedOptionIds: string[]
+	textAnswer?: string
+	selectedSpans?: SelectedSpan[]
 }
 
 interface TaskModalProps {
@@ -33,10 +62,15 @@ interface TaskModalProps {
 	hasPrevLesson?: boolean
 	onNextLesson?: () => void
 	onPrevLesson?: () => void
-	answerTask: (taskId: string, selectedOptionIds: string[]) => Promise<{
-  	isCorrect: boolean;
-  	explanation?: string  // ✅ Add this
+	answerTask: (
+		taskId: string,
+		payload: AnswerPayload
+	) => Promise<{
+		isCorrect: boolean
+		explanation?: string
 		awardedXp: number
+		redFlagFeedback?: RedFlagFeedback[]
+		falsePositives?: { location: string; text: string }[]
 	}>
 	isAnswering: boolean
 }
@@ -57,21 +91,39 @@ export function TaskModal({
 	isAnswering,
 }: TaskModalProps) {
 	const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+	const [textAnswer, setTextAnswer] = useState('')
+	const [selectedSpans, setSelectedSpans] = useState<SelectedSpan[]>([])
 	const [hasSubmitted, setHasSubmitted] = useState(false)
 	const [answerResult, setAnswerResult] = useState<{
-	  isCorrect: boolean
-	  explanation?: string
-	  awardedXp: number
+		isCorrect: boolean
+		explanation?: string
+		awardedXp: number
+		redFlagFeedback?: RedFlagFeedback[]
+		falsePositives?: { location: string; text: string }[]
 	} | null>(null)
 
 	const currentTask = tasks[currentTaskIndex]
 	const isMultiChoice = currentTask?.type === 'MULTI_CHOICE'
+	const isSimulator =
+		currentTask?.type === 'PHISHING_EMAIL' ||
+		currentTask?.type === 'PHISHING_SITE'
+	const isTextTask =
+		currentTask?.type === 'SHORT_ANSWER' || currentTask?.type === 'TEXT_INPUT'
+	const isChoiceTask = !isSimulator && !isTextTask
 	const isLastTask = currentTaskIndex >= tasks.length - 1
 	const isFirstTask = currentTaskIndex === 0
+
+	const hasAnswer = isSimulator
+		? selectedSpans.length > 0
+		: isTextTask
+			? textAnswer.trim().length > 0
+			: selectedOptions.length > 0
 
 	// ✅ Reset state when the task changes
 	useEffect(() => {
 		setSelectedOptions([])
+		setTextAnswer('')
+		setSelectedSpans([])
 		setHasSubmitted(false)
 		setAnswerResult(null)
 	}, [currentTaskIndex])
@@ -81,12 +133,9 @@ export function TaskModal({
 		if (!isOpen) return
 
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (
-				e.key === 'Enter' &&
-				!hasSubmitted &&
-				selectedOptions.length > 0 &&
-				!isAnswering
-			) {
+			// Enter would otherwise submit mid-sentence while typing a text answer.
+			if (e.key === 'Enter' && !hasSubmitted && hasAnswer && !isAnswering) {
+				if (isTextTask) return
 				handleSubmit()
 			}
 
@@ -102,7 +151,9 @@ export function TaskModal({
 				handlePrev()
 			}
 
-			if (e.key === 'r' && hasSubmitted && answerResult === false) {
+			// Was `answerResult === false`, comparing an object to a boolean, so
+			// the retry shortcut never fired.
+			if (e.key === 'r' && hasSubmitted && answerResult?.isCorrect === false) {
 				handleRetry()
 			}
 		}
@@ -126,16 +177,24 @@ export function TaskModal({
 	}
 
 	const handleSubmit = async () => {
-		if (selectedOptions.length === 0) {
-			toast.error('Select at least one option')
+		if (!hasAnswer) {
+			toast.error(
+				isSimulator
+					? 'Flag at least one thing that looks suspicious'
+					: isTextTask
+						? 'Type your answer first'
+						: 'Select at least one option'
+			)
 			return
 		}
 
 		try {
-			// ✅ Get result from the API
-			const result = await answerTask(currentTask.id, selectedOptions)
+			const result = await answerTask(currentTask.id, {
+				selectedOptionIds: isChoiceTask ? selectedOptions : [],
+				textAnswer: isTextTask ? textAnswer.trim() : undefined,
+				selectedSpans: isSimulator ? selectedSpans : undefined,
+			})
 
-			// ✅ Immediately store the result in local state
 			setAnswerResult(result)
 			setHasSubmitted(true)
 		} catch (error) {
@@ -157,6 +216,8 @@ export function TaskModal({
 
 	const handleRetry = () => {
 		setSelectedOptions([])
+		setTextAnswer('')
+		setSelectedSpans([])
 		setHasSubmitted(false)
 		setAnswerResult(null)
 	}
@@ -248,8 +309,33 @@ export function TaskModal({
 								</p>
 							</div>
 
+							{/* Phishing simulator */}
+							{isSimulator && (
+								<PhishingSimulator
+									email={currentTask.email}
+									site={currentTask.site}
+									selectedSpans={selectedSpans}
+									onChange={setSelectedSpans}
+									hasSubmitted={hasSubmitted}
+									feedback={answerResult?.redFlagFeedback}
+									falsePositives={answerResult?.falsePositives}
+								/>
+							)}
+
+							{/* Free-text answer */}
+							{isTextTask && (
+								<Textarea
+									value={textAnswer}
+									onChange={e => setTextAnswer(e.target.value)}
+									disabled={hasSubmitted}
+									rows={3}
+									placeholder='Type your answer...'
+									className='resize-none border-white/10 bg-white/5 text-white placeholder:text-white/30'
+								/>
+							)}
+
 							{/* Options */}
-							<div className='space-y-3'>
+							<div className={cn('space-y-3', !isChoiceTask && 'hidden')}>
 								{currentTask.options.map(option => (
 									<m.button
 										key={option.id}
@@ -301,10 +387,8 @@ export function TaskModal({
 												{isCorrect ? 'Correct!' : 'Incorrect'}
 											</p>
 											<p className='text-sm text-gray-400'>
-												{isCorrect && `You earned ${currentTask.points} XP`}
-												{answerResult.explanation && (
-												  <>{answerResult.explanation}</>
-												)}
+												{isCorrect && `You earned ${answerResult.awardedXp} XP. `}
+												{answerResult.explanation}
 											</p>
 										</div>
 									</div>
@@ -317,7 +401,7 @@ export function TaskModal({
 							{!hasSubmitted ? (
 								<Button
 									onClick={handleSubmit}
-									disabled={selectedOptions.length === 0 || isAnswering}
+									disabled={!hasAnswer || isAnswering}
 									className='w-full rounded-xl bg-white py-6 text-base font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-50'
 								>
 									{isAnswering ? 'Submitting...' : 'Check answer'}

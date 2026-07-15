@@ -8,6 +8,16 @@ import { PrismaService } from '../../prisma.service'
 import { AnswerResultDto } from '../dto/answer-result.dto'
 import { AnswerTaskDto } from '../dto/answer-task.dto'
 import { LessonDetailsDto } from '../dto/lesson-details.dto'
+import { buildSimulatorContent } from '../answers/simulator-content'
+import {
+	evaluateChoiceAnswer,
+	evaluatePhishingAnswer,
+	evaluateTextAnswer,
+	PhishingEvaluation,
+	PhishingTaskMeta,
+	SIMULATOR_TASK_TYPES,
+	TEXT_TASK_TYPES,
+} from '../answers/task-answer.evaluator'
 import { AchievementsService } from './achievements.service'
 
 @Injectable()
@@ -68,6 +78,7 @@ export class ProgressService {
 				question: task.question ?? undefined,
 				points: task.points,
 				difficulty: task.difficulty,
+				...buildSimulatorContent(task.meta),
 				options: task.options.map(o => ({
 					id: o.id,
 					text: o.text,
@@ -114,28 +125,24 @@ export class ProgressService {
 
 		// Check answer correctness
 		let isCorrect = false
+		let phishingEvaluation: PhishingEvaluation | undefined
 
 		if (
 			task.type === TaskType.SINGLE_CHOICE ||
 			task.type === TaskType.MULTI_CHOICE
 		) {
-			const correctIds = task.options
-				.filter(o => o.isCorrect)
-				.map(o => o.id)
-				.sort()
-
-			const selectedSorted = [...(dto.selectedOptionIds || [])].sort()
-
-			isCorrect =
-				correctIds.length === selectedSorted.length &&
-				correctIds.every((id, idx) => id === selectedSorted[idx])
-		} else if (
-			task.type === TaskType.TEXT_INPUT ||
-			task.type === TaskType.PHISHING_EMAIL ||
-			task.type === TaskType.PHISHING_SITE
-		) {
-			// Text-based tasks require manual review
-			isCorrect = false
+			isCorrect = evaluateChoiceAnswer(
+				task.options.filter(option => option.isCorrect).map(option => option.id),
+				dto.selectedOptionIds || []
+			)
+		} else if (SIMULATOR_TASK_TYPES.includes(task.type)) {
+			phishingEvaluation = evaluatePhishingAnswer(
+				task.meta as PhishingTaskMeta | null,
+				dto.selectedSpans ?? []
+			)
+			isCorrect = phishingEvaluation.isCorrect
+		} else if (TEXT_TASK_TYPES.includes(task.type)) {
+			isCorrect = evaluateTextAnswer(task.correctAnswer, dto.textAnswer)
 		}
 
 		// XP is awarded only for the first correct answer
@@ -268,13 +275,39 @@ export class ProgressService {
 		return {
 			taskId: task.id,
 			isCorrect,
-			explanation: task.explanation, // ✅ Explanation added
+			explanation: task.explanation,
 			awardedXp,
 			totalXp,
 			courseProgress: progressPercent,
 			lessonCompleted,
 			certificateIssued,
 			newAchievements,
+			...this.buildPhishingFeedback(task.meta, phishingEvaluation),
+		}
+	}
+
+	/**
+	 * Turns a simulator evaluation into learner-facing feedback. Returns an
+	 * empty object for non-simulator tasks so the fields stay absent rather
+	 * than null.
+	 */
+	private buildPhishingFeedback(
+		meta: unknown,
+		evaluation: PhishingEvaluation | undefined
+	) {
+		if (!evaluation) return {}
+
+		const redFlags = (meta as PhishingTaskMeta | null)?.redFlags ?? []
+		const found = new Set(evaluation.foundFlagIds)
+
+		return {
+			redFlagFeedback: redFlags.map(flag => ({
+				id: flag.id,
+				span: flag.span,
+				reason: flag.reason,
+				found: found.has(flag.id),
+			})),
+			falsePositives: evaluation.falsePositives,
 		}
 	}
 

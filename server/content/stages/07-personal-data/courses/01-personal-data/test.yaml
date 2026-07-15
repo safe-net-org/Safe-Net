@@ -1,0 +1,105 @@
+title: "Final Test: Protecting Personal Data"
+description: "Testing your knowledge of sensitive data and the Equifax breach."
+passingScore: 80
+questions:
+  - text: "Which of this data is dangerous to post publicly?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Your passport/ID number"
+        isCorrect: true
+      - text: "Your home address"
+        isCorrect: true
+      - text: "Your bank card's CVV code"
+        isCorrect: true
+      - text: "Your favorite book"
+        isCorrect: false
+      - text: "A photo of your pet"
+        isCorrect: false
+      - text: "Your general city or metro area, without a street address"
+        isCorrect: false
+
+  - text: "Which of these is safest to mention on a public profile?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Your general city or region, without a street address"
+        isCorrect: true
+      - text: "Your full home address"
+        isCorrect: false
+      - text: "A scan of your passport"
+        isCorrect: false
+      - text: "Your bank card number"
+        isCorrect: false
+
+  - text: "Why is your date of birth considered sensitive, even though sharing it feels harmless?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It's commonly used as a security-verification field for account and password recovery"
+        isCorrect: true
+      - text: "It has no real practical use to anyone"
+        isCorrect: false
+      - text: "It's only relevant for accessing age-restricted content"
+        isCorrect: false
+      - text: "Platforms are legally required to make it public"
+        isCorrect: false
+
+  - text: "What can someone realistically do with your full name, date of birth, and phone number combined?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Attempt to take out a loan in your name"
+        isCorrect: true
+      - text: "Impersonate you to a support team to recover access to your accounts"
+        isCorrect: true
+      - text: "Send you a birthday card"
+        isCorrect: false
+      - text: "Nothing at all without your explicit consent"
+        isCorrect: false
+      - text: "Guess your home Wi-Fi password directly"
+        isCorrect: false
+
+  - text: "What should you do with documents you must share, like an ID scan?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Add a visible watermark before sharing it"
+        isCorrect: true
+      - text: "Post it publicly so others can verify your identity too"
+        isCorrect: false
+      - text: "Email it to as many services as possible to save time later"
+        isCorrect: false
+      - text: "There's no way to reduce the risk of sharing it"
+        isCorrect: false
+
+  - text: "Roughly how many Americans had their personal data exposed in the 2017 Equifax breach?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 147 million"
+        isCorrect: true
+      - text: "About 14.7 million"
+        isCorrect: false
+      - text: "About 1.47 million"
+        isCorrect: false
+      - text: "About 1.4 billion"
+        isCorrect: false
+
+  - text: "What caused the 2017 Equifax breach?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Attackers exploited an unpatched web application vulnerability"
+        isCorrect: true
+      - text: "An employee accidentally emailed the database to the wrong person"
+        isCorrect: false
+      - text: "A physical break-in at Equifax's headquarters"
+        isCorrect: false
+      - text: "A former employee leaked the data intentionally"
+        isCorrect: false
+
+  - text: "Beyond its size, why did the Equifax breach become a landmark case in data-protection regulation?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Equifax held the data as a credit bureau without a direct consumer relationship -- people had no way to opt out"
+        isCorrect: true
+      - text: "It was the first data breach of any kind in history"
+        isCorrect: false
+      - text: "No personal data was actually exposed, only internal company records"
+        isCorrect: false
+      - text: "It only affected Equifax's own employees"
+        isCorrect: false

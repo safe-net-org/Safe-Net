@@ -36,6 +36,25 @@ enum BlockType {
   THEORY // Theory block (text/paragraph)
 }
 
+/// What an achievement rewards. SKILL/PRECISION reward demonstrated ability,
+/// MASTERY rewards coverage, PERSISTENCE rewards habit, SECRET is not shown
+/// in the catalog until earned.
+enum AchievementCategory {
+  SKILL
+  PRECISION
+  MASTERY
+  PERSISTENCE
+  MILESTONE
+  SECRET
+}
+
+enum AchievementTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
 /// Users and authentication
 model User {
   id        String   @id @default(uuid())
@@ -47,6 +66,11 @@ model User {
   password String?
   rights   Role[]     @default([USER])
   status   UserStatus @default(ACTIVE)
+
+  /// XP granted by achievements. Kept separate from CourseProgress.totalXp so
+  /// that achievement rewards can never feed back into the XP thresholds that
+  /// unlock XP achievements.
+  bonusXp Int @default(0) @map("bonus_xp")
 
   courseProgress   CourseProgress[]
   taskAttempts     TaskAttempt[]
@@ -321,8 +345,17 @@ model Achievement {
   description String
   icon        String
 
+  category AchievementCategory @default(MILESTONE)
+  tier     AchievementTier     @default(BRONZE)
+  xpReward Int                 @default(0) @map("xp_reward")
+  /// Hidden from the catalog until earned — the reveal is the reward.
+  isSecret Boolean             @default(false) @map("is_secret")
+  /// Display order within a category.
+  order    Int                 @default(0)
+
   users UserAchievement[]
 
+  @@index([category, order])
   @@map("achievements")
 }
 

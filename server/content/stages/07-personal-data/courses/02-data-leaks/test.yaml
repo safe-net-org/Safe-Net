@@ -1,0 +1,101 @@
+title: "Final Test: Data Breaches"
+description: "Testing your knowledge of breach-checking and the National Public Data case."
+passingScore: 80
+questions:
+  - text: "You find out your password leaked in a data breach. What should you do first?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Nothing, let them try to hack it"
+        isCorrect: false
+      - text: "Change your password immediately"
+        isCorrect: true
+      - text: "Delete the account"
+        isCorrect: false
+      - text: "Wait a week"
+        isCorrect: false
+
+  - text: "What's a reliable free way to check whether your email has appeared in a known data breach?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A dedicated service like Have I Been Pwned"
+        isCorrect: true
+      - text: "A random third-party app that asks for your password to \"check\" it"
+        isCorrect: false
+      - text: "Posting your email publicly and waiting for responses"
+        isCorrect: false
+      - text: "There's no way to check this"
+        isCorrect: false
+
+  - text: "You confirm your email and password appeared in a data breach. What should you do?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Change the password on the breached site immediately"
+        isCorrect: true
+      - text: "Change the same password anywhere else you reused it"
+        isCorrect: true
+      - text: "Ignore it if the breach happened more than a year ago"
+        isCorrect: false
+      - text: "Wait to see if anything bad happens first"
+        isCorrect: false
+      - text: "Delete your email address entirely"
+        isCorrect: false
+
+  - text: "Which category of data most commonly appears together in large breaches?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Email address, password, and phone number"
+        isCorrect: true
+      - text: "Exclusively banking PINs"
+        isCorrect: false
+      - text: "Exclusively biometric data"
+        isCorrect: false
+      - text: "Exclusively medical records"
+        isCorrect: false
+
+  - text: "In the 2024 National Public Data breach, roughly how many records did the seller \"USDoD\" advertise?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 2.9 billion"
+        isCorrect: true
+      - text: "About 2.9 million"
+        isCorrect: false
+      - text: "About 29,000"
+        isCorrect: false
+      - text: "About 290 million"
+        isCorrect: false
+
+  - text: "Why does the National Public Data breach's \"2.9 billion records\" figure require scrutiny?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The records include duplicate and historical entries per person, so unique people affected is far lower than 2.9 billion"
+        isCorrect: true
+      - text: "The figure was later proven to be entirely fabricated"
+        isCorrect: false
+      - text: "2.9 billion actually understates the true total"
+        isCorrect: false
+      - text: "The records only affected fictional test accounts"
+        isCorrect: false
+
+  - text: "What should you do about a password you know you've reused across multiple sites, after one of those sites is breached?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Change it on every site where you reused it, not just the breached one"
+        isCorrect: true
+      - text: "Only change it on the site that was breached"
+        isCorrect: false
+      - text: "Leave it as is if the other sites haven't reported a breach"
+        isCorrect: false
+      - text: "Only change it if you notice suspicious activity"
+        isCorrect: false
+
+  - text: "Which historical breach exposed roughly 3 billion accounts?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Yahoo (2013)"
+        isCorrect: true
+      - text: "LinkedIn (2021)"
+        isCorrect: false
+      - text: "Twitter/X (2023)"
+        isCorrect: false
+      - text: "Facebook (2019)"
+        isCorrect: false

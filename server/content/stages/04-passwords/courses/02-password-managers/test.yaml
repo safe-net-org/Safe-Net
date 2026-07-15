@@ -1,0 +1,101 @@
+title: "Final Test: Password Managers"
+description: "Testing your knowledge of password managers and the 2022 LastPass breach."
+passingScore: 75
+questions:
+  - text: "A password manager's main advantage is:"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Speeding up your computer"
+        isCorrect: false
+      - text: "Letting you use unique passwords everywhere"
+        isCorrect: true
+      - text: "Protecting against viruses"
+        isCorrect: false
+      - text: "Increasing internet speed"
+        isCorrect: false
+
+  - text: "What's the one password you still need to remember when using a manager?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Every individual site's password"
+        isCorrect: false
+      - text: "The manager's own master password"
+        isCorrect: true
+      - text: "Your email password, separately"
+        isCorrect: false
+      - text: "None -- it requires no memory at all"
+        isCorrect: false
+
+  - text: "Which of these are things a password manager actually does?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Generates long, unique passwords per site"
+        isCorrect: true
+      - text: "Stores passwords in encrypted form"
+        isCorrect: true
+      - text: "Automatically stops you from being phished"
+        isCorrect: false
+      - text: "Prevents the sites you use from ever being breached"
+        isCorrect: false
+      - text: "Makes two-factor authentication unnecessary"
+        isCorrect: false
+
+  - text: "Roughly how many individuals were affected by the 2022 LastPass breach?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 33 thousand"
+        isCorrect: false
+      - text: "About 33 million"
+        isCorrect: true
+      - text: "About 330 million"
+        isCorrect: false
+      - text: "About 3.3 billion"
+        isCorrect: false
+
+  - text: "Why didn't the LastPass breach immediately hand attackers usable website passwords?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "The data had already been deleted"
+        isCorrect: false
+      - text: "Vault contents stayed encrypted behind a key derived from each user's own master password"
+        isCorrect: true
+      - text: "The attackers chose not to use it"
+        isCorrect: false
+      - text: "The vaults never contained passwords"
+        isCorrect: false
+
+  - text: "What's the real lesson from the LastPass breach?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Never use a password manager"
+        isCorrect: false
+      - text: "A manager's encryption architecture and your master password strength both matter"
+        isCorrect: true
+      - text: "Only free managers are targeted"
+        isCorrect: false
+      - text: "Breaches like this can't be prepared for at all"
+        isCorrect: false
+
+  - text: "Which of these is a real, standalone password manager?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Bitwarden"
+        isCorrect: true
+      - text: "Norton 360"
+        isCorrect: false
+      - text: "CCleaner"
+        isCorrect: false
+      - text: "TeamViewer"
+        isCorrect: false
+
+  - text: "Why should you avoid storing passwords in a plain, unencrypted text file?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "It's technically impossible to do"
+        isCorrect: false
+      - text: "If your device is ever compromised, every password is immediately readable"
+        isCorrect: true
+      - text: "Text files can't be backed up"
+        isCorrect: false
+      - text: "It's against most software licenses"
+        isCorrect: false

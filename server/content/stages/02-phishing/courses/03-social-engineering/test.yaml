@@ -1,0 +1,101 @@
+title: "Final Test: Social Engineering"
+description: "Testing your understanding of manipulation techniques and how the Bangladesh Bank heist actually worked."
+passingScore: 80
+questions:
+  - text: "An attacker leaves a labeled USB drive in a parking lot, hoping someone plugs it in. What is this called?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Pretexting"
+        isCorrect: false
+      - text: "Baiting"
+        isCorrect: true
+      - text: "Tailgating"
+        isCorrect: false
+      - text: "Quid pro quo"
+        isCorrect: false
+
+  - text: "Which of these exploit authority specifically, rather than curiosity or ordinary courtesy?"
+    type: MULTI_CHOICE
+    options:
+      - text: "\"This is the director, transfer the money now\""
+        isCorrect: true
+      - text: "A caller posing as IT support asking you to \"verify\" your password"
+        isCorrect: true
+      - text: "A tempting USB drive left in a parking lot"
+        isCorrect: false
+      - text: "Someone carrying boxes asking you to hold a door"
+        isCorrect: false
+      - text: "An unusually generous cash-back offer for signing up today"
+        isCorrect: false
+
+  - text: "A call claiming to be tech support asks you to read out a code you just received by text. This is:"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A standard verification step"
+        isCorrect: false
+      - text: "Social engineering (vishing)"
+        isCorrect: true
+      - text: "A legitimate bank procedure"
+        isCorrect: false
+      - text: "Normal technical support behavior"
+        isCorrect: false
+
+  - text: "In the 2016 Bangladesh Bank heist, roughly how much of the nearly $1 billion in fraudulent requests actually went through?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About $101 million"
+        isCorrect: true
+      - text: "The full $1 billion"
+        isCorrect: false
+      - text: "Less than $1 million"
+        isCorrect: false
+      - text: "None -- it was fully blocked"
+        isCorrect: false
+
+  - text: "What specifically caused most of the remaining fraudulent requests to be blocked?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Antivirus software"
+        isCorrect: false
+      - text: "A spelling error (\"fandation\") that drew scrutiny at a routing bank"
+        isCorrect: true
+      - text: "Bangladesh Bank noticed immediately"
+        isCorrect: false
+      - text: "An AI system built into SWIFT"
+        isCorrect: false
+
+  - text: "What made the Bangladesh Bank theft possible, given that SWIFT's core network itself wasn't hacked?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "SWIFT's global network was directly breached"
+        isCorrect: false
+      - text: "Attackers used legitimate, stolen credentials from the bank's own compromised systems"
+        isCorrect: true
+      - text: "The Fed approved transfers with zero verification"
+        isCorrect: false
+      - text: "No malware was involved anywhere in the attack"
+        isCorrect: false
+
+  - text: "Kevin Mitnick's phone-based social engineering commonly relied on posing as which role?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A police officer"
+        isCorrect: false
+      - text: "IT support"
+        isCorrect: true
+      - text: "A company's CEO"
+        isCorrect: false
+      - text: "A delivery driver"
+        isCorrect: false
+
+  - text: "Which psychological lever does \"I'll fix your issue, but I need your password first\" primarily use?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Quid pro quo"
+        isCorrect: true
+      - text: "Tailgating"
+        isCorrect: false
+      - text: "Baiting"
+        isCorrect: false
+      - text: "Authority"
+        isCorrect: false

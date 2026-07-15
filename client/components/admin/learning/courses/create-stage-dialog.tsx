@@ -222,7 +222,7 @@ export default function CreateStageDialog({
 									</label>
 									<IconPicker
 										value={icon}
-										onChange={value => setValue('icon', value)}
+										onValueChange={value => setValue('icon', value)}
 									/>
 									<p className='mt-2 text-xs text-gray-500'>
 										Choose an icon from the Lucide React library

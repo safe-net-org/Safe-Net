@@ -258,8 +258,8 @@ export default function TestPage() {
 					items={[
 						{ label: 'Courses', href: ROUTES.COURSES, icon: BookOpen },
 						{
-							label: test.courseTitle,
-							href: `${ROUTES.COURSES}/${test.courseSlug}`,
+							label: test.courseTitle ?? 'Course',
+							href: `${ROUTES.COURSES}/${test.courseSlug ?? ''}`,
 						},
 						{ label: test.title },
 					]}

@@ -1,0 +1,103 @@
+title: "Final Test: Social Media Privacy"
+description: "Testing your knowledge of privacy settings and the Cambridge Analytica case."
+passingScore: 80
+questions:
+  - text: "Which of these is safer to post on a public profile?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Your passport number"
+        isCorrect: false
+      - text: "Your home address"
+        isCorrect: false
+      - text: "A photo with no geotags attached"
+        isCorrect: true
+      - text: "A photo of plane tickets showing the booking number"
+        isCorrect: false
+
+  - text: "Which of these are worth hiding or disabling on a social media profile?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Automatic geolocation tagging on posts"
+        isCorrect: true
+      - text: "Your full friends/followers list"
+        isCorrect: true
+      - text: "Your profile photo"
+        isCorrect: false
+      - text: "Your display name"
+        isCorrect: false
+      - text: "The date you created the account"
+        isCorrect: false
+
+  - text: "Why do security-conscious people wait until after a trip to post vacation photos?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Real-time posts broadcast that your home is currently empty"
+        isCorrect: true
+      - text: "Photos posted later look higher quality"
+        isCorrect: false
+      - text: "Platforms require a delay before travel photos can be posted"
+        isCorrect: false
+      - text: "Delayed posts get better engagement from the algorithm"
+        isCorrect: false
+
+  - text: "Which combinations of information let someone impersonate you or take over your accounts?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Full legal name plus date of birth"
+        isCorrect: true
+      - text: "Phone number plus the email used for account recovery"
+        isCorrect: true
+      - text: "Your favorite movie"
+        isCorrect: false
+      - text: "Your total follower count"
+        isCorrect: false
+      - text: "Your profile's color scheme"
+        isCorrect: false
+
+  - text: "How did Cambridge Analytica initially obtain data on approximately 87 million Facebook users?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Through a personality-quiz app that harvested data from users and their friends, most of whom never consented"
+        isCorrect: true
+      - text: "By directly hacking Facebook's servers"
+        isCorrect: false
+      - text: "By purchasing the data on the dark web"
+        isCorrect: false
+      - text: "Users voluntarily uploaded their own data directly to Cambridge Analytica"
+        isCorrect: false
+
+  - text: "Roughly how many Facebook users were affected by the Cambridge Analytica data harvesting?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 87 million"
+        isCorrect: true
+      - text: "About 87 thousand"
+        isCorrect: false
+      - text: "About 8.7 million"
+        isCorrect: false
+      - text: "About 870 million"
+        isCorrect: false
+
+  - text: "What Facebook API permission made the Cambridge Analytica data harvesting possible?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Apps could pull data on the installing user's friends, not just the user themselves"
+        isCorrect: true
+      - text: "Apps could read users' private messages"
+        isCorrect: false
+      - text: "Apps could access users' saved payment methods"
+        isCorrect: false
+      - text: "Apps could post on a user's behalf without permission"
+        isCorrect: false
+
+  - text: "What was one major, concrete consequence of the Cambridge Analytica scandal?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Meta agreed to a $725 million settlement, and platforms broadly restricted third-party apps' access to friend data"
+        isCorrect: true
+      - text: "Facebook was permanently shut down as a company"
+        isCorrect: false
+      - text: "The scandal had no lasting effect on platform policy"
+        isCorrect: false
+      - text: "It only ever affected users outside the United States"
+        isCorrect: false

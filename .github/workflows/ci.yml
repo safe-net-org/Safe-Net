@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  server:
+    name: Server — typecheck & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: server
+        run: bun install --frozen-lockfile
+
+      # The Prisma client is generated code; without it the types the server
+      # compiles against do not exist.
+      - name: Generate Prisma client
+        working-directory: server
+        run: bunx prisma generate
+
+      - name: Validate Prisma schema
+        working-directory: server
+        run: bunx prisma validate
+
+      - name: Typecheck
+        working-directory: server
+        run: bun run typecheck
+
+      # Fails the build on unsourced claims, malformed tasks, or a lesson that
+      # misses the content-quality floor — content bugs are caught here rather
+      # than after they reach the database.
+      - name: Validate all course content
+        working-directory: server
+        run: bun run validate:content
+
+      - name: Test
+        working-directory: server
+        run: bun run test

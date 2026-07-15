@@ -1,0 +1,103 @@
+title: "Final Test: Incident Response"
+description: "Testing your knowledge of post-hack action plans and the MGM/Caesars comparison."
+passingScore: 80
+questions:
+  - text: "What should you do FIRST if your account is hacked?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Message support"
+        isCorrect: false
+      - text: "Disconnect from the internet and change your password from another device"
+        isCorrect: true
+      - text: "Delete the account"
+        isCorrect: false
+      - text: "Wait a few days"
+        isCorrect: false
+
+  - text: "Which of these are real signs your account may have been hacked?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Posts appear that you didn't make"
+        isCorrect: true
+      - text: "You get a \"your password was changed\" email you didn't request"
+        isCorrect: true
+      - text: "You received a routine software update notification"
+        isCorrect: false
+      - text: "Your friend count increased gradually over time"
+        isCorrect: false
+      - text: "You logged in successfully using your usual password"
+        isCorrect: false
+
+  - text: "Why should you change your password from a different, clean device rather than the possibly-compromised one?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "If the compromised device has a keylogger, typing your new password there exposes it too"
+        isCorrect: true
+      - text: "It isn't actually necessary -- any device works equally well"
+        isCorrect: false
+      - text: "Changing it from the same device is always faster and just as safe"
+        isCorrect: false
+      - text: "It has no security implication either way"
+        isCorrect: false
+
+  - text: "What should you do if money was stolen as a result of a hack?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Freeze your card and contact your bank"
+        isCorrect: true
+      - text: "File a police report"
+        isCorrect: true
+      - text: "Wait to see if it happens again before acting"
+        isCorrect: false
+      - text: "Only post about it on social media"
+        isCorrect: false
+      - text: "Avoid contacting your bank to prevent embarrassment"
+        isCorrect: false
+
+  - text: "What is one reason to save evidence, like screenshots, right after discovering a hack?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Evidence may change or disappear, and you may need it for support or a police report"
+        isCorrect: true
+      - text: "It's required before you're allowed to change your password"
+        isCorrect: false
+      - text: "It has no practical use afterward"
+        isCorrect: false
+      - text: "It replaces the need to contact support"
+        isCorrect: false
+
+  - text: "In the September 2023 ransomware attacks, how did Caesars Entertainment's response differ from MGM Resorts'?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Caesars paid a reported $15 million ransom and avoided major disruption, while MGM refused to pay and suffered about 10 days of outages"
+        isCorrect: true
+      - text: "Both companies paid the exact same ransom amount"
+        isCorrect: false
+      - text: "Neither company suffered any operational disruption"
+        isCorrect: false
+      - text: "MGM paid the ransom while Caesars refused"
+        isCorrect: false
+
+  - text: "What was the approximate financial impact on MGM Resorts from its 2023 ransomware incident?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About $100 million in Q3 2023 losses"
+        isCorrect: true
+      - text: "No measurable financial impact"
+        isCorrect: false
+      - text: "About $1,000"
+        isCorrect: false
+      - text: "About $100 billion"
+        isCorrect: false
+
+  - text: "What threat actor group was tied to both the MGM and Caesars 2023 ransomware attacks?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Scattered Spider"
+        isCorrect: true
+      - text: "Lazarus Group"
+        isCorrect: false
+      - text: "APT28"
+        isCorrect: false
+      - text: "ALPHV/BlackCat"
+        isCorrect: false

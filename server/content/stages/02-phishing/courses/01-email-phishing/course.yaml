@@ -1,0 +1,7 @@
+# New example course under the existing "phishing" stage. slug is unique
+# against every slug already in seed.ts (phishing-basics, social-engineering,
+# phishing-practice, and everything in the other 7 stages).
+slug: email-phishing-anatomy
+title: "Email Phishing: Anatomy & Simulator"
+description: "A hands-on breakdown of how phishing emails are built, a real business-email-compromise case, and an interactive inbox simulator."
+difficulty: MEDIUM

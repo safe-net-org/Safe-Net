@@ -47,7 +47,11 @@ class LearningService {
 	// ✅ Updated return type
 	async answerTask(
 		taskId: string,
-		payload: { selectedOptionIds: string[]; textAnswer?: string }
+		payload: {
+			selectedOptionIds: string[]
+			textAnswer?: string
+			selectedSpans?: { location: string; text: string }[]
+		}
 	): Promise<ITaskAnswerResponse> {
 		const { data } = await instance.post(
 			`/learning/tasks/${taskId}/answer`,

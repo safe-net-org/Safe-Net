@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma.service'
 import { CreateLessonBlockDto } from '../dto/create-lesson-block.dto'
 import { LessonBlockDto } from '../dto/lesson-block.dto'
+import { buildSimulatorContent } from '../answers/simulator-content'
 import { LessonDetailsDto } from '../dto/lesson-details.dto'
 import { UpdateLessonBlockDto } from '../dto/update-lesson-block.dto'
 
@@ -61,6 +62,7 @@ export class LessonsService {
 					id: o.id,
 					text: o.text,
 				})),
+				...buildSimulatorContent(task.meta),
 			})),
 		}
 	}

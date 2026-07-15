@@ -72,7 +72,7 @@ export default function CourseTree({ stages, onRefetch }: CourseTreeProps) {
 		}
 	}
 
-	const getDifficultyColor = (difficulty: string) => {
+	const getDifficultyColor = (difficulty: string | undefined) => {
 		switch (difficulty) {
 			case 'EASY':
 				return 'text-green-500'

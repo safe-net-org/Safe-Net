@@ -18,5 +18,9 @@
 		"forceConsistentCasingInFileNames": false,
 		"noFallthroughCasesInSwitch": false,
 		"typeRoots": ["./node_modules/@types", "./src/types"]
-	}
+	},
+	// content-pipeline is a standalone content authoring tool with its own
+	// dependencies and its own install; compiling it as part of the API build
+	// fails on modules the server never has.
+	"exclude": ["node_modules", "dist", "prisma/content-pipeline"]
 }

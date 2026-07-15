@@ -1,21 +1,35 @@
-import { AppModule } from './app.module'
+import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import * as cookieParser from 'cookie-parser'
-import * as fs from 'fs'
+import helmet from 'helmet'
+import { AppModule } from './app.module'
+
+const DEFAULT_PORT = 4200
 
 async function bootstrap() {
-	const httpsOptions = {
-		key: fs.readFileSync('./src/certificates/key.pem'),
-		cert: fs.readFileSync('./src/certificates/cert.pem')
-	}
 	const app = await NestFactory.create(AppModule)
+
 	app.setGlobalPrefix('api')
+	app.use(helmet())
 	app.use(cookieParser())
+
+	// Applied globally: previously only two auth endpoints opted in via
+	// @UsePipes, so every admin and learning DTO carried class-validator
+	// decorators that never actually ran.
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+		})
+	)
+
 	app.enableCors({
 		origin: [process.env.FRONTEND_URL],
 		credentials: true,
-		exposedHeaders: 'set-cookie'
+		exposedHeaders: 'set-cookie',
 	})
-	await app.listen(4200)
+
+	await app.listen(process.env.PORT ?? DEFAULT_PORT)
 }
 bootstrap()

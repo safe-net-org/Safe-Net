@@ -1,0 +1,101 @@
+title: "Final Test: Social Media Scams"
+description: "Testing your knowledge of common scam schemes and the FTC's 2025 loss data."
+passingScore: 80
+questions:
+  - text: "A friend messages you, \"Urgently send me $50.\" What should you do?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Send the money right away"
+        isCorrect: false
+      - text: "Call your friend to confirm"
+        isCorrect: true
+      - text: "Ask for their card number in the chat"
+        isCorrect: false
+      - text: "Ask them to call you instead"
+        isCorrect: false
+
+  - text: "What is a fake \"Share this and win an iPhone!\" giveaway actually designed to do?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Build up a page's shares and followers to make it look credible for a later scam"
+        isCorrect: true
+      - text: "Genuinely give away free electronics to a random participant"
+        isCorrect: false
+      - text: "Verify that your account is authentic"
+        isCorrect: false
+      - text: "Improve the platform's overall security"
+        isCorrect: false
+
+  - text: "Which of these are red flags in a job offer received through social media?"
+    type: MULTI_CHOICE
+    options:
+      - text: "You must pay upfront for training or equipment"
+        isCorrect: true
+      - text: "Payment or fees are requested via gift cards or cryptocurrency"
+        isCorrect: true
+      - text: "The employer runs a standard background check"
+        isCorrect: false
+      - text: "The listing includes a clearly stated salary range"
+        isCorrect: false
+      - text: "The process includes an in-person interview"
+        isCorrect: false
+
+  - text: "An investment \"opportunity\" in a WhatsApp group promises guaranteed high returns, backed by member testimonials. What does this signal?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A likely investment scam -- guaranteed returns and staged testimonials are classic warning signs"
+        isCorrect: true
+      - text: "A legitimate, low-risk investment club"
+        isCorrect: false
+      - text: "A special, verified early-access opportunity"
+        isCorrect: false
+      - text: "Nothing concerning -- WhatsApp groups are vetted by the platform"
+        isCorrect: false
+
+  - text: "What should you do before sending money based on an urgent social media message from a friend?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Verify through a separate channel, such as a phone call"
+        isCorrect: true
+      - text: "Send a smaller amount first to test it"
+        isCorrect: false
+      - text: "Reply in the same chat asking if it's really them"
+        isCorrect: false
+      - text: "Forward the message to other friends first"
+        isCorrect: false
+
+  - text: "According to the FTC's 2025 data, what was the total reported loss to social media scams?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About $2.1 billion"
+        isCorrect: true
+      - text: "About $210 million"
+        isCorrect: false
+      - text: "About $21 billion"
+        isCorrect: false
+      - text: "About $2.1 million"
+        isCorrect: false
+
+  - text: "Which scam category accounted for the largest share of 2025 social media scam losses?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Investment scams, at $1.1 billion"
+        isCorrect: true
+      - text: "Romance scams"
+        isCorrect: false
+      - text: "Fake giveaways"
+        isCorrect: false
+      - text: "Charity fraud"
+        isCorrect: false
+
+  - text: "Which social media platform accounted for the most reported scam losses in the FTC's 2025 report?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Facebook"
+        isCorrect: true
+      - text: "Snapchat"
+        isCorrect: false
+      - text: "LinkedIn"
+        isCorrect: false
+      - text: "Pinterest"
+        isCorrect: false

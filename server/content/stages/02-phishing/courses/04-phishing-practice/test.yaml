@@ -1,0 +1,101 @@
+title: "Final Test: Practice Recognizing Phishing"
+description: "Testing your ability to break down realistic phishing examples, fictional and real."
+passingScore: 80
+questions:
+  - text: "Which domain is genuinely NOT phishing for a bank called \"YourBank\"?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "yourbank-secure.com"
+        isCorrect: false
+      - text: "online.yourbank.com"
+        isCorrect: true
+      - text: "your-bank.com"
+        isCorrect: false
+      - text: "yourbank.online.com"
+        isCorrect: false
+
+  - text: "A bank email claims a specific transaction was flagged but greets you with \"Dear customer.\" Why is that suspicious?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "\"Dear customer\" is grammatically wrong"
+        isCorrect: false
+      - text: "A bank that flagged your specific transaction already has your name on file"
+        isCorrect: true
+      - text: "Banks never say \"dear\""
+        isCorrect: false
+      - text: "It's too polite"
+        isCorrect: false
+
+  - text: "Select every genuine red flag in a 2016 email that impersonated a Google security alert."
+    type: MULTI_CHOICE
+    options:
+      - text: "A shortened bit.ly link instead of a real Google domain"
+        isCorrect: true
+      - text: "A fake login page asking for the same credentials the alert claimed to protect"
+        isCorrect: true
+      - text: "The email used the recipient's real name"
+        isCorrect: false
+      - text: "The email mentioned account security"
+        isCorrect: false
+      - text: "The email arrived on a weekday"
+        isCorrect: false
+
+  - text: "In that 2016 case, what internal mistake let a flagged, suspicious email through?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "IT staff never saw the email at all"
+        isCorrect: false
+      - text: "A reply meant to say \"illegitimate\" instead said \"legitimate\""
+        isCorrect: true
+      - text: "The email was accidentally deleted before review"
+        isCorrect: false
+      - text: "No one at the organization used email security tools"
+        isCorrect: false
+
+  - text: "What single check would have caught that 2016 case regardless of the internal miscommunication?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "A longer account password"
+        isCorrect: false
+      - text: "Hovering the shortened link to see it didn't lead to an actual Google domain"
+        isCorrect: true
+      - text: "Switching email providers"
+        isCorrect: false
+      - text: "Ignoring all security alerts"
+        isCorrect: false
+
+  - text: "What structure do the fictional bank email and the real 2016 case share?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Both used a malicious attachment"
+        isCorrect: false
+      - text: "Both used a spoofed trusted identity plus a link to a convincing fake action page"
+        isCorrect: true
+      - text: "Both targeted only senior executives"
+        isCorrect: false
+      - text: "Both were stopped before any damage occurred"
+        isCorrect: false
+
+  - text: "Why is a deadline like \"you have 2 hours\" included in a phishing email?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "To comply with anti-spam regulations"
+        isCorrect: false
+      - text: "To shorten how long you spend checking anything else before acting"
+        isCorrect: true
+      - text: "It's a standard part of all bank communications"
+        isCorrect: false
+      - text: "It has no real purpose"
+        isCorrect: false
+
+  - text: "What's the most reliable way to verify an unexpected \"your account is at risk\" email?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Click its link and see if the page looks legitimate"
+        isCorrect: false
+      - text: "Go directly to the official site or app yourself, not through the email's link"
+        isCorrect: true
+      - text: "Reply asking the sender to confirm"
+        isCorrect: false
+      - text: "Trust it if it uses your correct name"
+        isCorrect: false

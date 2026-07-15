@@ -13,8 +13,12 @@ import { UserService } from 'src/user/services/user.service'
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto'
 @Injectable()
 export class AuthService {
-	EXPIRE_DAY_REFRESH_TOKEN = 1
+	/** Must match the refresh token's own expiry, or the cookie dies while the
+	 * token is still valid (or worse, outlives it). */
+	EXPIRE_DAY_REFRESH_TOKEN = 7
 	REFRESH_TOKEN_NAME = 'refresh_token'
+	private readonly ACCESS_TOKEN_EXPIRY = '1h'
+	private readonly REFRESH_TOKEN_EXPIRY = '7d'
 	constructor(
 		private jwt: JwtService,
 		private UserService: UserService,
@@ -46,19 +50,19 @@ export class AuthService {
 			...tokens,
 		}
 	}
-	async newPassword(dto: AuthLoginDto) {
-		const user = await this.UserService.getByEmail(dto.email)
-		if (!user) throw new NotFoundException('User not found')
-		await this.UserService.update(user.id, { password: dto.password })
-		return { message: 'Password has been changed' }
-	}
+	// `newPassword` was removed: it changed any account's password given only an
+	// email address — no reset token, no authentication. It was unreachable
+	// (never wired to a controller), but a single import away from being a
+	// full account-takeover endpoint. A real reset flow needs a single-use,
+	// expiring token delivered out of band before this comes back.
+
 	private issueTokens(userId: string) {
 		const data = { id: userId }
 		const accessToken = this.jwt.sign(data, {
-			expiresIn: '1h',
+			expiresIn: this.ACCESS_TOKEN_EXPIRY,
 		})
 		const refreshToken = this.jwt.sign(data, {
-			expiresIn: '7d',
+			expiresIn: this.REFRESH_TOKEN_EXPIRY,
 		})
 		return {
 			accessToken,
@@ -81,9 +85,21 @@ export class AuthService {
 		res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
 			httpOnly: true,
 			expires: expiresIn,
-			secure: false, // ← use process.env.NODE_ENV === 'production' for production
-			sameSite: 'lax', // ← 'lax' or 'strict' for local development
+			...this.getCookieSecurityOptions(),
 		})
+	}
+
+	/**
+	 * `secure` was hardcoded to false, which shipped the refresh token over
+	 * plain HTTP in production. Driven by NODE_ENV instead, so local dev still
+	 * works without HTTPS.
+	 */
+	private getCookieSecurityOptions() {
+		const isProduction = process.env.NODE_ENV === 'production'
+		return {
+			secure: isProduction,
+			sameSite: isProduction ? ('none' as const) : ('lax' as const),
+		}
 	}
 
 	async getNewTokens(refreshToken: string) {
@@ -101,8 +117,7 @@ export class AuthService {
 		res.cookie(this.REFRESH_TOKEN_NAME, '', {
 			httpOnly: true,
 			expires: new Date(0),
-			secure: false,
-			sameSite: 'lax',
+			...this.getCookieSecurityOptions(),
 		})
 	}
 }

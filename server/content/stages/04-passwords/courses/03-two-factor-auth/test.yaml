@@ -1,0 +1,101 @@
+title: "Final Test: Two-Factor Authentication"
+description: "Testing your knowledge of 2FA methods and SIM-swap fraud."
+passingScore: 80
+questions:
+  - text: "Which 2FA method is the most secure?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Hardware key (YubiKey)"
+        isCorrect: true
+      - text: "SMS code"
+        isCorrect: false
+      - text: "Email with a code"
+        isCorrect: false
+      - text: "A secret question"
+        isCorrect: false
+
+  - text: "Conceptually, what are the two factors in 2FA?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Two different passwords"
+        isCorrect: false
+      - text: "Something you know and something you have"
+        isCorrect: true
+      - text: "Two separate email addresses"
+        isCorrect: false
+      - text: "The same password typed twice"
+        isCorrect: false
+
+  - text: "Which of these statements about 2FA methods are accurate?"
+    type: MULTI_CHOICE
+    options:
+      - text: "SMS codes are vulnerable to SIM-swap attacks"
+        isCorrect: true
+      - text: "Hardware keys resist phishing by verifying the actual domain"
+        isCorrect: true
+      - text: "SMS-based 2FA is completely unbreakable"
+        isCorrect: false
+      - text: "Authenticator apps require an internet connection to generate codes"
+        isCorrect: false
+      - text: "Push notifications can never be approved by mistake"
+        isCorrect: false
+
+  - text: "Per Microsoft, enabling MFA blocks roughly what percentage of automated account attacks?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "About 50%"
+        isCorrect: false
+      - text: "About 99.9%"
+        isCorrect: true
+      - text: "About 75%"
+        isCorrect: false
+      - text: "About 10%"
+        isCorrect: false
+
+  - text: "How does a SIM-swap attack actually defeat SMS-based 2FA?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Malware installed on the victim's phone"
+        isCorrect: false
+      - text: "Tricking a carrier into porting the victim's number to a SIM the attacker controls"
+        isCorrect: true
+      - text: "Brute-forcing the six-digit code"
+        isCorrect: false
+      - text: "Physically stealing the victim's phone"
+        isCorrect: false
+
+  - text: "UK SIM-swap fraud reports rose roughly 1,055% in a single year. What does this suggest?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "SMS 2FA now provides zero protection at all"
+        isCorrect: false
+      - text: "SMS is a meaningfully weaker, increasingly targeted 2FA method"
+        isCorrect: true
+      - text: "The trend is unrelated to 2FA"
+        isCorrect: false
+      - text: "Carriers have made SIM swapping impossible"
+        isCorrect: false
+
+  - text: "Why are authenticator apps considered more secure than SMS codes?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "They generate codes locally, independent of your phone number"
+        isCorrect: true
+      - text: "They're free while SMS costs money"
+        isCorrect: false
+      - text: "They require a paid subscription"
+        isCorrect: false
+      - text: "They send codes over email instead"
+        isCorrect: false
+
+  - text: "What's a reasonable default 2FA strategy given the tradeoffs between methods?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Use SMS everywhere since it's the simplest to set up"
+        isCorrect: false
+      - text: "Use a hardware key or authenticator app for your most important accounts, SMS only as a fallback"
+        isCorrect: true
+      - text: "Avoid 2FA entirely since every method has some weakness"
+        isCorrect: false
+      - text: "Use a secret question as your primary second factor"
+        isCorrect: false
