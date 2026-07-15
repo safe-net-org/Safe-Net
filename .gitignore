@@ -1,6 +1,7 @@
 .DS_Store
 ._*
 .turbo
+.claude/
 
 # dependencies
 node_modules/
@@ -21,3 +22,4 @@ dist/
 # local-only: retired code and database dumps. Dumps contain real user rows
 # and password hashes, so this must never be tracked.
 _archive/
+
