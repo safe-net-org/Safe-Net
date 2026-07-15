@@ -11,6 +11,7 @@ import {
 	Target,
 	WifiOff,
 } from 'lucide-react'
+import { GuardComparison } from './GuardComparison'
 import { UrlScanner } from './UrlScanner'
 
 export const metadata: Metadata = {
@@ -153,6 +154,9 @@ export default function GuardPage() {
 						))}
 					</div>
 				</section>
+
+				{/* Comparison */}
+				<GuardComparison />
 
 				{/* Principles */}
 				<section className='mb-16'>
