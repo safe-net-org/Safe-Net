@@ -24,9 +24,10 @@
 		"typecheck": "concurrently -n api,web -c cyan,magenta \"bun:typecheck:api\" \"bun:typecheck:web\"",
 		"typecheck:api": "cd server && bun run typecheck",
 		"typecheck:web": "cd client && bunx tsc --noEmit",
-		"test": "concurrently -n api,guard -c cyan,green \"bun:test:api\" \"bun:test:guard\"",
+		"test": "concurrently -n api,guard,ml -c cyan,green,yellow \"bun:test:api\" \"bun:test:guard\" \"bun:test:ml\"",
 		"test:api": "cd server && bun run test",
 		"test:guard": "cd packages/guard-core && bun test",
+		"test:ml": "cd ml-service && [ -x .venv/bin/python ] && .venv/bin/python scripts/test_scoring.py || echo '[ml] skipped — run bun run setup:ml'",
 		"validate:content": "cd server && bun run validate:content",
 		"clean:ports": "lsof -ti:3000,4200,8000 2>/dev/null | xargs kill -9 2>/dev/null || true"
 	},

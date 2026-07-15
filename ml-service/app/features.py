@@ -34,7 +34,12 @@ CYRILLIC_TRANSLIT: dict[str, str] = {
 
 CYRILLIC_RE = re.compile(r"[Ѐ-ӿԀ-ԯ]")
 
+# Kept in sync with packages/guard-core/src/shared/brands.ts. The international
+# payment and tech brands are load-bearing: the courses teach paypa1.com and
+# micros0ft-alerts.com as the canonical phishing examples, and the detector
+# must not contradict its own curriculum.
 TOP_RU_BRANDS: list[str] = [
+    # Russian banks / gov / retail / telecom / media / logistics
     "sberbank", "tinkoff", "vtb", "alfabank", "raiffeisen",
     "gosuslugi", "mos", "nalog", "pfr", "fssp",
     "yandex", "vk", "ok", "mail", "rambler",
@@ -43,8 +48,19 @@ TOP_RU_BRANDS: list[str] = [
     "gazprom", "lukoil", "rosneft", "sberinsurance", "ingos",
     "mvd", "fsb", "minzdrav", "rosreestr", "egov",
     "rbc", "kommersant", "ria", "lenta", "interfax",
+    # Global messengers and social
     "google", "microsoft", "apple", "amazon", "facebook",
     "instagram", "twitter", "telegram", "whatsapp", "youtube",
+    "linkedin", "discord", "tiktok", "snapchat", "reddit",
+    # Global tech and cloud
+    "outlook", "office365", "icloud", "dropbox", "github",
+    "gitlab", "adobe", "zoom", "slack", "notion",
+    "netflix", "spotify", "steam", "epicgames", "roblox",
+    # Global payments and finance — the classic phishing targets
+    "paypal", "stripe", "revolut", "wise", "visa", "mastercard",
+    "coinbase", "binance", "metamask", "blockchain", "kraken",
+    # Global shipping
+    "dhl", "fedex", "ups", "usps",
 ]
 BRAND_SET = set(TOP_RU_BRANDS)
 
@@ -91,6 +107,7 @@ class UrlFeatures:
     leet_brand: str
     has_brand_token: bool
     brand_token: str
+    brand_token_via_leet: bool
     has_excessive_encoding: bool
 
     # Structure
@@ -122,6 +139,11 @@ class UrlFeatures:
     has_port: bool
     query_param_count: int
     fragment_present: bool
+
+    # The registrable domain is itself a recognised brand (github.com,
+    # google.com). Lets the scorer refuse to let a nervous neural net block a
+    # site everyone uses.
+    registrable_is_brand: bool
 
 
 def punycode_to_unicode(host: str) -> str:
@@ -204,7 +226,12 @@ def detect_brand_impersonation(unicode_host: str) -> tuple[bool, str]:
         if core in BRAND_SET:
             return True, core
 
-    if len(labels) >= 3:
+    # Brand-in-subdomain, but only when the registrable domain is a stranger.
+    # `mail` is on the list (for mail.ru), which made mail.google.com — one of
+    # the most visited sites in the world — look like impersonation. A brand
+    # under a brand is that brand's own subdomain, not an attack.
+    sld_core = re.sub(r"[^a-z0-9]", "", transliterate(sld).lower())
+    if len(labels) >= 3 and sld_core not in BRAND_SET:
         for lbl in labels[:-2]:
             core = re.sub(r"[^a-z0-9]", "", transliterate(lbl).lower())
             if core in BRAND_SET:
@@ -242,20 +269,32 @@ def detect_leet_squat(unicode_host: str) -> tuple[bool, str]:
     return best_dist <= threshold, best
 
 
-def detect_brand_token(unicode_host: str) -> tuple[bool, str]:
-    """Brand name embedded as a token: sberbank-online.ru, login-tinkoff.com."""
+def detect_brand_token(unicode_host: str) -> tuple[bool, str, bool]:
+    """
+    Brand embedded as a token: sberbank-online.ru, login-tinkoff.com.
+    Returns (found, brand, via_leet). `via_leet` is True when the token only
+    matched after de-leeting (micros0ft) — deliberate evasion, scored higher.
+    """
     extracted = tldextract.extract(unicode_host)
     sld = (extracted.domain or "").lower()
     translit = transliterate(sld)
     if re.sub(r"[^a-z0-9]", "", translit) in BRAND_SET:
-        return False, ""
+        return False, "", False
     tokens = [t for t in re.split(r"[-_.]", translit) if len(t) >= 3]
     if len(tokens) < 2:
-        return False, ""
+        return False, "", False
     for token in tokens:
         if token in BRAND_SET:
-            return True, token
-    return False, ""
+            return True, token, False
+        # De-leet the token too: without this, leet and a suffix cancel out and
+        # micros0ft-alerts.com scores zero — the token micros0ft is not literally
+        # in the set, and de-leeting the whole label is edit-distance 6 from
+        # "microsoft", past the leet detector's threshold. Each check assumed the
+        # other would catch it.
+        de_leeted = re.sub(r"[^a-z0-9]", "", _de_leet(token))
+        if de_leeted != token and de_leeted in BRAND_SET:
+            return True, de_leeted, True
+    return False, "", False
 
 
 def has_excessive_encoding(raw_url: str) -> bool:
@@ -305,7 +344,7 @@ def extract_features(raw_url: str) -> UrlFeatures:
     brand_imp, imp_brand = detect_brand_impersonation(unicode_host)
     is_typosquat, nearest_brand, typo_dist = detect_typosquat(unicode_host)
     is_leet_squat, leet_brand = detect_leet_squat(unicode_host)
-    has_brand_token, brand_token = detect_brand_token(unicode_host)
+    has_brand_token, brand_token, brand_token_via_leet = detect_brand_token(unicode_host)
     excessive_encoding = has_excessive_encoding(raw_url)
 
     has_ip = bool(re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", raw_host))
@@ -323,6 +362,9 @@ def extract_features(raw_url: str) -> UrlFeatures:
 
     free = any(raw_url.endswith(fh) or f".{fh}" in raw_url for fh in FREE_HOSTING_DOMAINS)
 
+    registrable_core = re.sub(r"[^a-z0-9]", "", transliterate(domain).lower())
+    registrable_is_brand = registrable_core in BRAND_SET
+
     return UrlFeatures(
         idn_homograph=is_homograph,
         mixed_script=mixed_script,
@@ -337,6 +379,7 @@ def extract_features(raw_url: str) -> UrlFeatures:
         leet_brand=leet_brand,
         has_brand_token=has_brand_token,
         brand_token=brand_token,
+        brand_token_via_leet=brand_token_via_leet,
         has_excessive_encoding=excessive_encoding,
         has_ip=has_ip,
         is_https=is_https,
@@ -358,6 +401,7 @@ def extract_features(raw_url: str) -> UrlFeatures:
         has_port=parsed.port is not None,
         query_param_count=len(query.split("&")) if query else 0,
         fragment_present=bool(parsed.fragment),
+        registrable_is_brand=registrable_is_brand,
     )
 
 
@@ -393,4 +437,5 @@ def features_to_dict(f: UrlFeatures) -> dict[str, float]:
         "has_port": float(f.has_port),
         "query_param_count": float(f.query_param_count),
         "fragment_present": float(f.fragment_present),
+        "registrable_is_brand": float(f.registrable_is_brand),
     }

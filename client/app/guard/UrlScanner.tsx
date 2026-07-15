@@ -6,11 +6,12 @@ import { analyzeUrl, scoreUrl } from '@safe-net/guard-core'
 import { m } from 'framer-motion'
 import {
 	ArrowRight,
+	Cpu,
 	ShieldAlert,
 	ShieldCheck,
 	ShieldQuestion,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 /**
  * The live scanner.
@@ -65,9 +66,31 @@ const SEVERITY_COLOR: Record<string, string> = {
 	low: 'text-white/40',
 }
 
+interface MlVerdict {
+	score: number
+	level: string
+	ml_probability: number
+	rule_score: number
+	method: string
+}
+
+const ML_URL =
+	process.env.NEXT_PUBLIC_ML_URL?.replace(/\/$/, '') ?? 'http://localhost:8000'
+
+const METHOD_LABEL: Record<string, string> = {
+	'rule-override': 'Rules overrode the model',
+	ml: 'Model-driven',
+	blend: 'Model + rules blended',
+	rules: 'Rules only',
+}
+
 export function UrlScanner() {
 	const [input, setInput] = useState(EXAMPLES[0].url)
 	const [submitted, setSubmitted] = useState<string | null>(EXAMPLES[0].url)
+	const [ml, setMl] = useState<MlVerdict | null>(null)
+	const [mlState, setMlState] = useState<'idle' | 'loading' | 'unavailable'>(
+		'idle'
+	)
 
 	const result = useMemo(() => {
 		if (!submitted?.trim()) return null
@@ -75,6 +98,36 @@ export function UrlScanner() {
 			return scoreUrl(submitted, analyzeUrl(submitted))
 		} catch {
 			return null
+		}
+	}, [submitted])
+
+	// The local engine is the answer; the neural net is an optional second
+	// opinion. If the ML service is not running, the scanner simply does not show
+	// that panel — it never blocks or degrades the instant local verdict.
+	useEffect(() => {
+		if (!submitted?.trim()) return
+		const controller = new AbortController()
+		const timeout = setTimeout(() => controller.abort(), 4000)
+		setMl(null)
+		setMlState('loading')
+
+		fetch(`${ML_URL}/predict`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ url: submitted }),
+			signal: controller.signal,
+		})
+			.then(res => (res.ok ? res.json() : Promise.reject()))
+			.then((data: MlVerdict) => {
+				setMl(data)
+				setMlState('idle')
+			})
+			.catch(() => setMlState('unavailable'))
+			.finally(() => clearTimeout(timeout))
+
+		return () => {
+			clearTimeout(timeout)
+			controller.abort()
 		}
 	}, [submitted])
 
@@ -179,12 +232,89 @@ export function UrlScanner() {
 				</m.div>
 			)}
 
+			{/* Optional second opinion from the neural net. */}
+			{ml && (
+				<m.div
+					key={`ml-${submitted}`}
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					className='rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5'
+				>
+					<div className='mb-3 flex items-center gap-2'>
+						<Cpu className='h-4 w-4 text-cyan-400' />
+						<span className='text-xs font-semibold uppercase tracking-wide text-cyan-300'>
+							Neural network — second opinion
+						</span>
+					</div>
+					<div className='grid grid-cols-3 gap-3 text-center'>
+						<Stat
+							label='BERT says'
+							value={`${Math.round(ml.ml_probability * 100)}%`}
+							hint='phishing'
+						/>
+						<Stat label='Rules say' value={String(ml.rule_score)} hint='/ 100' />
+						<Stat
+							label='Final'
+							value={String(ml.score)}
+							hint={ml.level}
+							emphasis
+						/>
+					</div>
+					<p className='mt-3 border-t border-white/10 pt-2.5 text-[11px] leading-relaxed text-white/50'>
+						{METHOD_LABEL[ml.method] ?? ml.method}.{' '}
+						{ml.method === 'rule-override' && ml.ml_probability > 0.5 && ml.score < 40
+							? 'The model flagged this, but the deterministic rules recognised a known-safe site and overruled it.'
+							: ml.method === 'rule-override' && ml.score >= 70
+								? 'The rules are certain, so no model probability can argue this down.'
+								: 'The model decides where the rules are silent.'}
+					</p>
+				</m.div>
+			)}
+
 			<p className='text-[11px] leading-relaxed text-white/30'>
-				Runs entirely in your browser using{' '}
+				The verdict runs entirely in your browser using{' '}
 				<code className='font-mono text-white/50'>@safe-net/guard-core</code> —
-				the same package the extension ships. Nothing about the URL you type is
-				sent anywhere.
+				the same package the extension ships, sending nothing anywhere.{' '}
+				{mlState === 'unavailable'
+					? 'The neural-network layer is offline (start it with bun run dev).'
+					: 'The neural network is an optional second opinion.'}
 			</p>
+		</div>
+	)
+}
+
+function Stat({
+	label,
+	value,
+	hint,
+	emphasis,
+}: {
+	label: string
+	value: string
+	hint?: string
+	emphasis?: boolean
+}) {
+	return (
+		<div
+			className={
+				'rounded-xl border p-2.5 ' +
+				(emphasis
+					? 'border-cyan-400/25 bg-cyan-400/[0.06]'
+					: 'border-white/10 bg-white/[0.02]')
+			}
+		>
+			<div className='text-[10px] uppercase tracking-wide text-white/40'>
+				{label}
+			</div>
+			<div
+				className={
+					'mt-0.5 text-xl font-bold ' +
+					(emphasis ? 'text-cyan-300' : 'text-white')
+				}
+			>
+				{value}
+			</div>
+			{hint && <div className='text-[10px] text-white/30'>{hint}</div>}
 		</div>
 	)
 }

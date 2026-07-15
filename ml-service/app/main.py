@@ -18,8 +18,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["chrome-extension://*", "http://localhost:*"],
-    allow_methods=["POST", "GET"],
+    # A regex, not a list: CORSMiddleware matches allow_origins by exact string,
+    # so "http://localhost:*" never matched http://localhost:3000 and the web
+    # scanner's fetch failed CORS. This matches any localhost port and any
+    # extension origin.
+    allow_origin_regex=r"^(chrome-extension://.*|https?://localhost(:\d+)?|https?://127\.0\.0\.1(:\d+)?)$",
+    allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["*"],
 )
 

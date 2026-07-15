@@ -114,6 +114,105 @@ def _rule_signals(features: UrlFeatures, feat_dict: dict[str, float]) -> list[Sh
     return sorted(signals, key=lambda s: -s.shap_value)
 
 
+# Deterministic, high-precision signals. When any of these fire the domain is
+# near-certainly malicious, and no neural-net probability should be able to
+# argue it down.
+def _hard_danger(features: UrlFeatures) -> bool:
+    return (
+        features.idn_homograph
+        or features.brand_impersonation
+        or features.is_leet_squat
+        or (features.is_typosquat and features.typosquat_distance <= 2)
+        or (features.has_brand_token and _brand_token_is_leet(features))
+    )
+
+
+def _brand_token_is_leet(features: UrlFeatures) -> bool:
+    # A brand token that only matched after de-leeting (micros0ft-alerts) is
+    # deliberate evasion, not a coincidence — score it like leet-squatting.
+    return features.brand_token_via_leet
+
+
+def _rule_score(features: UrlFeatures) -> int:
+    """The deterministic score, mirroring packages/guard-core/model/score.ts."""
+    score = 0
+    if features.idn_homograph:
+        score += 90
+    if features.brand_impersonation:
+        score = max(score, 88)
+    if features.is_typosquat and features.typosquat_distance <= 2:
+        score += 75
+    if features.is_leet_squat:
+        score = max(score, 80)
+    if features.has_brand_token:
+        score = max(score, 80) if _brand_token_is_leet(features) else score + 35
+    if features.has_excessive_encoding:
+        score += 15
+    if features.has_ip:
+        score += 35
+    if features.has_punycode:
+        score += 30
+    if not features.is_https:
+        score += 20
+    if features.suspicious_word_count >= 2:
+        score += min(80, features.suspicious_word_count * 8)
+    if features.free_hosting:
+        score += 20
+    if features.has_at_sign:
+        score += 20
+    if features.subdomain_depth >= 3:
+        score += 15
+    if features.tld_suspicious:
+        score += 15
+    if features.multiple_domains_in_url:
+        score += 15
+    if features.domain_entropy > 3.5:
+        score += 12
+    if features.url_length > 100:
+        score += 10
+    return min(100, score)
+
+
+# How much a blended verdict leans on the neural net when neither side is
+# certain. Mirrors the extension's documented 0.6 ML / 0.4 rules split.
+_ML_BLEND_WEIGHT = 0.6
+# A recognised brand's own domain with no red flags is capped here, so a jumpy
+# classifier can never block a site everyone uses.
+_KNOWN_BRAND_SAFE_CAP = 20
+
+
+def _blend(features: UrlFeatures, bert_score: int) -> tuple[int, str]:
+    """
+    Combine the neural net with the deterministic rules.
+
+    The rules are high precision but narrow; the net is broad but noisy. So the
+    rules win at the extremes — they floor the score when they are certain it is
+    phishing, and cap it when it is plainly a known brand — and the net decides
+    the uncertain middle where the rules stay silent.
+    """
+    rule = _rule_score(features)
+
+    if _hard_danger(features):
+        # Rules are certain: never let the net argue a homograph down.
+        return max(rule, bert_score), "rule-override"
+
+    no_red_flags = rule < 40
+    if features.registrable_is_brand and no_red_flags:
+        # github.com, mail.google.com — the net's nervousness is overruled.
+        return min(bert_score, _KNOWN_BRAND_SAFE_CAP), "rule-override"
+
+    if rule >= 70:
+        # Rules already say danger; the net can only raise it.
+        return max(rule, bert_score), "rules"
+
+    # Uncertain middle — this is where the model earns its keep, catching novel
+    # phishing the rules have never seen. Weighted toward the net, floored by
+    # whatever the rules did find.
+    blended = round(_ML_BLEND_WEIGHT * bert_score + (1 - _ML_BLEND_WEIGHT) * rule)
+    method = "ml" if bert_score > rule else "blend"
+    return max(blended, rule), method
+
+
 class PhishingModel:
     def __init__(self) -> None:
         self._pipeline: Optional[object] = None
@@ -163,8 +262,11 @@ class PhishingModel:
             # Different model checkpoints use different label conventions
             is_phishing = label in ("phishing", "label_1", "1", "malicious", "spam", "bad")
             phishing_prob = confidence if is_phishing else 1.0 - confidence
+            bert_score = min(100, round(phishing_prob * 100))
 
-            score = min(100, round(phishing_prob * 100))
+            # The net alone is noisy (it rated mail.google.com 0.98). Blend it
+            # with the deterministic rules so precision wins at the extremes.
+            score, method = _blend(features, bert_score)
             level = _score_to_level(score)
             signals = _rule_signals(features, feat_dict)
 
@@ -172,9 +274,12 @@ class PhishingModel:
                 url=raw_url,
                 score=score,
                 level=level,
-                probability=phishing_prob,
+                probability=score / 100.0,
                 signals=signals[:10],
                 features=feat_dict,
+                ml_probability=round(phishing_prob, 4),
+                rule_score=_rule_score(features),
+                method=method,
             )
         except Exception as exc:
             logger.error("HF prediction error (%s) — falling back to rules", exc)
@@ -186,56 +291,21 @@ class PhishingModel:
         features: UrlFeatures,
         feat_dict: dict[str, float],
     ) -> PredictResponse:
-        """Rule-based scorer — mirrors risk-scorer.ts hard rules."""
+        """Deterministic scorer, used when the neural net is unavailable."""
         signals = _rule_signals(features, feat_dict)
-
-        score = 0
-        if features.idn_homograph:
-            score += 90
-        if features.brand_impersonation:
-            score = max(score, 88)
-        if features.is_typosquat and features.typosquat_distance <= 2:
-            score += 75
-        if features.is_leet_squat:
-            score = max(score, 80)
-        if features.has_brand_token:
-            score += 35
-        if features.has_excessive_encoding:
-            score += 15
-        if features.has_ip:
-            score += 35
-        if features.has_punycode:
-            score += 30
-        if not features.is_https:
-            score += 20
-        if features.suspicious_word_count >= 2:
-            score += min(80, features.suspicious_word_count * 8)
-        if features.free_hosting:
-            score += 20
-        if features.has_at_sign:
-            score += 20
-        if features.subdomain_depth >= 3:
-            score += 15
-        if features.tld_suspicious:
-            score += 15
-        if features.multiple_domains_in_url:
-            score += 15
-        if features.domain_entropy > 3.5:
-            score += 12
-        if features.url_length > 100:
-            score += 10
-
-        score = min(100, score)
-        proba = score / 100.0
+        score = _rule_score(features)
         level = _score_to_level(score)
 
         return PredictResponse(
             url=raw_url,
             score=score,
             level=level,
-            probability=proba,
+            probability=score / 100.0,
             signals=signals[:10],
             features=feat_dict,
+            ml_probability=0.0,
+            rule_score=score,
+            method="rules",
         )
 
 

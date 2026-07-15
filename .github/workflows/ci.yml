@@ -83,3 +83,25 @@ jobs:
       - name: Build
         working-directory: extension
         run: bun run build
+
+  ml:
+    name: ML service — scoring tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # tldextract is the only import the rule layer needs; the BERT model is
+      # never loaded, so these tests are fast and offline. They assert the
+      # Python heuristics still agree with the TypeScript engine they were
+      # hand-ported from.
+      - name: Install minimal deps
+        working-directory: ml-service
+        run: pip install tldextract
+
+      - name: Test deterministic scoring
+        working-directory: ml-service
+        run: python scripts/test_scoring.py

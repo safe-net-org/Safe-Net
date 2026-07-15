@@ -76,6 +76,12 @@ export default function Navigation() {
 						>
 							Statistics
 						</a>
+						<a
+							href='#guard'
+							className='text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
+						>
+							AI Guard
+						</a>
 
 						{/* User Profile with Logout */}
 						{!isLoading && isAuthenticated && user && (
@@ -158,6 +164,12 @@ export default function Navigation() {
 							className='block text-sm text-slate-300 hover:text-white transition-colors'
 						>
 							Statistics
+						</a>
+						<a
+							href='#guard'
+							className='block text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
+						>
+							AI Guard
 						</a>
 
 						{!isLoading && isAuthenticated && user && (
