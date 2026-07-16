@@ -14,12 +14,28 @@ from urllib.parse import urlparse
 
 import tldextract
 
-# Visual look-alike map (Cyrillic homoglyph → Latin) — for the "looks like" call.
+# Visual homoglyph map — characters that look Latin but are not. Kept in sync
+# with packages/guard-core/src/shared/brands.ts (CYRILLIC_TO_LATIN_MAP); the CI
+# parity test fails if they drift. Covers Cyrillic, Greek, and fullwidth Latin.
 CYRILLIC_TO_LATIN: dict[str, str] = {
-    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c",
-    "у": "y", "х": "x", "В": "B", "М": "M", "Т": "T",
-    "А": "A", "Е": "E", "О": "O", "Р": "P", "С": "C",
-    "і": "i", "ј": "j", "ѕ": "s",
+    # Cyrillic
+    "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y",
+    "х": "x", "ѕ": "s", "і": "i", "ј": "j", "ԁ": "d", "һ": "h",
+    "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H",
+    "О": "O", "Р": "P", "С": "C", "Т": "T", "У": "Y", "Х": "X",
+    "ї": "i", "ӓ": "a", "ё": "e",
+    # Greek
+    "ο": "o", "α": "a", "ε": "e", "ρ": "p", "ν": "v", "υ": "u",
+    "ι": "i", "κ": "k", "χ": "x", "τ": "t", "ς": "c", "μ": "u",
+    "Α": "A", "Β": "B", "Ε": "E", "Ζ": "Z", "Η": "H", "Ι": "I",
+    "Κ": "K", "Μ": "M", "Ν": "N", "Ο": "O", "Ρ": "P", "Τ": "T",
+    "Υ": "Y", "Χ": "X",
+    # Fullwidth Latin
+    "ａ": "a", "ｂ": "b", "ｃ": "c", "ｄ": "d", "ｅ": "e", "ｆ": "f",
+    "ｇ": "g", "ｈ": "h", "ｉ": "i", "ｊ": "j", "ｋ": "k", "ｌ": "l",
+    "ｍ": "m", "ｎ": "n", "ｏ": "o", "ｐ": "p", "ｑ": "q", "ｒ": "r",
+    "ｓ": "s", "ｔ": "t", "ｕ": "u", "ｖ": "v", "ｗ": "w", "ｘ": "x",
+    "ｙ": "y", "ｚ": "z",
 }
 
 # Phonetic transliteration (full alphabet) — ONLY for brand impersonation.
@@ -41,9 +57,15 @@ CYRILLIC_RE = re.compile(r"[Ѐ-ӿԀ-ԯ]")
 TOP_RU_BRANDS: list[str] = [
     # Russian banks / gov / retail / telecom / media / logistics
     "sberbank", "tinkoff", "vtb", "alfabank", "raiffeisen",
-    "gosuslugi", "mos", "nalog", "pfr", "fssp",
+    "gosuslugi", "mos", "nalog", "pfr", "fssp", "fss", "esia",
+    "gazprombank", "otkritie", "pochtabank", "rosbank", "mkb",
+    "sovcombank", "rshb", "psbank", "uralsib", "promsvyazbank",
+    "absolutbank", "citimoscow",
     "yandex", "vk", "ok", "mail", "rambler",
     "ozon", "wildberries", "avito", "domclick", "cdek",
+    "youla", "lamoda", "mvideo", "eldorado", "citilink", "dns-shop",
+    "svyaznoy", "boxberry", "pochta", "dpd", "sberlogistics",
+    "lenta", "pinterest",
     "rostelecom", "megafon", "mts", "beeline", "tele2",
     "gazprom", "lukoil", "rosneft", "sberinsurance", "ingos",
     "mvd", "fsb", "minzdrav", "rosreestr", "egov",
@@ -197,18 +219,24 @@ def _has_latin(text: str) -> bool:
     return any(c.isascii() and c.isalpha() for c in text)
 
 
+def _has_confusable(text: str) -> bool:
+    """Any character that impersonates a Latin letter (Cyrillic/Greek/fullwidth)."""
+    return any(ch in CYRILLIC_TO_LATIN for ch in text)
+
+
 def detect_idn(unicode_host: str, has_punycode: bool) -> tuple[bool, bool, bool]:
     """Returns (is_homograph, mixed_script, has_cyrillic) on a Unicode host."""
     has_cyrillic = _has_cyrillic(unicode_host)
     labels = unicode_host.split(".")
 
-    mixed_script = any(_has_cyrillic(lbl) and _has_latin(lbl) for lbl in labels)
+    # A label mixing real Latin with a confusable char (sberbаnk, paypαl).
+    mixed_script = any(_has_confusable(lbl) and _has_latin(lbl) for lbl in labels)
     if mixed_script:
         return True, True, has_cyrillic
 
-    # All-Cyrillic label that is a pure-Latin visual look-alike.
+    # An all-confusable label that is a pure-Latin visual look-alike.
     for lbl in labels:
-        if _has_cyrillic(lbl) and not _has_latin(lbl):
+        if _has_confusable(lbl) and not _has_latin(lbl):
             norm = visual_normalize(lbl)
             if norm != lbl and re.fullmatch(r"[a-z0-9-]+", norm):
                 return True, False, has_cyrillic

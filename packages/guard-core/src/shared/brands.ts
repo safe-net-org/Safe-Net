@@ -15,6 +15,10 @@ export const TOP_RU_BRANDS = [
   'psbank', 'uralsib', 'promsvyazbank', 'absolutbank', 'citimoscow',
   // Russian government services
   'gosuslugi', 'nalog', 'pfr', 'fss', 'mos', 'esia',
+  'fssp', 'mvd', 'fsb', 'minzdrav', 'rosreestr', 'egov',
+  // Russian energy and media
+  'gazprom', 'lukoil', 'rosneft', 'sberinsurance', 'ingos', 'domclick',
+  'rostelecom', 'rbc', 'kommersant', 'interfax',
   // Russian marketplaces and retail
   'ozon', 'wildberries', 'avito', 'youla', 'lamoda', 'mvideo', 'eldorado',
   'citilink', 'dns-shop', 'svyaznoy', 'beeline', 'megafon', 'mts', 'tele2',
@@ -60,11 +64,38 @@ export const SUSPICIOUS_TLDS = new Set([
   '.review', '.download', '.accountant', '.date', '.faith', '.men', '.party',
 ])
 
+/**
+ * Visual homoglyph map: characters that look Latin but are not, mapped to the
+ * Latin letter they impersonate. Used to unmask homograph domains.
+ *
+ * Covers three confusable scripts, not just Cyrillic — attackers reach for
+ * whichever alphabet has a look-alike:
+ *   - Cyrillic  (а е о р с …)  — the classic sberbаnk.ru
+ *   - Greek     (ο α ε ρ ν …)  — paypαl.com, micrοsoft.com
+ *   - Fullwidth (ａ-ｚ Ａ-Ｚ)   — ｇｏｏｇｌｅ.com
+ *
+ * Kept as CYRILLIC_TO_LATIN_MAP for backward-compatible imports; despite the
+ * name it is the full confusable set.
+ */
 export const CYRILLIC_TO_LATIN_MAP: Record<string, string> = {
+  // Cyrillic
   'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y',
-  'х': 'x', 'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M',
-  'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'У': 'Y',
-  'Х': 'X', 'і': 'i', 'ї': 'i', 'ӓ': 'a', 'ё': 'e',
+  'х': 'x', 'ѕ': 's', 'і': 'i', 'ј': 'j', 'ԁ': 'd', 'һ': 'h',
+  'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H',
+  'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'У': 'Y', 'Х': 'X',
+  'ї': 'i', 'ӓ': 'a', 'ё': 'e',
+  // Greek (lowercase then uppercase look-alikes)
+  'ο': 'o', 'α': 'a', 'ε': 'e', 'ρ': 'p', 'ν': 'v', 'υ': 'u',
+  'ι': 'i', 'κ': 'k', 'χ': 'x', 'τ': 't', 'ς': 'c', 'μ': 'u',
+  'Α': 'A', 'Β': 'B', 'Ε': 'E', 'Ζ': 'Z', 'Η': 'H', 'Ι': 'I',
+  'Κ': 'K', 'Μ': 'M', 'Ν': 'N', 'Ο': 'O', 'Ρ': 'P', 'Τ': 'T',
+  'Υ': 'Y', 'Χ': 'X',
+  // Fullwidth Latin
+  'ａ': 'a', 'ｂ': 'b', 'ｃ': 'c', 'ｄ': 'd', 'ｅ': 'e', 'ｆ': 'f',
+  'ｇ': 'g', 'ｈ': 'h', 'ｉ': 'i', 'ｊ': 'j', 'ｋ': 'k', 'ｌ': 'l',
+  'ｍ': 'm', 'ｎ': 'n', 'ｏ': 'o', 'ｐ': 'p', 'ｑ': 'q', 'ｒ': 'r',
+  'ｓ': 's', 'ｔ': 't', 'ｕ': 'u', 'ｖ': 'v', 'ｗ': 'w', 'ｘ': 'x',
+  'ｙ': 'y', 'ｚ': 'z',
 }
 
 /**

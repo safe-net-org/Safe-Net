@@ -94,6 +94,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       # tldextract is the only import the rule layer needs; the BERT model is
       # never loaded, so these tests are fast and offline. They assert the
       # Python heuristics still agree with the TypeScript engine they were
@@ -105,3 +109,10 @@ jobs:
       - name: Test deterministic scoring
         working-directory: ml-service
         run: python scripts/test_scoring.py
+
+      # Fails if the Python brand list or homoglyph map drifts from the
+      # canonical TypeScript source — the exact bug that let paypa1.com score as
+      # safe while the courses taught it as phishing.
+      - name: Cross-language detection-data parity
+        working-directory: ml-service
+        run: python scripts/test_parity.py

@@ -27,6 +27,16 @@ describe('phishing is caught', () => {
 		)
 	})
 
+	// Greek confusables, not just Cyrillic: paypαl uses a Greek alpha, micrοsoft
+	// a Greek omicron. Neither folds to Latin under NFKC, so both are live
+	// homograph vectors the Cyrillic-only detector used to miss.
+	it('flags a Greek-letter homograph', () => {
+		expect(score('https://paypαl.com')).toBeGreaterThanOrEqual(DANGER_THRESHOLD)
+		expect(score('https://micrοsoft.com')).toBeGreaterThanOrEqual(
+			DANGER_THRESHOLD
+		)
+	})
+
 	it('flags typosquatting', () => {
 		expect(score('https://tinkkoff.ru')).toBeGreaterThanOrEqual(DANGER_THRESHOLD)
 	})

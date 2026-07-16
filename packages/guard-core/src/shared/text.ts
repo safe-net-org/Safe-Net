@@ -8,6 +8,7 @@ import { CYRILLIC_TO_LATIN_MAP, CYRILLIC_TRANSLIT } from './brands'
 const CYRILLIC_RE = /[Ѐ-ӿԀ-ԯ]/
 const LATIN_RE = /[a-z]/i
 const GREEK_RE = /[Ͱ-Ͽ]/
+const FULLWIDTH_RE = /[Ａ-Ｚａ-ｚ]/
 
 export function hasCyrillic(text: string): boolean {
 	return CYRILLIC_RE.test(text)
@@ -17,6 +18,14 @@ export function hasLatin(text: string): boolean {
 	return LATIN_RE.test(text)
 }
 
+/** True if the text contains any character that impersonates a Latin letter. */
+export function hasConfusable(text: string): boolean {
+	for (const ch of text) {
+		if (ch in CYRILLIC_TO_LATIN_MAP) return true
+	}
+	return false
+}
+
 /** Distinct alphabets present in the string (e.g. ['latin', 'cyrillic']). */
 export function scriptsOf(text: string): string[] {
 	const set = new Set<string>()
@@ -24,6 +33,7 @@ export function scriptsOf(text: string): string[] {
 		if (LATIN_RE.test(ch)) set.add('latin')
 		else if (CYRILLIC_RE.test(ch)) set.add('cyrillic')
 		else if (GREEK_RE.test(ch)) set.add('greek')
+		else if (FULLWIDTH_RE.test(ch)) set.add('fullwidth')
 	}
 	return [...set]
 }

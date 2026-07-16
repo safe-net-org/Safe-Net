@@ -1,4 +1,6 @@
+import { CYRILLIC_TO_LATIN_MAP } from '../shared/brands'
 import {
+	hasConfusable,
 	hasCyrillic,
 	hasLatin,
 	scriptsOf,
@@ -30,8 +32,9 @@ export function detectIdnHomograph(
 ): IdnResult {
 	const scripts = scriptsOf(unicodeHost)
 	const cyr = hasCyrillic(unicodeHost)
+	const confusable = hasConfusable(unicodeHost)
 
-	if (!cyr && !hasPunycode) {
+	if (!confusable && !hasPunycode) {
 		return {
 			isHomograph: false,
 			details: null,
@@ -45,15 +48,16 @@ export function detectIdnHomograph(
 
 	const labels = unicodeHost.split('.')
 
-	// Case 1 — mixed script within one label.
-	const mixedLabel = labels.find(l => hasCyrillic(l) && hasLatin(l))
+	// Case 1 — a single label mixing real Latin with a confusable character
+	// (Cyrillic, Greek, or fullwidth). This is the classic sberbаnk / paypαl.
+	const mixedLabel = labels.find(l => hasConfusable(l) && hasLatin(l))
 	if (mixedLabel) {
 		const lookalike = visualNormalize(mixedLabel)
-		const cyrChars = [...mixedLabel].filter(c => hasCyrillic(c))
+		const fakeChars = [...mixedLabel].filter(c => c in CYRILLIC_TO_LATIN_MAP)
 		return {
 			isHomograph: true,
-			details: `Метка «${mixedLabel}» смешивает кириллицу (${cyrChars.join(' ')}) и латиницу — выглядит как «${lookalike}»`,
-			hasCyrillic: true,
+			details: `Метка «${mixedLabel}» смешивает похожие символы (${fakeChars.join(' ')}) с латиницей — выглядит как «${lookalike}»`,
+			hasCyrillic: cyr,
 			hasPunycode,
 			lookalike,
 			mixedScript: true,
@@ -61,15 +65,15 @@ export function detectIdnHomograph(
 		}
 	}
 
-	// Case 2 — all-Cyrillic label that is a pure-Latin look-alike.
+	// Case 2 — an all-confusable label that resolves to a pure-Latin look-alike.
 	for (const label of labels) {
-		if (hasCyrillic(label) && !hasLatin(label)) {
+		if (hasConfusable(label) && !hasLatin(label)) {
 			const norm = visualNormalize(label)
 			if (norm !== label && /^[a-z0-9-]+$/.test(norm)) {
 				return {
 					isHomograph: true,
-					details: `Домен «${label}» визуально читается как «${norm}», но набран кириллицей`,
-					hasCyrillic: true,
+					details: `Домен «${label}» визуально читается как «${norm}», но набран похожими символами`,
+					hasCyrillic: cyr,
 					hasPunycode,
 					lookalike: norm,
 					mixedScript: false,

@@ -25,6 +25,8 @@ WARN = 40
 # from the neural net, so detection survives the model being unavailable.
 PHISHING = [
     ("https://sberbаnk.ru/login", DANGER),        # Cyrillic 'а' homograph
+    ("https://paypαl.com", DANGER),                # Greek alpha homograph
+    ("https://micrοsoft.com", DANGER),             # Greek omicron homograph
     ("https://tinkkoff.ru", DANGER),               # typosquat
     ("https://sb3rbank.ru", DANGER),               # leet-squat
     ("https://paypa1.com", DANGER),                # the courses' own example
