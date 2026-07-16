@@ -171,31 +171,36 @@ export function AuthDialog({
 							{...register('email')}
 						/>
 					</div>
-					<div className='relative space-y-2'>
+					<div className='space-y-2'>
 						<Label htmlFor='password' className='text-slate-300'>
 							Password
 						</Label>
-						<Input
-							id='password'
-							type={showPassword ? 'text' : 'password'}
-							placeholder='••••••••'
-							className='bg-slate-800/50 border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 pr-10'
-							{...register('password')}
-						/>
-						<button
-							type='button'
-							className='absolute right-3 top-1/2 transform translate-y-[-3px] text-slate-400 hover:text-white transition-colors flex items-center justify-center'
-							onClick={() => setShowPassword(!showPassword)}
-							aria-label={showPassword ? 'Hide password' : 'Show password'}
-						>
-							{showPassword ? (
-								<EyeOff className='w-5 h-5' />
-							) : (
-								<Eye className='w-5 h-5' />
-							)}
-						</button>
+						{/* The eye toggle is positioned against this wrapper, which holds
+						    only the input — so the "Forgot password?" link below can no
+						    longer push its vertical centre off. */}
+						<div className='relative'>
+							<Input
+								id='password'
+								type={showPassword ? 'text' : 'password'}
+								placeholder='••••••••'
+								className='bg-slate-800/50 border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 pr-10'
+								{...register('password')}
+							/>
+							<button
+								type='button'
+								className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors'
+								onClick={() => setShowPassword(!showPassword)}
+								aria-label={showPassword ? 'Hide password' : 'Show password'}
+							>
+								{showPassword ? (
+									<EyeOff className='w-5 h-5' />
+								) : (
+									<Eye className='w-5 h-5' />
+								)}
+							</button>
+						</div>
 						{isLogin && (
-							<div className='pt-1 text-right'>
+							<div className='text-right'>
 								<Link
 									href='/forgot-password'
 									className='text-xs text-slate-400 hover:text-indigo-400 transition-colors'

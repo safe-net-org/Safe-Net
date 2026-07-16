@@ -47,7 +47,7 @@ export default function DemoCard() {
 							Determine whether the link is safe
 						</p>
 					</div>
-					<div className='w-12 h-12 bg-linear-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center'>
+					<div className='w-12 h-12 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center'>
 						<FishingHook className='w-7 h-7 text-white' />
 					</div>
 				</div>
@@ -128,7 +128,7 @@ export default function DemoCard() {
 				)}
 				{}
 				{isCorrect !== null && (
-					<div className='mt-4'>
+					<div className='mt-4 space-y-2'>
 						<button
 							onClick={openModal}
 							className='w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-lg hover:scale-[1.01] transition-transform'
@@ -136,6 +136,13 @@ export default function DemoCard() {
 							<BookOpen className='w-4 h-4' />
 							Try another — password security overview
 						</button>
+						<a
+							href='/guard'
+							className='w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-900/50 text-sm text-slate-300 hover:text-white hover:border-slate-600 transition-colors'
+						>
+							<ShieldCheck className='w-4 h-4 text-indigo-400' />
+							See how AI Guard scores this automatically
+						</a>
 					</div>
 				)}
 				{}

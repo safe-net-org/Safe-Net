@@ -1,4 +1,4 @@
-import { ArrowRight, Play, Sparkles } from 'lucide-react'
+import { ArrowRight, Play, ShieldCheck, Sparkles } from 'lucide-react'
 
 import { AuthDialog } from '../Auth/AuthDialog'
 import DemoCard from './DemoCard'
@@ -46,11 +46,12 @@ export default function Hero() {
 								}}
 							/>
 							<a
-								href='#features'
-								className='bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl font-semibold transition-all border border-slate-700 flex items-center gap-2'
+								href='/guard'
+								className='bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl font-semibold transition-all border border-slate-700 flex items-center gap-2 group'
 							>
-								Learn More
-								<ArrowRight className='w-5 h-5' />
+								<ShieldCheck className='w-5 h-5 text-indigo-400' />
+								Try AI Guard
+								<ArrowRight className='w-5 h-5 group-hover:translate-x-0.5 transition-transform' />
 							</a>
 						</div>
 					</div>

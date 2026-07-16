@@ -16,9 +16,9 @@ export default function Landing() {
 			<Hero />
 			<Stats />
 			<Features />
+			<GuardSection />
 			<Topics />
 			<HowItWorks />
-			<GuardSection />
 			<Testimonials />
 			<CTA />
 			<Footer />
