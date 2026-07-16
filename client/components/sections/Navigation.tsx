@@ -3,8 +3,10 @@ import { useRouter } from 'next/navigation'
 
 import { LogOut, Menu, Shield, X } from 'lucide-react'
 
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useLogout } from '@/hooks/user/useLogout'
 import { useProfile } from '@/hooks/user/useProfile'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { useEffect, useRef, useState } from 'react'
 
 export default function Navigation() {
@@ -12,6 +14,7 @@ export default function Navigation() {
 	const [showLogout, setShowLogout] = useState(false)
 	const { user, isLoading } = useProfile()
 	const { logout } = useLogout()
+	const { t } = useI18n()
 	const router = useRouter()
 	const profileRef = useRef<HTMLDivElement>(null)
 	const isAuthenticated = !!user?.isLoggedIn
@@ -51,7 +54,7 @@ export default function Navigation() {
 						<div>
 							<h1 className='text-lg font-bold'>SafeNet</h1>
 							<p className='text-xs text-slate-400 -mt-1'>
-								Learn. Play. Stay Safe.
+								{t.footer.tagline}
 							</p>
 						</div>
 					</div>
@@ -62,26 +65,28 @@ export default function Navigation() {
 							href='#features'
 							className='text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Features
+							{t.nav.features}
 						</a>
 						<a
 							href='#topics'
 							className='text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Topics
+							{t.nav.topics}
 						</a>
 						<a
 							href='#stats'
 							className='text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Statistics
+							{t.nav.statistics}
 						</a>
 						<a
 							href='#guard'
 							className='text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
 						>
-							AI Guard
+							{t.nav.aiGuard}
 						</a>
+
+						<LanguageSwitcher />
 
 						{/* User Profile with Logout */}
 						{!isLoading && isAuthenticated && user && (
@@ -151,26 +156,28 @@ export default function Navigation() {
 							href='#features'
 							className='block text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Features
+							{t.nav.features}
 						</a>
 						<a
 							href='#topics'
 							className='block text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Topics
+							{t.nav.topics}
 						</a>
 						<a
 							href='#stats'
 							className='block text-sm text-slate-300 hover:text-white transition-colors'
 						>
-							Statistics
+							{t.nav.statistics}
 						</a>
 						<a
 							href='#guard'
 							className='block text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
 						>
-							AI Guard
+							{t.nav.aiGuard}
 						</a>
+
+						<LanguageSwitcher />
 
 						{!isLoading && isAuthenticated && user && (
 							<>
@@ -182,7 +189,7 @@ export default function Navigation() {
 									className='text-left w-full text-red-400 hover:text-red-300 transition-colors flex items-center gap-2'
 								>
 									<LogOut className='w-4 h-4' />
-									Log Out
+									{t.nav.logout}
 								</button>
 							</>
 						)}

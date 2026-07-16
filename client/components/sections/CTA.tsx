@@ -1,8 +1,11 @@
+'use client'
 import { Play } from 'lucide-react'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { AuthDialog } from '../Auth/AuthDialog'
 
 export default function CTA() {
+	const { t } = useI18n()
 	return (
 		<section className='py-20'>
 			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -13,14 +16,14 @@ export default function CTA() {
 					</div>
 					<div className='relative z-10'>
 						<h3 className='text-3xl sm:text-4xl font-bold text-white mb-4'>
-							Ready to test yourself?
+							{t.cta.title}
 						</h3>
 						<p className='text-xl text-white/90 mb-8 max-w-2xl mx-auto'>
-							Complete the first level and find out how safe you really are online
+							{t.cta.subtitle}
 						</p>
 						<AuthDialog
 							triggerButton={{
-								text: 'Start Learning',
+								text: t.hero.startLearning,
 								className:
 									'inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-indigo-600 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-xl group',
 								icon: (

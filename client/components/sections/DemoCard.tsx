@@ -18,8 +18,10 @@ import {
 } from 'lucide-react'
 
 import { useState } from 'react'
+import { useI18n } from '@/i18n/LocaleProvider'
 
 export default function DemoCard() {
+	const { t } = useI18n()
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
 	const [showModal, setShowModal] = useState(false)
 	const handleSafeClick = () => setIsCorrect(false)
@@ -41,11 +43,9 @@ export default function DemoCard() {
 				<div className='flex items-center justify-between mb-4'>
 					<div>
 						<h3 className='font-semibold text-white text-lg'>
-							Level 1: Phishing
+							{t.demo.level}
 						</h3>
-						<p className='text-xs text-slate-400'>
-							Determine whether the link is safe
-						</p>
+						<p className='text-xs text-slate-400'>{t.demo.prompt}</p>
 					</div>
 					<div className='w-12 h-12 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center'>
 						<FishingHook className='w-7 h-7 text-white' />
@@ -53,14 +53,12 @@ export default function DemoCard() {
 				</div>
 				<div className='bg-slate-900/50 rounded-xl p-4 mb-4 border border-slate-700'>
 					<p className='text-sm text-slate-200 mb-2'>
-						<span className='text-slate-400'>Sender:</span>{' '}
+						<span className='text-slate-400'>{t.demo.sender}</span>{' '}
 						<a href='mailto:support@bank-pay.com' className='underline'>
 							support@bank-pay.com
 						</a>
 					</p>
-					<p className='text-sm text-slate-400'>
-						&quot;Your account will be closed. Verify your identity immediately.&quot;
-					</p>
+					<p className='text-sm text-slate-400'>{t.demo.message}</p>
 				</div>
 				{isCorrect !== null && (
 					<m.div
@@ -81,9 +79,7 @@ export default function DemoCard() {
 						<span
 							className={`text-sm ${isCorrect ? 'text-emerald-200' : 'text-rose-200'}`}
 						>
-							{isCorrect
-								? 'Correct! This is phishing. Notice the suspicious domain.'
-								: 'Incorrect. This is a phishing email.'}
+							{isCorrect ? t.demo.correct : t.demo.incorrect}
 						</span>
 					</m.div>
 				)}
@@ -98,7 +94,7 @@ export default function DemoCard() {
 						disabled={isCorrect !== null}
 					>
 						<CheckCircle className='w-4 h-4' />
-						Safe
+						{t.demo.safe}
 					</button>
 					<button
 						className={`${
@@ -110,7 +106,7 @@ export default function DemoCard() {
 						disabled={isCorrect !== null}
 					>
 						<XCircle className='w-4 h-4' />
-						Dangerous
+						{t.demo.dangerous}
 					</button>
 				</div>
 				{isCorrect === null && (
@@ -121,9 +117,7 @@ export default function DemoCard() {
 						className='mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-900/30 rounded-lg p-3'
 					>
 						<Zap className='w-4 h-4 text-yellow-500 shrink-0 mt-0.5' />
-						<span>
-							Hint: Check the sender&apos;s address for domain misspellings.
-						</span>
+						<span>{t.demo.hint}</span>
 					</m.div>
 				)}
 				{}
@@ -141,7 +135,7 @@ export default function DemoCard() {
 							className='w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-900/50 text-sm text-slate-300 hover:text-white hover:border-slate-600 transition-colors'
 						>
 							<ShieldCheck className='w-4 h-4 text-indigo-400' />
-							See how AI Guard scores this automatically
+							{t.demo.guardLink}
 						</a>
 					</div>
 				)}

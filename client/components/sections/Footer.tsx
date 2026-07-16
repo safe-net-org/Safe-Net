@@ -1,6 +1,10 @@
+'use client'
 import { Shield } from 'lucide-react'
 
+import { useI18n } from '@/i18n/LocaleProvider'
+
 export default function Footer() {
+	const { t } = useI18n()
 	return (
 		<footer className='bg-slate-800/50 border-t border-slate-800 py-12'>
 			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -12,51 +16,49 @@ export default function Footer() {
 							</div>
 							<div>
 								<h4 className='text-lg font-bold text-white'>SafeNet</h4>
-								<p className='text-xs text-slate-400'>
-									Learn. Play. Stay Safe.
-								</p>
+								<p className='text-xs text-slate-400'>{t.footer.tagline}</p>
 							</div>
 						</div>
 						<p className='text-sm text-slate-400 leading-relaxed'>
-							A cybersecurity education platform for schoolkids
+							{t.footer.description}
 						</p>
 					</div>
 					<div>
-						<h5 className='text-white font-semibold mb-4'>Navigation</h5>
+						<h5 className='text-white font-semibold mb-4'>
+							{t.footer.navigation}
+						</h5>
 						<div className='space-y-2'>
 							<a
 								href='#features'
 								className='block text-sm text-slate-400 hover:text-white transition-colors'
 							>
-								Features
+								{t.nav.features}
 							</a>
 							<a
 								href='#topics'
 								className='block text-sm text-slate-400 hover:text-white transition-colors'
 							>
-								Learning Topics
+								{t.nav.topics}
 							</a>
 							<a
 								href='#stats'
 								className='block text-sm text-slate-400 hover:text-white transition-colors'
 							>
-								Statistics
+								{t.nav.statistics}
 							</a>
 						</div>
 					</div>
 					<div>
-						<h5 className='text-white font-semibold mb-4'>Contact</h5>
+						<h5 className='text-white font-semibold mb-4'>{t.footer.contact}</h5>
 						<div className='space-y-2'>
-							<p className='text-sm text-slate-400'>
-								SafeNet Team
-							</p>
+							<p className='text-sm text-slate-400'>SafeNet Team</p>
 							<p className='text-sm text-slate-400'>Moscow, 2025</p>
 						</div>
 					</div>
 				</div>
 				<div className='pt-8 border-t border-slate-700 text-center'>
 					<p className='text-sm text-slate-500'>
-						© 2025 SafeNet — Cybersecurity Education Platform
+						© 2025 SafeNet — {t.footer.rights}
 					</p>
 				</div>
 			</div>
