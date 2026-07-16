@@ -31,23 +31,25 @@ const COLS = [
 function Mark({ value }: { value: Cell }) {
 	if (value === 'yes') return <Check className='mx-auto h-4 w-4 text-emerald-400' />
 	if (value === 'partial') return <Minus className='mx-auto h-4 w-4 text-amber-400' />
-	return <X className='mx-auto h-4 w-4 text-white/25' />
+	return <X className='mx-auto h-4 w-4 text-slate-600' />
 }
 
 export function GuardComparison() {
 	return (
-		<section className='mb-16'>
-			<h2 className='mb-2 text-2xl font-bold'>What the others miss</h2>
-			<p className='mb-6 max-w-2xl text-sm text-white/50'>
+		<section className='mb-20'>
+			<h2 className='mb-2 text-3xl font-bold text-white sm:text-4xl'>
+				What the others miss
+			</h2>
+			<p className='mb-6 max-w-2xl text-slate-400'>
 				Standard filters match known-bad URLs from a blocklist. Guard matches the
 				technique, so it catches an attack the first time it is ever used.
 			</p>
 
-			<div className='overflow-x-auto rounded-2xl border border-white/10'>
+			<div className='overflow-x-auto rounded-2xl border border-slate-700 bg-slate-800'>
 				<table className='w-full min-w-[560px] border-collapse'>
 					<thead>
-						<tr className='border-b border-white/10'>
-							<th className='p-4 text-left text-[11px] font-normal uppercase tracking-[0.15em] text-white/40'>
+						<tr className='border-b border-slate-700'>
+							<th className='p-4 text-left text-xs font-normal uppercase tracking-wide text-slate-500'>
 								Capability
 							</th>
 							{COLS.map(col => (
@@ -55,7 +57,7 @@ export function GuardComparison() {
 									key={col.key}
 									className={
 										'p-4 text-center text-[13px] font-semibold ' +
-										(col.accent ? 'text-purple-300' : 'text-white/50')
+										(col.accent ? 'text-indigo-300' : 'text-slate-400')
 									}
 								>
 									{col.name}
@@ -67,15 +69,15 @@ export function GuardComparison() {
 						{ROWS.map(row => (
 							<tr
 								key={row.feature}
-								className='border-b border-white/5 last:border-0'
+								className='border-b border-slate-700/60 last:border-0'
 							>
-								<td className='p-4 text-sm text-white/80'>{row.feature}</td>
+								<td className='p-4 text-sm text-slate-300'>{row.feature}</td>
 								{COLS.map(col => (
 									<td
 										key={col.key}
 										className={
 											'p-4 text-center ' +
-											(col.accent ? 'bg-purple-500/[0.05]' : '')
+											(col.accent ? 'bg-indigo-500/[0.06]' : '')
 										}
 									>
 										<Mark value={row[col.key]} />

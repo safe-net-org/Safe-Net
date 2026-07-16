@@ -63,7 +63,7 @@ type Level = keyof typeof LEVEL
 const SEVERITY_COLOR: Record<string, string> = {
 	high: 'text-red-400',
 	medium: 'text-amber-400',
-	low: 'text-white/40',
+	low: 'text-slate-500',
 }
 
 interface MlVerdict {
@@ -149,7 +149,7 @@ export function UrlScanner() {
 					spellCheck={false}
 					aria-label='URL to scan'
 					placeholder='Paste any URL…'
-					className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm text-white outline-none transition-colors placeholder:text-white/30 focus:border-white/25'
+					className='flex-1 rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 font-mono text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-slate-500'
 				/>
 				<Button type='submit' className='gap-1.5'>
 					Scan <ArrowRight className='h-4 w-4' />
@@ -165,10 +165,10 @@ export function UrlScanner() {
 							setInput(example.url)
 							setSubmitted(example.url)
 						}}
-						className='rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] text-white/60 transition-colors hover:border-white/25 hover:text-white'
+						className='rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1 font-mono text-[11px] text-slate-300 transition-colors hover:border-slate-500 hover:text-white'
 					>
 						{example.url.replace('https://', '')}
-						<span className='ml-1.5 font-sans text-white/30'>{example.note}</span>
+						<span className='ml-1.5 font-sans text-slate-500'>{example.note}</span>
 					</button>
 				))}
 			</div>
@@ -179,7 +179,7 @@ export function UrlScanner() {
 					initial={{ opacity: 0, y: 8 }}
 					animate={{ opacity: 1, y: 0 }}
 					className={cn(
-						'space-y-4 rounded-2xl border border-white/10 p-4 ring-1 sm:p-6',
+						'space-y-4 rounded-2xl border border-slate-700 p-4 ring-1 sm:p-6',
 						meta.bg,
 						meta.ring
 					)}
@@ -191,12 +191,12 @@ export function UrlScanner() {
 								<span className={cn('text-2xl font-bold', meta.text)}>
 									{result.score}
 								</span>
-								<span className='text-xs text-white/40'>/ 100</span>
+								<span className='text-xs text-slate-500'>/ 100</span>
 								<span className={cn('text-sm font-semibold', meta.text)}>
 									{meta.label}
 								</span>
 							</div>
-							<div className='mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10'>
+							<div className='mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-700'>
 								<m.div
 									initial={{ width: 0 }}
 									animate={{ width: `${result.score}%` }}
@@ -208,23 +208,23 @@ export function UrlScanner() {
 					</div>
 
 					{result.signals.length > 0 ? (
-						<ul className='space-y-2 border-t border-white/10 pt-3'>
+						<ul className='space-y-2 border-t border-slate-700 pt-3'>
 							{result.signals.map(signal => (
 								<li key={signal.key} className='flex items-start gap-2'>
 									<span
 										className={cn(
 											'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current',
-											SEVERITY_COLOR[signal.severity] ?? 'text-white/40'
+											SEVERITY_COLOR[signal.severity] ?? 'text-slate-500'
 										)}
 									/>
-									<p className='text-xs leading-relaxed text-white/70'>
+									<p className='text-xs leading-relaxed text-slate-200'>
 										{signal.message}
 									</p>
 								</li>
 							))}
 						</ul>
 					) : (
-						<p className='border-t border-white/10 pt-3 text-xs text-white/50'>
+						<p className='border-t border-slate-700 pt-3 text-xs text-slate-400'>
 							No red flags found. Recognising what is normal matters as much as
 							spotting what is not.
 						</p>
@@ -238,11 +238,11 @@ export function UrlScanner() {
 					key={`ml-${submitted}`}
 					initial={{ opacity: 0, y: 8 }}
 					animate={{ opacity: 1, y: 0 }}
-					className='rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5'
+					className='rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5'
 				>
 					<div className='mb-3 flex items-center gap-2'>
-						<Cpu className='h-4 w-4 text-cyan-400' />
-						<span className='text-xs font-semibold uppercase tracking-wide text-cyan-300'>
+						<Cpu className='h-4 w-4 text-indigo-400' />
+						<span className='text-xs font-semibold uppercase tracking-wide text-indigo-300'>
 							Neural network — second opinion
 						</span>
 					</div>
@@ -260,7 +260,7 @@ export function UrlScanner() {
 							emphasis
 						/>
 					</div>
-					<p className='mt-3 border-t border-white/10 pt-2.5 text-[11px] leading-relaxed text-white/50'>
+					<p className='mt-3 border-t border-slate-700 pt-2.5 text-[11px] leading-relaxed text-slate-400'>
 						{METHOD_LABEL[ml.method] ?? ml.method}.{' '}
 						{ml.method === 'rule-override' && ml.ml_probability > 0.5 && ml.score < 40
 							? 'The model flagged this, but the deterministic rules recognised a known-safe site and overruled it.'
@@ -271,9 +271,9 @@ export function UrlScanner() {
 				</m.div>
 			)}
 
-			<p className='text-[11px] leading-relaxed text-white/30'>
+			<p className='text-[11px] leading-relaxed text-slate-500'>
 				The verdict runs entirely in your browser using{' '}
-				<code className='font-mono text-white/50'>@safe-net/guard-core</code> —
+				<code className='font-mono text-slate-400'>@safe-net/guard-core</code> —
 				the same package the extension ships, sending nothing anywhere.{' '}
 				{mlState === 'unavailable'
 					? 'The neural-network layer is offline (start it with bun run dev).'
@@ -299,22 +299,22 @@ function Stat({
 			className={
 				'rounded-xl border p-2.5 ' +
 				(emphasis
-					? 'border-cyan-400/25 bg-cyan-400/[0.06]'
-					: 'border-white/10 bg-white/[0.02]')
+					? 'border-indigo-500/30 bg-indigo-500/10'
+					: 'border-slate-700 bg-slate-900/60')
 			}
 		>
-			<div className='text-[10px] uppercase tracking-wide text-white/40'>
+			<div className='text-[10px] uppercase tracking-wide text-slate-500'>
 				{label}
 			</div>
 			<div
 				className={
 					'mt-0.5 text-xl font-bold ' +
-					(emphasis ? 'text-cyan-300' : 'text-white')
+					(emphasis ? 'text-indigo-300' : 'text-white')
 				}
 			>
 				{value}
 			</div>
-			{hint && <div className='text-[10px] text-white/30'>{hint}</div>}
+			{hint && <div className='text-[10px] text-slate-500'>{hint}</div>}
 		</div>
 	)
 }

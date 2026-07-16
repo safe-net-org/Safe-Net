@@ -5,8 +5,8 @@ import {
 	Cpu,
 	Eye,
 	Gauge,
-	GraduationCap,
 	Globe,
+	GraduationCap,
 	Lock,
 	Puzzle,
 	ShieldCheck,
@@ -75,7 +75,7 @@ const PRINCIPLES = [
 
 function Kbd({ children }: { children: React.ReactNode }) {
 	return (
-		<code className='rounded bg-white/10 px-1.5 py-0.5 font-mono text-[13px] text-white/90'>
+		<code className='rounded bg-slate-700/60 px-1.5 py-0.5 font-mono text-[13px] text-slate-200'>
 			{children}
 		</code>
 	)
@@ -83,54 +83,43 @@ function Kbd({ children }: { children: React.ReactNode }) {
 
 export default function GuardPage() {
 	return (
-		<div className='relative min-h-screen overflow-hidden bg-[#070B16] text-white'>
-			{/* ambient glow */}
-			<div className='pointer-events-none fixed inset-0'>
-				<div className='absolute -top-40 left-1/4 h-[32rem] w-[32rem] rounded-full bg-purple-700/15 blur-[120px]' />
-				<div className='absolute top-1/3 -right-40 h-[28rem] w-[28rem] rounded-full bg-cyan-600/10 blur-[120px]' />
-				<div className='absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent' />
-			</div>
-
-			<div className='relative mx-auto max-w-5xl px-6 pb-24'>
+		<div className='min-h-screen bg-slate-900 text-slate-100'>
+			<div className='mx-auto max-w-6xl px-4 pb-24 sm:px-6 lg:px-8'>
 				{/* Top bar */}
 				<div className='flex items-center justify-between py-6'>
 					<Link
 						href='/'
-						className='inline-flex items-center gap-1.5 text-sm text-white/50 transition-colors hover:text-white'
+						className='inline-flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-white'
 					>
 						<ArrowLeft className='h-4 w-4' />
 						Safe-Net
 					</Link>
-					<div className='inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1'>
-						<Puzzle className='h-3.5 w-3.5 text-purple-400' />
-						<span className='font-mono text-[11px] uppercase tracking-[0.15em] text-purple-300'>
+					<div className='inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800 px-3 py-1'>
+						<Puzzle className='h-3.5 w-3.5 text-indigo-400' />
+						<span className='text-xs font-medium text-slate-300'>
 							Browser extension · AI
 						</span>
 					</div>
 				</div>
 
 				{/* Hero */}
-				<section className='grid items-center gap-10 pt-8 pb-16 lg:grid-cols-2 lg:gap-14 lg:pt-14'>
+				<section className='grid items-center gap-10 pt-6 pb-16 lg:grid-cols-2 lg:gap-14 lg:pt-12'>
 					<div>
-						<h1 className='text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl'>
-							Reads every link
-							<br />
-							<span className='bg-gradient-to-r from-purple-300 via-white to-cyan-200 bg-clip-text text-transparent'>
-								before you click.
-							</span>
+						<h1 className='text-4xl font-bold tracking-tight text-white sm:text-5xl'>
+							Reads every link before you click.
 						</h1>
-						<p className='mt-6 max-w-xl text-lg leading-relaxed text-white/60'>
+						<p className='mt-6 max-w-xl text-lg leading-relaxed text-slate-400'>
 							Over a thousand phishing sites go live every hour, and the dangerous
 							ones are not ugly. Guard scores every URL before the page loads,
 							blending a neural network with deterministic rules.
 						</p>
 
 						<div className='mt-7 flex flex-wrap gap-2.5'>
-							<span className='inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70'>
+							<span className='inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-300'>
 								<Zap className='h-3.5 w-3.5 text-amber-400' />
 								Under 5 ms, on your device
 							</span>
-							<span className='inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70'>
+							<span className='inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-300'>
 								<WifiOff className='h-3.5 w-3.5 text-emerald-400' />
 								Zero bytes sent
 							</span>
@@ -138,7 +127,7 @@ export default function GuardPage() {
 
 						<a
 							href='#scanner'
-							className='group mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition-transform hover:scale-[1.02]'
+							className='group mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition-transform hover:scale-[1.02]'
 						>
 							Try the live scanner
 							<Zap className='h-4 w-4 transition-transform group-hover:translate-x-0.5' />
@@ -149,10 +138,10 @@ export default function GuardPage() {
 				</section>
 
 				{/* One engine, three places */}
-				<section className='mb-20 rounded-3xl border border-white/10 bg-gradient-to-br from-purple-500/[0.08] via-white/[0.01] to-transparent p-6 sm:p-8'>
+				<section className='mb-20 rounded-2xl border border-slate-700 bg-slate-800 p-6 sm:p-8'>
 					<div className='mb-6 flex items-center gap-2'>
-						<BookOpen className='h-4 w-4 text-purple-400' />
-						<h2 className='text-sm font-semibold uppercase tracking-[0.15em] text-purple-300'>
+						<BookOpen className='h-4 w-4 text-indigo-400' />
+						<h2 className='text-sm font-semibold uppercase tracking-wide text-indigo-300'>
 							One engine, three places
 						</h2>
 					</div>
@@ -160,28 +149,25 @@ export default function GuardPage() {
 					<div className='flex flex-col items-stretch gap-3 sm:flex-row sm:items-center'>
 						{ENGINE_NODES.map((node, i) => (
 							<div key={node.label} className='flex items-center gap-3 sm:flex-1'>
-								<div className='flex flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4'>
-									<node.Icon className='h-5 w-5 shrink-0 text-purple-300' />
+								<div className='flex flex-1 items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 p-4'>
+									<node.Icon className='h-5 w-5 shrink-0 text-indigo-400' />
 									<div>
-										<div className='font-semibold'>{node.label}</div>
-										<div className='text-xs text-white/50'>{node.note}</div>
+										<div className='font-semibold text-white'>{node.label}</div>
+										<div className='text-xs text-slate-400'>{node.note}</div>
 									</div>
 								</div>
 								{i < ENGINE_NODES.length - 1 && (
-									<span className='hidden text-white/25 sm:block'>→</span>
+									<span className='hidden text-slate-600 sm:block'>→</span>
 								)}
 							</div>
 						))}
 					</div>
 
-					<p className='mt-6 max-w-3xl text-sm leading-relaxed text-white/50'>
-						All three run{' '}
-						<code className='rounded bg-white/10 px-1.5 py-0.5 font-mono text-[13px] text-white/90'>
-							@safe-net/guard-core
-						</code>{' '}
-						— one implementation. That is not a slogan; it is the fix for a real
-						bug. The rules were written twice and drifted: the courses taught{' '}
-						<span className='font-mono text-white/70'>paypa1.com</span> as the
+					<p className='mt-6 max-w-3xl text-sm leading-relaxed text-slate-400'>
+						All three run <Kbd>@safe-net/guard-core</Kbd> — one implementation.
+						That is not a slogan; it is the fix for a real bug. The rules were
+						written twice and drifted: the courses taught{' '}
+						<span className='font-mono text-slate-300'>paypa1.com</span> as the
 						textbook example of phishing while the detector scored it 8/100, safe.
 						Sharing the engine makes that contradiction impossible, and the tests
 						now assert it.
@@ -191,57 +177,54 @@ export default function GuardPage() {
 				{/* Live scanner */}
 				<section id='scanner' className='mb-20 scroll-mt-8'>
 					<div className='mb-6'>
-						<h2 className='text-2xl font-bold sm:text-3xl'>Try it</h2>
-						<p className='mt-1.5 text-sm text-white/50'>
+						<h2 className='text-3xl font-bold text-white sm:text-4xl'>Try it</h2>
+						<p className='mt-2 text-slate-400'>
 							The real engine, running in your browser right now — not a
 							recording.
 						</p>
 					</div>
-					<div className='relative'>
-						<div className='absolute -inset-2 rounded-3xl bg-gradient-to-b from-purple-600/10 to-transparent blur-xl' />
-						<div className='relative rounded-3xl border border-white/10 bg-slate-900/50 p-5 backdrop-blur-sm sm:p-7'>
-							<UrlScanner />
-						</div>
+					<div className='rounded-2xl border border-slate-700 bg-slate-800 p-5 sm:p-7'>
+						<UrlScanner />
 					</div>
 				</section>
 
 				{/* Layers */}
 				<section className='mb-20'>
-					<h2 className='text-2xl font-bold sm:text-3xl'>Four layers</h2>
-					<p className='mb-6 mt-1.5 text-sm text-white/50'>
+					<h2 className='text-3xl font-bold text-white sm:text-4xl'>Four layers</h2>
+					<p className='mb-6 mt-2 text-slate-400'>
 						Only the first is required. Everything else degrades gracefully.
 					</p>
-					<div className='grid gap-3 sm:grid-cols-2'>
+					<div className='grid gap-4 sm:grid-cols-2'>
 						{LAYERS.map((layer, i) => (
 							<div
 								key={layer.title}
 								className={
 									'rounded-2xl border p-5 transition-colors ' +
 									(layer.accent
-										? 'border-purple-500/25 bg-purple-500/[0.07]'
-										: 'border-white/10 bg-white/[0.02] hover:border-white/20')
+										? 'border-indigo-500/40 bg-slate-800'
+										: 'border-slate-700 bg-slate-800 hover:border-slate-600')
 								}
 							>
 								<div className='mb-3 flex items-center gap-3'>
 									<div
 										className={
 											'flex h-9 w-9 items-center justify-center rounded-xl ' +
-											(layer.accent ? 'bg-purple-500/20' : 'bg-white/5')
+											(layer.accent ? 'bg-indigo-500/20' : 'bg-slate-700')
 										}
 									>
 										<layer.Icon
 											className={
-												'h-[18px] w-[18px] ' +
-												(layer.accent ? 'text-purple-300' : 'text-white/50')
+												'h-5 w-5 ' +
+												(layer.accent ? 'text-indigo-400' : 'text-slate-400')
 											}
 										/>
 									</div>
-									<span className='font-mono text-xs text-white/30'>
+									<span className='font-mono text-xs text-slate-500'>
 										{String(i + 1).padStart(2, '0')}
 									</span>
-									<h3 className='font-semibold'>{layer.title}</h3>
+									<h3 className='font-semibold text-white'>{layer.title}</h3>
 								</div>
-								<p className='text-sm leading-relaxed text-white/50'>
+								<p className='text-sm leading-relaxed text-slate-400'>
 									{layer.body}
 								</p>
 							</div>
@@ -254,18 +237,22 @@ export default function GuardPage() {
 
 				{/* Principles */}
 				<section className='mb-20'>
-					<h2 className='mb-6 text-2xl font-bold sm:text-3xl'>Design rules</h2>
-					<div className='grid gap-3 sm:grid-cols-3'>
+					<h2 className='mb-6 text-3xl font-bold text-white sm:text-4xl'>
+						Design rules
+					</h2>
+					<div className='grid gap-4 sm:grid-cols-3'>
 						{PRINCIPLES.map(principle => (
 							<div
 								key={principle.title}
-								className='rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-emerald-500/20'
+								className='rounded-2xl border border-slate-700 bg-slate-800 p-5 transition-colors hover:border-slate-600'
 							>
 								<div className='mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10'>
-									<principle.Icon className='h-[18px] w-[18px] text-emerald-400' />
+									<principle.Icon className='h-5 w-5 text-emerald-400' />
 								</div>
-								<h3 className='mb-1.5 font-semibold'>{principle.title}</h3>
-								<p className='text-sm leading-relaxed text-white/50'>
+								<h3 className='mb-1.5 font-semibold text-white'>
+									{principle.title}
+								</h3>
+								<p className='text-sm leading-relaxed text-slate-400'>
 									{principle.body}
 								</p>
 							</div>
@@ -274,14 +261,14 @@ export default function GuardPage() {
 				</section>
 
 				{/* Install */}
-				<section className='overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-6 sm:p-8'>
+				<section className='rounded-2xl border border-slate-700 bg-slate-800 p-6 sm:p-8'>
 					<div className='mb-5 flex items-center gap-2'>
 						<ShieldCheck className='h-5 w-5 text-emerald-400' />
-						<h2 className='text-xl font-bold'>Run it locally</h2>
+						<h2 className='text-xl font-bold text-white'>Run it locally</h2>
 					</div>
-					<ol className='space-y-3 text-sm text-white/70'>
+					<ol className='space-y-3 text-sm text-slate-300'>
 						<li className='flex gap-3'>
-							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/5 font-mono text-xs text-white/40'>
+							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-700 font-mono text-xs text-slate-400'>
 								1
 							</span>
 							<span>
@@ -289,7 +276,7 @@ export default function GuardPage() {
 							</span>
 						</li>
 						<li className='flex gap-3'>
-							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/5 font-mono text-xs text-white/40'>
+							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-700 font-mono text-xs text-slate-400'>
 								2
 							</span>
 							<span>
@@ -297,7 +284,7 @@ export default function GuardPage() {
 							</span>
 						</li>
 						<li className='flex gap-3'>
-							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/5 font-mono text-xs text-white/40'>
+							<span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-700 font-mono text-xs text-slate-400'>
 								3
 							</span>
 							<span>
@@ -305,7 +292,7 @@ export default function GuardPage() {
 							</span>
 						</li>
 					</ol>
-					<p className='mt-5 text-xs text-white/30'>
+					<p className='mt-5 text-xs text-slate-500'>
 						The ML layer is optional: <Kbd>bun run setup:ml</Kbd> once, then{' '}
 						<Kbd>bun run dev</Kbd> starts it alongside the API and the web app.
 					</p>
