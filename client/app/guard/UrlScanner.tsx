@@ -25,6 +25,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 const EXAMPLES = [
 	{ url: 'https://sberbа nk.ru/login'.replace(' ', ''), note: 'Cyrillic "а"' },
+	{ url: 'https://paypαl.com', note: 'Greek "α"' },
 	{ url: 'https://paypa1.com', note: 'digit 1 for l' },
 	{ url: 'https://micros0ft-alerts.com', note: 'zero for o' },
 	{ url: 'https://sberbank.com.verify-account.info/login', note: 'brand as subdomain' },
