@@ -19,6 +19,10 @@ export function useAchievements() {
 	return {
 		userAchievements: userAchievementsQuery.data,
 		achievements: allAchievementsQuery.data,
+		isUserAchievementsLoading: userAchievementsQuery.isLoading,
+		isUserAchievementsError: userAchievementsQuery.isError,
+		userAchievementsError: userAchievementsQuery.error,
+		refetchUserAchievements: userAchievementsQuery.refetch,
 		isLoading:
 			userAchievementsQuery.isLoading || allAchievementsQuery.isLoading,
 		isError: userAchievementsQuery.isError || allAchievementsQuery.isError,

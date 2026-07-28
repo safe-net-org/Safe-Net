@@ -10,8 +10,9 @@ import {
 	Globe,
 	Puzzle,
 	ShieldCheck,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
+import { MOTION } from '@/config/motion.config'
 
 export default function GuardSection() {
 	const { t } = useI18n()
@@ -36,10 +37,10 @@ export default function GuardSection() {
 				<div className='grid items-center gap-12 lg:grid-cols-2'>
 					{/* Left — the story */}
 					<m.div
-						initial={{ opacity: 0, y: 24 }}
+						initial={{ opacity: 0, y: 8 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						transition={{ duration: 0.6 }}
+						transition={{ duration: MOTION.reveal, ease: MOTION.ease }}
 					>
 						<div className='mb-5 inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1'>
 							<Puzzle className='h-3.5 w-3.5 text-purple-400' />
@@ -82,7 +83,7 @@ export default function GuardSection() {
 
 						<Link
 							href='/guard'
-							className='group mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-transform hover:scale-[1.02]'
+							className='group mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-transform duration-300 hover:-translate-y-0.5'
 						>
 							{t.guard.cta}
 							<ArrowRight className='h-4 w-4 transition-transform group-hover:translate-x-0.5' />
@@ -91,19 +92,27 @@ export default function GuardSection() {
 
 					{/* Right — the four layers */}
 					<m.div
-						initial={{ opacity: 0, y: 24 }}
+						initial={{ opacity: 0, y: 8 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						transition={{ duration: 0.6, delay: 0.15 }}
+						transition={{
+							duration: MOTION.reveal,
+							delay: 0.06,
+							ease: MOTION.ease,
+						}}
 						className='space-y-3'
 					>
 						{LAYERS.map((layer, i) => (
 							<m.div
 								key={layer.name}
-								initial={{ opacity: 0, x: 20 }}
+								initial={{ opacity: 0, x: 6 }}
 								whileInView={{ opacity: 1, x: 0 }}
 								viewport={{ once: true }}
-								transition={{ duration: 0.4, delay: 0.2 + i * 0.08 }}
+								transition={{
+									duration: MOTION.standard,
+									delay: 0.08 + i * 0.035,
+									ease: MOTION.ease,
+								}}
 								className='flex items-center gap-4 rounded-2xl border border-slate-700 bg-slate-800/60 p-4'
 							>
 								<div className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900'>

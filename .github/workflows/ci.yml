@@ -6,6 +6,44 @@ on:
   pull_request:
 
 jobs:
+  client:
+    name: Client — lint, locales, typecheck & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: client
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        working-directory: client
+        run: bun run lint
+
+      - name: Check English and Russian catalogs
+        working-directory: client
+        run: bun run check:i18n
+
+      - name: Keep pre-i18n legacy admin modules unreachable
+        working-directory: client
+        run: bun run check:legacy-admin
+
+      - name: Check centralized color contract
+        working-directory: client
+        run: bun run check:colors
+
+      - name: Typecheck
+        working-directory: client
+        run: bun run typecheck
+
+      - name: Build
+        working-directory: client
+        run: bun run build
+
   server:
     name: Server — typecheck & tests
     runs-on: ubuntu-latest
@@ -63,7 +101,7 @@ jobs:
         run: bun test
 
   extension:
-    name: Extension — typecheck & build
+    name: Extension — privacy, locales, typecheck & build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +112,15 @@ jobs:
 
       - name: Install dependencies
         working-directory: extension
-        run: bun install
+        run: bun install --frozen-lockfile
+
+      - name: Check English and Russian catalogs
+        working-directory: extension
+        run: bun run check:i18n
+
+      - name: Test privacy defaults and request boundaries
+        working-directory: extension
+        run: bun run test:privacy
 
       - name: Typecheck
         working-directory: extension
@@ -83,6 +129,18 @@ jobs:
       - name: Build
         working-directory: extension
         run: bun run build
+
+      # The same zip `bun run package:ext` copies into client/public/downloads —
+      # uploaded so every CI run has an installable build, no toolchain needed.
+      - name: Package installable zip
+        working-directory: extension
+        run: bun run zip
+
+      - name: Upload extension zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: safenet-guard-chrome
+          path: extension/.output/*-chrome.zip
 
   ml:
     name: ML service — scoring tests
@@ -109,6 +167,14 @@ jobs:
       - name: Test deterministic scoring
         working-directory: ml-service
         run: python scripts/test_scoring.py
+
+      - name: Run the versioned URL regression evaluation
+        working-directory: ml-service
+        run: python scripts/evaluate.py --mode rules
+
+      - name: Test URL privacy boundaries
+        working-directory: ml-service
+        run: python scripts/test_privacy.py
 
       # Fails if the Python brand list or homoglyph map drifts from the
       # canonical TypeScript source — the exact bug that let paypa1.com score as

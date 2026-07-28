@@ -10,6 +10,7 @@ import { SettingsTab } from '@/src/features/tabs/settings/ui/SettingsTab'
 import { SignalsTab } from '@/src/features/tabs/signals/ui/SignalsTab'
 import { StatsTab } from '@/src/features/tabs/stats/ui/StatsTab'
 import { FONT_SANS, T } from '@/src/shared/config/tokens'
+import { ExtensionLocaleProvider } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { STORAGE_KEYS } from '@/src/shared/lib/storage-keys'
 import { EmptyState } from '@/src/shared/ui/EmptyState'
 import { LoadingState } from '@/src/shared/ui/LoadingState'
@@ -21,6 +22,14 @@ import { TabBar, type PopupTab } from '@/src/widgets/tab-bar/ui/TabBar'
 type ResultState = AnalysisResult | null | 'loading'
 
 export function PopupPage() {
+  return (
+    <ExtensionLocaleProvider>
+      <PopupContent />
+    </ExtensionLocaleProvider>
+  )
+}
+
+function PopupContent() {
   const [result, setResult] = useState<ResultState>('loading')
   const [stats, setStats] = useState<GlobalStats>(EMPTY_STATS)
   const [animated, setAnimated] = useState(false)
@@ -116,6 +125,14 @@ export function PopupPage() {
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 999px; }
         ::selection { background: ${T.accent}; color: ${T.bg}; }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
       `}</style>
 
       <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

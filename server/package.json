@@ -47,6 +47,7 @@
 		"passport-jwt": "^4.0.1",
 		"pg": "^8.16.3",
 		"reflect-metadata": "^0.1.13",
+		"resend": "^6.18.1",
 		"rxjs": "^7.8.1",
 		"yaml": "^2.9.0",
 		"zod": "^4.4.3"
@@ -88,6 +89,9 @@
 		"testRegex": ".*\\.spec\\.ts$",
 		"transform": {
 			"^.+\\.(t|j)s$": "ts-jest"
+		},
+		"moduleNameMapper": {
+			"^src/(.*)$": "<rootDir>/$1"
 		},
 		"collectCoverageFrom": [
 			"**/*.(t|j)s"

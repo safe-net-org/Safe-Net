@@ -1,0 +1,115 @@
+title: "Итоговый тест: Фишинг"
+description: "Проверка ваших навыков распознавания фишинга."
+passingScore: 80
+questions:
+  - text: "Какой признак точно указывает на фишинговое письмо?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Письмо от друга"
+        isCorrect: false
+      - text: "Персональное приветствие"
+        isCorrect: false
+      - text: "Срочное требование ввести пароль по ссылке"
+        isCorrect: true
+      - text: "Короткая тема письма"
+        isCorrect: false
+
+  - text: "Как правильно проверить ссылку в письме?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Сразу кликнуть по ней"
+        isCorrect: false
+      - text: "Навести курсор и проверить URL"
+        isCorrect: true
+      - text: "Вставить в поисковик"
+        isCorrect: false
+      - text: "Переслать другу для проверки"
+        isCorrect: false
+
+  - text: "Звонок якобы из отдела по борьбе с мошенничеством вашего банка просит продиктовать код из SMS. Как это называется?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Стандартная процедура верификации"
+        isCorrect: false
+      - text: "Вишинг"
+        isCorrect: true
+      - text: "Уэйлинг"
+        isCorrect: false
+      - text: "Легитимный запрос банка"
+        isCorrect: false
+
+  - text: "Что из этого описывает именно целевой фишинг или уэйлинг, а не обычный массовый фишинг?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Письмо, персонализированное вашей настоящей должностью и названием реального проекта"
+        isCorrect: true
+      - text: "Письмо, выдающее себя за CEO, срочно просящее финансового директора перевести средства"
+        isCorrect: true
+      - text: "Массовое письмо с призом миллионам случайных адресов"
+        isCorrect: false
+      - text: "Обычная рассылка по всей компании"
+        isCorrect: false
+      - text: "Обобщённое смишинг-SMS, разосланное случайным номерам"
+        isCorrect: false
+
+  - text: "Согласно DBIR Verizon за 2025 год, какая примерно доля утечек начиналась напрямую с фишинга?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 90%"
+        isCorrect: false
+      - text: "Около 16%"
+        isCorrect: true
+      - text: "Около 50%"
+        isCorrect: false
+      - text: "Около 2%"
+        isCorrect: false
+
+  - text: "«Уважаемый клиент! Ваша карта заблокирована, перейдите по ссылке, чтобы подтвердить данные». Какой признак самый явный?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Само упоминание заблокированной карты"
+        isCorrect: false
+      - text: "Обращение «клиент» вместо имени"
+        isCorrect: true
+      - text: "Слово «Уважаемый»"
+        isCorrect: false
+      - text: "Восклицательный знак"
+        isCorrect: false
+
+  - text: "Письмо о налоговом возврате просит ввести номер карты, чтобы получить деньги. Выберите каждую причину, почему это фишинг."
+    type: MULTI_CHOICE
+    options:
+      - text: "Налоговые органы не запрашивают данные карты по email"
+        isCorrect: true
+      - text: "Возвраты идут через имеющийся счёт, а не через форму в письме"
+        isCorrect: true
+      - text: "Названная сумма нереалистична"
+        isCorrect: false
+      - text: "Государственные органы никогда не отправляют email"
+        isCorrect: false
+      - text: "В письме используется слово «возврат»"
+        isCorrect: false
+
+  - text: "В фишинговом черве Google Docs 2017 года, что заставило его так быстро распространиться?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Единственная необычно крупная массовая рассылка"
+        isCorrect: false
+      - text: "Предоставление разрешений поддельному приложению позволило ему автоматически рассылать письма реальным контактам жертвы"
+        isCorrect: true
+      - text: "Уязвимость в спам-фильтре Gmail"
+        isCorrect: false
+      - text: "Платная реклама"
+        isCorrect: false
+
+  - text: "Почему проверка «отправитель — тот, кого вы знаете» не смогла поймать червя Google Docs?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Потому что отправитель действительно был настоящим, уже скомпрометированным контактом"
+        isCorrect: true
+      - text: "Потому что письма отправлялись с неизвестных адресов"
+        isCorrect: false
+      - text: "Потому что атака была нацелена только на незнакомцев"
+        isCorrect: false
+      - text: "Потому что она вообще не была связана с электронной почтой"
+        isCorrect: false

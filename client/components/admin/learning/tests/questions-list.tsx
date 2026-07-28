@@ -1,9 +1,10 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { ITestQuestion } from '@/services/admin/admin.types'
 import { m } from 'framer-motion'
-import { Edit2, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from '@/components/ui/icons'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { DeleteQuestionDialog } from './DeleteQuestionDialog'
@@ -20,6 +21,8 @@ export default function QuestionsList({
   testId,
   onUpdate,
 }: QuestionsListProps) {
+  const { t } = useI18n()
+  const c = t.adminTestComponents.questionsList
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
     question: ITestQuestion | null
@@ -39,12 +42,12 @@ export default function QuestionsList({
     try {
       // Fixed: deleteTestQuestion instead of deleteQuestion
       await adminService.deleteTestQuestion(deleteDialog.question.id)
-      toast.success('Question deleted successfully')
+      toast.success(c.toasts.deleted)
       onUpdate()
       setDeleteDialog({ open: false, question: null })
     } catch (error) {
       console.error('Delete question error:', error)
-      toast.error('Error deleting question')
+      toast.error(c.toasts.deleteError)
     } finally {
       setIsDeleting(false)
     }
@@ -71,7 +74,7 @@ export default function QuestionsList({
               <div className='flex-1'>
                 <div className='flex items-center gap-2 mb-2'>
                   <span className='text-xs font-semibold text-gray-500'>
-                    Question {index + 1}
+                    {c.questionNumTemplate.replace('{index}', String(index + 1))}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
@@ -83,22 +86,25 @@ export default function QuestionsList({
                     }`}
                   >
                     {question.type === 'SINGLE_CHOICE'
-                      ? 'Single Answer'
+                      ? c.typeLabels.singleAnswer
                       : question.type === 'MULTI_CHOICE'
-                      ? 'Multiple Answers'
+                      ? c.typeLabels.multipleAnswers
                       : question.type === 'SHORT_ANSWER'
-                      ? 'Short Answer'
+                      ? c.typeLabels.shortAnswer
                       : question.type === 'TEXT_INPUT'
-                      ? 'Free Text'
+                      ? c.typeLabels.freeText
                       : question.type === 'PHISHING_EMAIL'
-                      ? 'Phishing Email'
-                      : 'Phishing Website'}
+                      ? c.typeLabels.phishingEmail
+                      : c.typeLabels.phishingWebsite}
                   </span>
                 </div>
                 <p className='text-white font-medium mb-2'>{question.text}</p>
                 {question.options && question.options.length > 0 && (
                   <p className='text-sm text-gray-400'>
-                    Options: {question.options.length}
+                    {c.optionsCountTemplate.replace(
+                      '{count}',
+                      String(question.options.length)
+                    )}
                   </p>
                 )}
               </div>

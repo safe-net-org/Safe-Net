@@ -1,0 +1,103 @@
+title: "Итоговый тест: Анализ ссылок"
+description: "Проверка умения читать URL-адреса и распознавать похожие домены."
+passingScore: 75
+questions:
+  - text: "Какой настоящий домен в https://amazon.fake-store.com/products?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "amazon"
+        isCorrect: false
+      - text: "fake-store.com"
+        isCorrect: true
+      - text: "amazon.fake-store.com"
+        isCorrect: false
+      - text: "products"
+        isCorrect: false
+
+  - text: "В https://mail.google.com/inbox — какой настоящий домен?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "mail"
+        isCorrect: false
+      - text: "google.com"
+        isCorrect: true
+      - text: "inbox"
+        isCorrect: false
+      - text: "mail.google"
+        isCorrect: false
+
+  - text: "Какие из этих адресов используют приём с поддельным поддоменом, пряча знакомое имя перед настоящим, но не связанным доменом?"
+    type: MULTI_CHOICE
+    options:
+      - text: "apple.com.fake-site.com"
+        isCorrect: true
+      - text: "secure-paypal.phishing.net"
+        isCorrect: true
+      - text: "mail.google.com"
+        isCorrect: false
+      - text: "online.yourbank.com, от банка, которому действительно принадлежит yourbank.com"
+        isCorrect: false
+      - text: "Сокращённая ссылка bit.ly"
+        isCorrect: false
+
+  - text: "Какая кодировка превращает Unicode-символы домена в ASCII-строку, начинающуюся с \"xn--\"?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Base64"
+        isCorrect: false
+      - text: "Punycode"
+        isCorrect: true
+      - text: "ROT13"
+        isCorrect: false
+      - text: "UTF-16"
+        isCorrect: false
+
+  - text: "Почему в 2017 году несколько крупных браузеров отобразили кириллический похожий домен как \"apple.com\"?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Это была ошибка только в одном малоизвестном браузере"
+        isCorrect: false
+      - text: "Некоторые кириллические буквы визуально идентичны латинским, и браузеры отображают их как введено"
+        isCorrect: true
+      - text: "Apple разрешила такую регистрацию"
+        isCorrect: false
+      - text: "Для этого требовалось изменить исходный код браузера"
+        isCorrect: false
+
+  - text: "Что из этого является настоящей защитой от похожего домена типа «омограф»?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Проверка, декодируется ли странный домен в punycode-строку \"xn--\""
+        isCorrect: true
+      - text: "Набирать важные домены вручную вместо перехода по ссылке"
+        isCorrect: true
+      - text: "Доверять домену, потому что он визуально похож на бренд"
+        isCorrect: false
+      - text: "Считать, что HTTPS исключает этот приём"
+        isCorrect: false
+      - text: "Считать, что браузер всегда перехватывает это автоматически"
+        isCorrect: false
+
+  - text: "О чём обычно говорит голый IP-адрес в ссылке, например http://192.168.1.1/login?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Это нормальный способ для легитимных сервисов показывать страницу входа"
+        isCorrect: false
+      - text: "Это необычно — легитимные сайты почти всегда используют зарегистрированный домен, а не голый IP"
+        isCorrect: true
+      - text: "Это гарантирует безопасность ссылки, потому что IP нельзя подделать"
+        isCorrect: false
+      - text: "Это значит, что сайт использует дополнительное шифрование"
+        isCorrect: false
+
+  - text: "Какую часть URL важнее всего проверить, прежде чем доверять ссылке?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Путь после домена"
+        isCorrect: false
+      - text: "Сам зарегистрированный домен"
+        isCorrect: true
+      - text: "Параметры URL"
+        isCorrect: false
+      - text: "Якорь после символа #"
+        isCorrect: false

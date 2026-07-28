@@ -1,4 +1,5 @@
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { Pill } from '@/src/shared/ui/Pill'
 import type { VirusTotalInfo } from '../model/types'
 import { InfoRow } from './InfoRow'
@@ -17,16 +18,27 @@ function reputationColor(rep: number): string {
 }
 
 export function VirusTotalSection({ vt, noKey }: VirusTotalSectionProps) {
+  const { locale, t } = useExtensionI18n()
+  const localizedError = (error: string | null): string => {
+    if (!error || locale === 'ru') return error ?? t('vt.noData')
+    const errors: Record<string, string> = {
+      'домен ещё не сканировался': 'domain has not been scanned yet',
+      'неверный API-ключ': 'invalid API key',
+      'лимит запросов исчерпан': 'request limit exceeded',
+      'пустой ответ': 'empty response',
+    }
+    return errors[error] ?? error
+  }
+
   // No key configured — show a call-to-action instead of an empty section.
   if (noKey) {
     return (
       <IntelSection
-        title="VirusTotal · 90+ движков"
-        badge={<Pill color={T.textMuted} bg={T.surface2} border={T.border}>не подключён</Pill>}
+        title={t('vt.title')}
+        badge={<Pill color={T.textMuted} bg={T.surface2} border={T.border}>{t('vt.notConnected')}</Pill>}
       >
         <div style={{ fontSize: 11, color: T.textMuted, lineHeight: 1.5 }}>
-          Добавь бесплатный API-ключ во вкладке «Настройки», чтобы проверять
-          домен по 90+ антивирусным движкам VirusTotal.
+          {t('vt.connectHint')}
         </div>
       </IntelSection>
     )
@@ -35,10 +47,10 @@ export function VirusTotalSection({ vt, noKey }: VirusTotalSectionProps) {
   if (!vt) {
     return (
       <IntelSection
-        title="VirusTotal · 90+ движков"
-        badge={<Pill color={T.textMuted} bg={T.surface2} border={T.border}>недоступно</Pill>}
+        title={t('vt.title')}
+        badge={<Pill color={T.textMuted} bg={T.surface2} border={T.border}>{t('domain.unavailable')}</Pill>}
       >
-        <InfoRow label="Статус" value="нет ответа" />
+        <InfoRow label={t('domain.status')} value={t('vt.noResponse')} />
       </IntelSection>
     )
   }
@@ -46,10 +58,10 @@ export function VirusTotalSection({ vt, noKey }: VirusTotalSectionProps) {
   if (!vt.available) {
     return (
       <IntelSection
-        title="VirusTotal · 90+ движков"
+        title={t('vt.title')}
         badge={<Pill color={T.warn} bg="oklch(80% 0.16 80 / 0.1)" border="oklch(80% 0.16 80 / 0.3)">—</Pill>}
       >
-        <InfoRow label="Статус" value={vt.error ?? 'нет данных'} color={T.warn} />
+        <InfoRow label={t('domain.status')} value={localizedError(vt.error)} color={T.warn} />
       </IntelSection>
     )
   }
@@ -63,7 +75,7 @@ export function VirusTotalSection({ vt, noKey }: VirusTotalSectionProps) {
 
   return (
     <IntelSection
-      title="VirusTotal · 90+ движков"
+      title={t('vt.title')}
       badge={
         <Pill color={verdictColor} bg={verdictBg} border={verdictBorder}>
           {flagged > 0 ? `⚠ ${flagged}/${vt.total}` : `✓ clean ${vt.harmless}/${vt.total}`}
@@ -94,25 +106,25 @@ export function VirusTotalSection({ vt, noKey }: VirusTotalSectionProps) {
       </div>
 
       <InfoRow
-        label="Репутация"
+        label={t('vt.reputation')}
         value={vt.reputation > 0 ? `+${vt.reputation}` : `${vt.reputation}`}
         color={reputationColor(vt.reputation)}
         mono
       />
       <InfoRow
-        label="Голоса"
+        label={t('vt.votes')}
         value={`👍 ${vt.votesHarmless} · 👎 ${vt.votesMalicious}`}
         mono
       />
       {vt.topRank !== null && (
-        <InfoRow label="Популярность" value={`#${vt.topRank.toLocaleString('ru-RU')}`} mono />
+        <InfoRow label={t('vt.popularity')} value={`#${vt.topRank.toLocaleString(locale === 'ru' ? 'ru-RU' : 'en-US')}`} mono />
       )}
       {vt.categories.length > 0 && (
-        <InfoRow label="Категории" value={vt.categories.join(', ')} />
+        <InfoRow label={t('vt.categories')} value={vt.categories.join(', ')} />
       )}
       {vt.flaggedEngines.length > 0 && (
         <InfoRow
-          label="Отметили"
+          label={t('vt.flaggedBy')}
           value={vt.flaggedEngines.slice(0, 4).join(', ') + (vt.flaggedEngines.length > 4 ? '…' : '')}
           color={T.danger}
         />

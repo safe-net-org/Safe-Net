@@ -1,10 +1,16 @@
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
+import { memo, type MouseEventHandler, type ReactNode } from 'react'
 
+interface TabButtonProps {
+	active: boolean
+	onClick: MouseEventHandler<HTMLButtonElement>
+	children: ReactNode
+}
 
-export const TabButton = memo(({ active, onClick, children }: any) => {
+export const TabButton = memo(({ active, onClick, children }: TabButtonProps) => {
 	return (
 		<button
+			type='button'
 			onClick={onClick}
 			className={cn(
 				'relative px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300',

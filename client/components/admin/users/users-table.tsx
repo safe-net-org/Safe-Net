@@ -7,7 +7,7 @@ import { IUserListItem } from '@/services/admin/admin.types'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 
 import { m } from 'framer-motion'
-import { Eye, Trash2 } from 'lucide-react'
+import { Eye, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -27,7 +27,7 @@ export default function UsersTable({ users, onUserUpdated }: UsersTableProps) {
 				await adminService.deleteUser(userId)
 				toast.success('User deleted')
 				onUserUpdated()
-			} catch (error) {
+			} catch {
 				toast.error('Error deleting user')
 			}
 		}

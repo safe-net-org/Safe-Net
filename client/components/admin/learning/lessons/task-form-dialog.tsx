@@ -6,6 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { Difficulty, TaskType } from '@/services/admin/admin.types'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -19,47 +20,34 @@ import {
     Target,
     Trash2,
     X,
-} from 'lucide-react'
-import { useState } from 'react'
-import { Controller, useFieldArray, useForm } from 'react-hook-form'
+} from '@/components/ui/icons'
+import { useMemo, useState } from 'react'
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const taskSchema = z.object({
-	lessonId: z.string(),
-	order: z.number().int().positive(),
-	type: z.nativeEnum(TaskType),
-	title: z.string().min(3, 'Must be at least 3 characters'),
-	question: z.string().optional(),
-	explanation: z.string().optional(),
-	points: z.number().int().min(1).max(100).optional(),
-	difficulty: z.nativeEnum(Difficulty).optional(),
-	options: z
-		.array(
-			z.object({
-				text: z.string().min(1, 'Option cannot be empty'),
-				isCorrect: z.boolean(),
-			})
-		)
-		.optional(),
-})
-
-type TaskFormData = z.infer<typeof taskSchema>
-
-const TaskTypeLabels: Record<TaskType, string> = {
-	[TaskType.SINGLE_CHOICE]: 'Single choice',
-	[TaskType.MULTI_CHOICE]: 'Multiple choice',
-	[TaskType.SHORT_ANSWER]: 'Short answer',
-	[TaskType.PHISHING_EMAIL]: 'Phishing: Email',
-	[TaskType.PHISHING_SITE]: 'Phishing: Website',
-	[TaskType.TEXT_INPUT]: 'Text input',
+function makeTaskSchema(v: { titleMin: string; optionRequired: string }) {
+	return z.object({
+		lessonId: z.string(),
+		order: z.number().int().positive(),
+		type: z.nativeEnum(TaskType),
+		title: z.string().min(3, v.titleMin),
+		question: z.string().optional(),
+		explanation: z.string().optional(),
+		points: z.number().int().min(1).max(100).optional(),
+		difficulty: z.nativeEnum(Difficulty).optional(),
+		options: z
+			.array(
+				z.object({
+					text: z.string().min(1, v.optionRequired),
+					isCorrect: z.boolean(),
+				})
+			)
+			.optional(),
+	})
 }
 
-const DifficultyLabels: Record<Difficulty, string> = {
-	[Difficulty.EASY]: 'Easy',
-	[Difficulty.MEDIUM]: 'Medium',
-	[Difficulty.HARD]: 'Hard',
-}
+type TaskFormData = z.infer<ReturnType<typeof makeTaskSchema>>
 
 interface CreateTaskDialogProps {
 	open: boolean
@@ -74,12 +62,37 @@ export default function CreateTaskDialog({
 	lessonId,
 	onSuccess,
 }: CreateTaskDialogProps) {
+	const { t } = useI18n()
+	const c = t.adminLessonComponents.taskFormDialog
 	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	const TaskTypeLabels: Record<TaskType, string> = {
+		[TaskType.SINGLE_CHOICE]: c.taskTypeLabels.singleChoice,
+		[TaskType.MULTI_CHOICE]: c.taskTypeLabels.multiChoice,
+		[TaskType.SHORT_ANSWER]: c.taskTypeLabels.shortAnswer,
+		[TaskType.PHISHING_EMAIL]: c.taskTypeLabels.phishingEmail,
+		[TaskType.PHISHING_SITE]: c.taskTypeLabels.phishingSite,
+		[TaskType.TEXT_INPUT]: c.taskTypeLabels.textInput,
+	}
+
+	const DifficultyLabels: Record<Difficulty, string> = {
+		[Difficulty.EASY]: c.difficultyLabels.easy,
+		[Difficulty.MEDIUM]: c.difficultyLabels.medium,
+		[Difficulty.HARD]: c.difficultyLabels.hard,
+	}
+
+	const taskSchema = useMemo(
+		() =>
+			makeTaskSchema({
+				titleMin: c.validation.titleMin,
+				optionRequired: c.validation.optionRequired,
+			}),
+		[c.validation.titleMin, c.validation.optionRequired]
+	)
 
 	const {
 		register,
 		handleSubmit,
-		watch,
 		control,
 		formState: { errors },
 		reset,
@@ -106,7 +119,7 @@ export default function CreateTaskDialog({
 		name: 'options',
 	})
 
-	const taskType = watch('type')
+	const taskType = useWatch({ control, name: 'type' })
 	const hasOptions =
 		taskType === TaskType.SINGLE_CHOICE || taskType === TaskType.MULTI_CHOICE
 
@@ -114,12 +127,12 @@ export default function CreateTaskDialog({
 		setIsSubmitting(true)
 		try {
 			await adminService.createTask(data)
-			toast.success('Task created')
+			toast.success(c.toasts.taskCreated)
 			reset()
 			onOpenChange(false)
 			onSuccess()
-		} catch (error) {
-			toast.error('Error creating task')
+		} catch {
+			toast.error(c.toasts.taskCreateError)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -132,15 +145,15 @@ export default function CreateTaskDialog({
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
-			className='fixed inset-0 z-[9999] bg-[#0A0F1D] overflow-y-auto'
+			className='fixed inset-0 z-[9999] bg-overlay overflow-y-auto'
 		>
 			{/* Header */}
-			<div className='sticky top-0 border-b border-white/10 bg-[#0A0F1D]/95 backdrop-blur-xl z-10'>
+			<div className='sticky top-0 border-b border-white/10 bg-overlay/95 backdrop-blur-xl z-10'>
 				<div className='mx-auto flex max-w-5xl items-center justify-between px-6 py-4'>
 					<div>
-						<h3 className='text-2xl font-bold text-white'>Add task</h3>
+						<h3 className='text-2xl font-bold text-white'>{c.title}</h3>
 						<p className='mt-1 text-sm text-gray-500'>
-							Create a practical task for the lesson
+							{c.subtitle}
 						</p>
 					</div>
 					<button
@@ -162,14 +175,14 @@ export default function CreateTaskDialog({
 					<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 						<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 							<Sparkles className='h-5 w-5 text-blue-400' />
-							Basic information
+							{c.basicInfoHeading}
 						</h4>
 
 						<div className='space-y-6'>
 							<div className='grid gap-6 md:grid-cols-2'>
 								<div>
 									<label className='mb-2 block text-sm font-semibold text-white'>
-										Order number
+										{c.orderLabel}
 									</label>
 									<input
 										{...register('order', { valueAsNumber: true })}
@@ -180,7 +193,7 @@ export default function CreateTaskDialog({
 
 								<div>
 									<label className='mb-2 block text-sm font-semibold text-white'>
-										Task type
+										{c.taskTypeLabel}
 									</label>
 									<Controller
 										name='type'
@@ -198,7 +211,7 @@ export default function CreateTaskDialog({
 												</DropdownMenuTrigger>
 												<DropdownMenuContent
 													align='start'
-													className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-[#0A0F1D] border-white/10'
+													className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-overlay border-white/10'
 												>
 													{Object.entries(TaskTypeLabels).map(([key, label]) => (
 														<DropdownMenuItem
@@ -218,12 +231,12 @@ export default function CreateTaskDialog({
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Task title
+									{c.titleLabel}
 								</label>
 								<input
 									{...register('title')}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10'
-									placeholder='SQL Injection'
+									placeholder={c.titlePlaceholder}
 								/>
 								{errors.title && (
 									<p className='mt-2 text-sm text-red-400'>
@@ -234,25 +247,25 @@ export default function CreateTaskDialog({
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Question
+									{c.questionLabel}
 								</label>
 								<textarea
 									{...register('question')}
 									rows={3}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10 resize-none'
-									placeholder='What method is used for SQL injection?'
+									placeholder={c.questionPlaceholder}
 								/>
 							</div>
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Explanation (optional)
+									{c.explanationLabel}
 								</label>
 								<textarea
 									{...register('explanation')}
 									rows={3}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10 resize-none'
-									placeholder='SQL injection allows...'
+									placeholder={c.explanationPlaceholder}
 								/>
 							</div>
 						</div>
@@ -262,13 +275,13 @@ export default function CreateTaskDialog({
 					<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 						<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 							<Target className='h-5 w-5 text-purple-400' />
-							Settings
+							{c.settingsHeading}
 						</h4>
 
 						<div className='grid gap-6 md:grid-cols-2'>
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Points (XP)
+									{c.pointsLabel}
 								</label>
 								<input
 									{...register('points', { valueAsNumber: true })}
@@ -281,7 +294,7 @@ export default function CreateTaskDialog({
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Difficulty
+									{c.difficultyLabel}
 								</label>
 								<Controller
 									name='difficulty'
@@ -303,7 +316,7 @@ export default function CreateTaskDialog({
 											</DropdownMenuTrigger>
 											<DropdownMenuContent
 												align='start'
-												className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-[#0A0F1D] border-white/10'
+												className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-overlay border-white/10'
 											>
 												{Object.entries(DifficultyLabels).map(([key, label]) => (
 													<DropdownMenuItem
@@ -328,7 +341,7 @@ export default function CreateTaskDialog({
 							<div className='mb-4 flex items-center justify-between'>
 								<h4 className='flex items-center gap-2 text-lg font-semibold text-white'>
 									<CheckCircle2 className='h-5 w-5 text-green-400' />
-									Answer options
+									{c.optionsHeading}
 								</h4>
 								<button
 									type='button'
@@ -336,7 +349,7 @@ export default function CreateTaskDialog({
 									className='flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90'
 								>
 									<Plus className='h-4 w-4' />
-									Add option
+									{c.addOption}
 								</button>
 							</div>
 
@@ -373,7 +386,7 @@ export default function CreateTaskDialog({
 										<input
 											{...register(`options.${index}.text`)}
 											className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-green-500/50 focus:bg-white/10'
-											placeholder={`Option ${index + 1}`}
+											placeholder={c.optionPlaceholderTemplate.replace('{index}', String(index + 1))}
 										/>
 										{fields.length > 2 && (
 											<button
@@ -389,8 +402,8 @@ export default function CreateTaskDialog({
 							</div>
 							<p className='mt-3 text-xs text-gray-500'>
 								{taskType === TaskType.SINGLE_CHOICE
-									? 'Select one correct answer (radio)'
-									: 'Check all correct answers (checkbox)'}
+									? c.singleChoiceHint
+									: c.multiChoiceHint}
 							</p>
 						</div>
 )}
@@ -407,7 +420,7 @@ export default function CreateTaskDialog({
 							disabled={isSubmitting}
 							className='flex-1 rounded-xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-gray-300 transition-colors hover:bg-white/10 disabled:opacity-50'
 						>
-							Cancel
+							{c.cancel}
 						</button>
 						<button
 							type='submit'
@@ -417,12 +430,12 @@ export default function CreateTaskDialog({
 							{isSubmitting ? (
 								<>
 									<Loader2 className='mr-2 inline h-5 w-5 animate-spin' />
-									Creating...
+									{c.creating}
 								</>
 							) : (
 								<>
 									<Plus className='mr-2 inline h-5 w-5' />
-									Add task
+									{c.submit}
 								</>
 							)}
 						</button>

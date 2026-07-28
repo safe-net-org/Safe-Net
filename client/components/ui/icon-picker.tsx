@@ -4,8 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import * as LucideIcons from 'lucide-react'
-import { useMemo, useState } from 'react'
+import {
+	ChevronsUpDown,
+	CircleHelp,
+	icons,
+	type AppIcon,
+} from '@/components/ui/icons'
+import { createElement, useMemo, useState } from 'react'
 
 const ICON_NAMES: string[] = [
 	// Core (Navigation and Learning)
@@ -37,14 +42,26 @@ interface IconPickerProps {
 	onValueChange: (value: string) => void
 }
 
+function getIcon(name: string): AppIcon {
+	return (icons[name as keyof typeof icons] as AppIcon | undefined) ?? CircleHelp
+}
+
+function IconGlyph({
+	name,
+	className,
+}: {
+	name: string
+	className: string
+}) {
+	return createElement(getIcon(name), {
+		className,
+		'aria-hidden': true,
+	})
+}
+
 export function IconPicker({ value = 'BookOpen', onValueChange }: IconPickerProps) {
 	const [open, setOpen] = useState(false)
 	const [search, setSearch] = useState('')
-
-	const SelectedIcon =
-		(LucideIcons as any)[value] ||
-		(LucideIcons as any)['CircleHelp'] ||
-		(() => null)
 
 	const filtered = useMemo(() => {
 		const s = search.trim().toLowerCase()
@@ -67,15 +84,15 @@ export function IconPicker({ value = 'BookOpen', onValueChange }: IconPickerProp
 					className='w-full justify-between bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white'
 				>
 					<div className='flex items-center gap-2'>
-						<SelectedIcon className='w-4 h-4' />
+						<IconGlyph name={value} className='h-4 w-4' />
 						<span>{value || 'Select an icon'}</span>
 					</div>
-					<LucideIcons.ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+					<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 				</Button>
 			</PopoverTrigger>
 
 			<PopoverContent
-				className='w-[420px] p-0 bg-[#0A0F1D] border-white/10'
+				className='w-[420px] p-0 bg-overlay border-white/10'
 				align='start'
 				onWheel={e => e.stopPropagation()}
 			>
@@ -94,10 +111,6 @@ export function IconPicker({ value = 'BookOpen', onValueChange }: IconPickerProp
 							<div className='max-h-[360px] overflow-y-auto'>
 								<div className='grid grid-cols-8 gap-1 p-3'>
 									{filtered.map(iconName => {
-										const IconComp =
-											(LucideIcons as any)[iconName] ||
-											(LucideIcons as any)['CircleHelp']
-
 										return (
 											<button
 												key={iconName}
@@ -116,7 +129,8 @@ export function IconPicker({ value = 'BookOpen', onValueChange }: IconPickerProp
 												)}
 												title={iconName}
 											>
-												<IconComp
+												<IconGlyph
+													name={iconName}
 													className={cn(
 														'w-5 h-5',
 														value === iconName ? 'text-purple-400' : 'text-gray-300'

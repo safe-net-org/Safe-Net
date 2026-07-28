@@ -1,4 +1,4 @@
-import { UserRole } from '@/services/auth/auth.types'
+import { IUser, UserRole } from '@/services/auth/auth.types'
 
 
 export type TUserDataState = {
@@ -9,18 +9,31 @@ export type TUserDataState = {
 	isLoggedIn: boolean
 	isAdmin: boolean
 }
-export const transformUserToState = (user: any): TUserDataState | null => {
-	const userData = user?.user || user
-	if (!userData || !userData.rights) {
+function isUser(value: unknown): value is IUser {
+	if (!value || typeof value !== 'object') return false
+	const candidate = value as Partial<IUser>
+	return (
+		typeof candidate.id === 'string' &&
+		typeof candidate.email === 'string' &&
+		Array.isArray(candidate.rights)
+	)
+}
+
+export const transformUserToState = (value: unknown): TUserDataState | null => {
+	const nested =
+		value && typeof value === 'object' && 'user' in value
+			? (value as { user?: unknown }).user
+			: value
+	if (!isUser(nested)) {
 		return null
 	}
 	const result = {
-		id: userData.id,
-		name: userData.name,
-		email: userData.email,
-		rights: userData.rights,
+		id: nested.id,
+		name: nested.name,
+		email: nested.email,
+		rights: nested.rights,
 		isLoggedIn: true,
-		isAdmin: userData.rights.includes(UserRole.ADMIN)
+		isAdmin: nested.rights.includes(UserRole.ADMIN)
 	}
 	return result
 }

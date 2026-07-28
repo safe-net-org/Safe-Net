@@ -6,6 +6,8 @@ import TasksList from '@/components/admin/learning/lessons/tasks-list'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/config/pages-url.config'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { adminService } from '@/services/admin/admin.service'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, m } from 'framer-motion'
@@ -19,12 +21,14 @@ import {
     Plus,
     Target,
     Zap
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 export default function LessonEditPage() {
+	const { locale, t } = useI18n()
+	const c = t.adminLessons.edit
 	const params = useParams()
 	const lessonId = params.id as string
 	const [showCreateTask, setShowCreateTask] = useState(false)
@@ -59,7 +63,7 @@ export default function LessonEditPage() {
 						<div className='absolute inset-0 rounded-full border-4 border-white/10' />
 						<div className='absolute inset-0 rounded-full border-4 border-transparent border-t-white' />
 					</m.div>
-					<p className='text-sm font-medium text-gray-400'>Loading lesson...</p>
+					<p className='text-sm font-medium text-gray-400'>{c.loading}</p>
 				</div>
 			</div>
 		)
@@ -72,16 +76,16 @@ export default function LessonEditPage() {
 					<div className='mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10'>
 						<BookOpen className='h-10 w-10 text-red-400' />
 					</div>
-					<h2 className='text-2xl font-bold text-white'>Lesson not found</h2>
+					<h2 className='text-2xl font-bold text-white'>{c.notFound.title}</h2>
 					<p className='mt-2 text-gray-500'>
-						It may have been deleted or does not exist
+						{c.notFound.subtitle}
 					</p>
 					<Link
 						href={ROUTES.ADMIN.LEARNING.COURSES}
 						className='mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-black transition-all hover:scale-105'
 					>
 						<ArrowLeft className='h-4 w-4' />
-						Back to courses
+						{c.notFound.back}
 					</Link>
 				</div>
 			</div>
@@ -90,18 +94,18 @@ export default function LessonEditPage() {
 
 	return (
 		<div className='min-h-screen'>
-			<div className='relative mx-auto max-w-7xl px-6 py-8'>
+			<div className='relative mx-auto max-w-7xl'>
 				{/* Breadcrumb Navigation */}
 				<div className='mb-6'>
 					<Breadcrumb
 						showBackButton
 						items={[
 							{
-								label: 'Learning',
+								label: c.breadcrumb.learning,
 								href: ROUTES.ADMIN.LEARNING.COURSES,
 							},
 							{
-								label: 'Courses',
+								label: c.breadcrumb.courses,
 								href: ROUTES.ADMIN.LEARNING.COURSES,
 							},
 							{
@@ -131,12 +135,12 @@ export default function LessonEditPage() {
 								<div>
 									<div className='flex items-center gap-2'>
 										<span className='text-sm font-semibold text-gray-500'>
-											Lesson {lesson.order}
+											{c.lessonNumTemplate.replace('{order}', String(lesson.order))}
 										</span>
 										{stats.isComplete && (
 											<div className='flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400'>
 												<CheckCircle2 className='h-3 w-3' />
-												Ready
+												{c.ready}
 											</div>
 										)}
 									</div>
@@ -164,10 +168,10 @@ export default function LessonEditPage() {
 								</div>
 								<p className='text-3xl font-bold text-white'>
 									{lesson.estimatedDuration || 0}
-									<span className='ml-1 text-lg text-gray-500'>min</span>
+									<span className='ml-1 text-lg text-gray-500'>{c.stats.durationUnit}</span>
 								</p>
 								<p className='mt-1 text-sm font-medium text-gray-500'>
-									Duration
+									{c.stats.duration}
 								</p>
 							</div>
 						</m.div>
@@ -188,7 +192,7 @@ export default function LessonEditPage() {
 									{stats.blocksCount}
 								</p>
 								<p className='mt-1 text-sm font-medium text-gray-500'>
-									Theory blocks
+									{c.stats.theoryBlocks}
 								</p>
 							</div>
 						</m.div>
@@ -209,7 +213,7 @@ export default function LessonEditPage() {
 									{stats.tasksCount}
 								</p>
 								<p className='mt-1 text-sm font-medium text-gray-500'>
-									Practice
+									{c.stats.practice}
 								</p>
 							</div>
 						</m.div>
@@ -228,10 +232,10 @@ export default function LessonEditPage() {
 								</div>
 								<p className='text-3xl font-bold text-white'>
 									{stats.totalPoints}
-									<span className='ml-1 text-lg text-gray-500'>XP</span>
+									<span className='ml-1 text-lg text-gray-500'>{c.stats.xpUnit}</span>
 								</p>
 								<p className='mt-1 text-sm font-medium text-gray-500'>
-									Total points
+									{c.stats.totalPoints}
 								</p>
 							</div>
 						</m.div>
@@ -255,7 +259,7 @@ export default function LessonEditPage() {
 									<Layers className='h-4 w-4 text-purple-400' />
 								</div>
 								<h2 className='text-2xl font-bold text-white'>
-									Theory content
+									{c.theoryContent.heading}
 								</h2>
 							</div>
 
@@ -283,12 +287,22 @@ export default function LessonEditPage() {
 									</div>
 									<div>
 										<h2 className='text-2xl font-bold text-white'>
-											Practice tasks
+											{c.practiceTasks.heading}
 										</h2>
 										<p className='text-sm text-gray-500'>
 											{stats.tasksCount === 0
-												? 'Add your first task'
-												: `${stats.tasksCount} ${stats.tasksCount === 1 ? 'task' : 'tasks'} • ${stats.totalPoints} XP`}
+												? c.practiceTasks.addFirst
+												: c.practiceTasks.summaryTemplate
+														.replace('{count}', String(stats.tasksCount))
+														.replace(
+															'{taskWord}',
+															selectPlural(locale, stats.tasksCount, {
+																one: c.practiceTasks.taskWordOne,
+																few: c.practiceTasks.taskWordFew,
+																many: c.practiceTasks.taskWordMany,
+															})
+														)
+														.replace('{xp}', String(stats.totalPoints))}
 										</p>
 									</div>
 								</div>
@@ -298,7 +312,7 @@ export default function LessonEditPage() {
 										className='group flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 font-semibold text-black shadow-lg shadow-white/10 transition-all hover:bg-white/90 hover:shadow-white/20'
 									>
 										<Plus className='h-4 w-4 transition-transform group-hover:rotate-90' />
-										<span>Add</span>
+										<span>{c.practiceTasks.add}</span>
 									</Button>
 								</m.div>
 							</div>

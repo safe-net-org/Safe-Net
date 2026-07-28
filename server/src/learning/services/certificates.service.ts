@@ -4,12 +4,18 @@ import {
 	NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
+import { Locale, pickLocalized } from '../../i18n/locale'
 
 @Injectable()
 export class CertificatesService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async getCertificateById(id: string, userId: string, userRights?: string[]) {
+	async getCertificateById(
+		id: string,
+		userId: string,
+		userRights: string[] | undefined,
+		locale: Locale
+	) {
 		const certificate = await this.prisma.certificate.findUnique({
 			where: { id },
 			include: {
@@ -24,7 +30,9 @@ export class CertificatesService {
 					select: {
 						id: true,
 						title: true,
+						titleRu: true,
 						description: true,
+						descriptionRu: true,
 						difficulty: true,
 					},
 				},
@@ -50,11 +58,20 @@ export class CertificatesService {
 			courseId: certificate.courseId,
 			issuedAt: certificate.issuedAt.toISOString(),
 			user: certificate.user,
-			course: certificate.course,
+			course: {
+				id: certificate.course.id,
+				title: pickLocalized(locale, certificate.course.title, certificate.course.titleRu),
+				description: pickLocalized(
+					locale,
+					certificate.course.description,
+					certificate.course.descriptionRu
+				),
+				difficulty: certificate.course.difficulty,
+			},
 		}
 	}
 
-	async getUserCertificates(userId: string) {
+	async getUserCertificates(userId: string, locale: Locale) {
 		const certificates = await this.prisma.certificate.findMany({
 			where: { userId },
 			include: {
@@ -62,6 +79,7 @@ export class CertificatesService {
 					select: {
 						id: true,
 						title: true,
+						titleRu: true,
 						slug: true,
 					},
 				},
@@ -75,7 +93,7 @@ export class CertificatesService {
 			id: cert.id,
 			certificateNumber: cert.certificateNumber,
 			courseId: cert.courseId,
-			courseTitle: cert.course.title,
+			courseTitle: pickLocalized(locale, cert.course.title, cert.course.titleRu),
 			courseSlug: cert.course.slug,
 			issuedAt: cert.issuedAt.toISOString(),
 		}))

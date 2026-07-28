@@ -1,14 +1,22 @@
-import { GraduationCap, Sparkles } from 'lucide-react'
+import { GraduationCap, Sparkles } from '@/components/ui/icons'
 
 import { Badge } from '@/components/ui/badge'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { memo } from 'react'
 
-export const WelcomeCard = memo(({ greeting, userName, message }: any) => {
+interface WelcomeCardProps {
+	greeting: string
+	userName: string
+	message: string
+}
+
+export const WelcomeCard = memo(({ greeting, userName, message }: WelcomeCardProps) => {
+	const { t } = useI18n()
 	return (
-		<div className='lg:col-span-3 relative overflow-hidden rounded-3xl md:rounded-[28px] bg-linear-to-br from-indigo-600/10 via-purple-600/5 to-transparent border border-white/4 backdrop-blur-xl p-8 md:p-10 flex flex-col justify-center group hover:border-white/8 transition-all duration-700 ease-out hover:shadow-[0_20px_70px_-15px_rgba(99,102,241,0.2)] hover:scale-[1.01]'>
+		<div className='lg:col-span-3 relative overflow-hidden rounded-3xl md:rounded-[28px] bg-linear-to-br from-indigo-600/10 via-purple-600/5 to-transparent border border-white/4 backdrop-blur-xl p-8 md:p-10 flex flex-col justify-center group hover:border-white/8 transition-all duration-700 ease-out hover-shadow-brand-wide hover:scale-[1.01]'>
 			{}
 			<div className='absolute inset-0 bg-linear-to-br from-white/2 via-transparent to-white/1 opacity-0 group-hover:opacity-100 transition-opacity duration-700' />
-			<div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.05),transparent_50%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700' />
+			<div className='absolute inset-0 dashboard-brand-radial opacity-0 group-hover:opacity-100 transition-opacity duration-700' />
 			{}
 			<div className='absolute inset-0 overflow-hidden'>
 				<div
@@ -31,13 +39,13 @@ export const WelcomeCard = memo(({ greeting, userName, message }: any) => {
 			<div className='relative z-10 space-y-4'>
 				<Badge
 					variant='outline'
-					className='w-fit border-indigo-400/20 text-indigo-300 bg-indigo-500/8 backdrop-blur-sm px-3 py-1 hover:bg-indigo-500/12 hover:scale-105 transition-all duration-500 ease-out cursor-default shadow-sm'
+					className='w-fit border-indigo-300/60 bg-indigo-100/80 px-3 py-1 text-indigo-800 shadow-sm transition-all duration-500 ease-out hover:scale-105 hover:bg-indigo-100 dark:border-indigo-400/20 dark:bg-indigo-500/8 dark:text-indigo-300 dark:hover:bg-indigo-500/12 backdrop-blur-sm cursor-default'
 				>
 					<Sparkles className='w-3.5 h-3.5 mr-2 inline animate-pulse' />
 					<span className='font-medium text-sm'>{greeting}</span>
 				</Badge>
 				<h1 className='text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight animate-in fade-in slide-in-from-left-6 duration-1000 ease-out'>
-					Hi,
+					{t.dashboardHome.hi}
 					<span className='text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 inline-block ml-3'>
 						{userName}
 					</span>

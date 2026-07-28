@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "SafeNet Guard"
+  },
+  "extensionDescription": {
+    "message": "Локальная защита от фишинга с опциональной репутацией домена и ML. Обнаруживает поддельные сайты, IDN-гомографы и тайпсквоттинг."
+  },
+  "actionTitle": {
+    "message": "SafeNet Guard — открыть панель"
+  },
+  "commandDescription": {
+    "message": "Открыть или закрыть панель SafeNet Guard"
+  }
+}

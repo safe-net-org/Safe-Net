@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { Bell, ChevronDown, Search, User } from 'lucide-react'
+import { Bell, ChevronDown, Search, User } from '@/components/ui/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'

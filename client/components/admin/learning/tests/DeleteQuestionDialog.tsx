@@ -9,8 +9,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2 } from '@/components/ui/icons'
 
 interface DeleteQuestionDialogProps {
   open: boolean
@@ -27,6 +28,8 @@ export function DeleteQuestionDialog({
   onConfirm,
   isDeleting = false,
 }: DeleteQuestionDialogProps) {
+  const { t } = useI18n()
+  const c = t.adminTestComponents.deleteQuestionDialog
   const handleConfirm = async () => {
     await onConfirm()
     if (!isDeleting) {
@@ -36,7 +39,7 @@ export function DeleteQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[480px] bg-[#0A0F1E] border-white/10'>
+      <DialogContent className='sm:max-w-[480px] bg-overlay border-white/10'>
         <AnimatePresence mode='wait'>
           <m.div
             initial={{ opacity: 0, y: 10 }}
@@ -54,10 +57,10 @@ export function DeleteQuestionDialog({
                 <AlertTriangle className='w-8 h-8 text-red-400' />
               </m.div>
               <DialogTitle className='text-center text-2xl'>
-                Delete question?
+                {c.title}
               </DialogTitle>
               <DialogDescription className='text-center text-base pt-2'>
-                Are you sure you want to delete this question?
+                {c.description}
               </DialogDescription>
             </DialogHeader>
 
@@ -80,7 +83,7 @@ export function DeleteQuestionDialog({
                   disabled={isDeleting}
                   className='w-full sm:w-auto'
                 >
-                  Cancel
+                  {c.cancel}
                 </Button>
               </m.div>
               <m.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -93,10 +96,10 @@ export function DeleteQuestionDialog({
                   {isDeleting ? (
                     <>
                       <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                      Deleting...
+                      {c.deleting}
                     </>
                   ) : (
-                    'Delete'
+                    c.confirm
                   )}
                 </Button>
               </m.div>

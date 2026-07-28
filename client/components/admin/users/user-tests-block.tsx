@@ -1,8 +1,9 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { m } from 'framer-motion'
-import { Award, CheckCircle2, Clock, FileText, XCircle } from 'lucide-react'
+import { Award, CheckCircle2, Clock, FileText, XCircle } from '@/components/ui/icons'
 
 interface TestResult {
 	id: string
@@ -21,19 +22,24 @@ interface UserTestsBlockProps {
 	testResults: TestResult[]
 }
 
-// Function to format time
-function formatTime(seconds: number): string {
-	const minutes = Math.floor(seconds / 60)
-	const remainingSeconds = seconds % 60
+export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userTestsBlock
 
-	if (minutes === 0) {
-		return `${remainingSeconds}s`
+	// Function to format time
+	function formatTime(seconds: number): string {
+		const minutes = Math.floor(seconds / 60)
+		const remainingSeconds = seconds % 60
+
+		if (minutes === 0) {
+			return c.timeSecondsTemplate.replace('{seconds}', String(remainingSeconds))
+		}
+
+		return c.timeMinutesTemplate
+			.replace('{minutes}', String(minutes))
+			.replace('{seconds}', String(remainingSeconds))
 	}
 
-	return `${minutes}m ${remainingSeconds}s`
-}
-
-export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 	if (testResults.length === 0) {
 		return (
 			<m.div
@@ -42,7 +48,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 				className='flex flex-col items-center justify-center py-16 bg-white/[0.02] backdrop-blur-sm rounded-2xl border border-white/5'
 			>
 				<FileText className='w-12 h-12 text-white/20 mb-4' />
-				<p className='text-white/50'>User has not taken any tests</p>
+				<p className='text-white/50'>{c.empty}</p>
 			</m.div>
 		)
 	}
@@ -59,6 +65,16 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 				)
 			: 0
 
+	const tableHeaders = [
+		c.table.test,
+		c.table.course,
+		c.table.score,
+		c.table.answers,
+		c.table.time,
+		c.table.status,
+		c.table.date,
+	]
+
 	return (
 		<div className='space-y-6'>
 			{/* Stats */}
@@ -68,7 +84,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{testResults.length}
 					</div>
-					<div className='text-white/60 text-xs'>Total tests</div>
+					<div className='text-white/60 text-xs'>{c.stats.totalTests}</div>
 				</div>
 
 				<div className='bg-linear-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-xl p-4'>
@@ -76,7 +92,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{passedTests}
 					</div>
-					<div className='text-white/60 text-xs'>Passed</div>
+					<div className='text-white/60 text-xs'>{c.stats.passed}</div>
 				</div>
 
 				<div className='bg-linear-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-4'>
@@ -84,7 +100,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{Math.round(averageScore)}%
 					</div>
-					<div className='text-white/60 text-xs'>Average score</div>
+					<div className='text-white/60 text-xs'>{c.stats.averageScore}</div>
 				</div>
 
 				<div className='bg-linear-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20 rounded-xl p-4'>
@@ -92,7 +108,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{formatTime(averageTime)}
 					</div>
-					<div className='text-white/60 text-xs'>Average time</div>
+					<div className='text-white/60 text-xs'>{c.stats.averageTime}</div>
 				</div>
 			</div>
 
@@ -101,15 +117,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 				<table className='w-full'>
 					<thead>
 						<tr className='border-b border-white/10'>
-							{[
-								'Test',
-								'Course',
-								'Score',
-								'Answers',
-								'Time',
-								'Status',
-								'Date',
-							].map(h => (
+							{tableHeaders.map(h => (
 								<th
 									key={h}
 									className='text-left text-xs font-semibold text-white/60 pb-3 px-4 first:pl-0 last:pr-0'
@@ -125,7 +133,7 @@ export default function UserTestsBlock({ testResults }: UserTestsBlockProps) {
 								formatDate(result.completedAt, {
 									locale: 'en-US',
 									gracefulFail: true,
-								}) || 'Date unknown'
+								}) || c.dateUnknown
 
 							return (
 								<m.tr

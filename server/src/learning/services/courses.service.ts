@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma.service'
 import { CourseDetailsDto } from '../dto/course-details.dto'
 import { CourseSummaryDto } from '../dto/course-summary.dto'
+import { Locale, pickLocalized } from '../../i18n/locale'
 
 @Injectable()
 export class CoursesService {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async getCoursesByStage(slug: string): Promise<CourseSummaryDto[]> {
+	async getCoursesByStage(slug: string, locale: Locale): Promise<CourseSummaryDto[]> {
 		const stage = await this.prisma.stage.findUnique({
 			where: { slug },
 			include: {
@@ -27,8 +28,8 @@ export class CoursesService {
 		return stage.courses.map(course => ({
 			id: course.id,
 			slug: course.slug,
-			title: course.title,
-			description: course.description,
+			title: pickLocalized(locale, course.title, course.titleRu),
+			description: pickLocalized(locale, course.description, course.descriptionRu),
 			difficulty: course.difficulty,
 			lessonsCount: course.lessons.length,
 		}))
@@ -36,7 +37,8 @@ export class CoursesService {
 
 	async getCourseBySlug(
 		slug: string,
-		userId: string
+		userId: string,
+		locale: Locale
 	): Promise<CourseDetailsDto> {
 		const course = await this.prisma.course.findUnique({
 			where: { slug },
@@ -47,6 +49,8 @@ export class CoursesService {
 						slug: true,
 						title: true,
 						subtitle: true,
+						titleRu: true,
+						subtitleRu: true,
 						icon: true,
 					},
 				},
@@ -56,6 +60,7 @@ export class CoursesService {
 						id: true,
 						order: true,
 						title: true,
+						titleRu: true,
 						estimatedDuration: true,
 						_count: {
 							select: { tasks: true },
@@ -67,6 +72,8 @@ export class CoursesService {
 						id: true,
 						title: true,
 						description: true,
+						titleRu: true,
+						descriptionRu: true,
 						passingScore: true,
 					},
 				},
@@ -196,8 +203,8 @@ export class CoursesService {
 		return {
 			id: course.id,
 			slug: course.slug,
-			title: course.title,
-			description: course.description,
+			title: pickLocalized(locale, course.title, course.titleRu),
+			description: pickLocalized(locale, course.description, course.descriptionRu),
 			difficulty: course.difficulty,
 			progress: calculatedProgress, // ✅ Use the fixed progress value
 			totalXp: userCourseProgress?.totalXp ?? calculatedTotalXp,
@@ -205,8 +212,8 @@ export class CoursesService {
 				? {
 						id: course.stage.id,
 						slug: course.stage.slug,
-						title: course.stage.title,
-						subtitle: course.stage.subtitle,
+						title: pickLocalized(locale, course.stage.title, course.stage.titleRu),
+						subtitle: pickLocalized(locale, course.stage.subtitle, course.stage.subtitleRu),
 						icon: course.stage.icon,
 					}
 				: null,
@@ -215,7 +222,7 @@ export class CoursesService {
 				return {
 					id: lesson.id,
 					order: lesson.order,
-					title: lesson.title,
+					title: pickLocalized(locale, lesson.title, lesson.titleRu),
 					estimatedDuration: lesson.estimatedDuration,
 					tasksCount: lesson._count.tasks,
 					completed: completedLessonIds.has(lesson.id),
@@ -234,8 +241,8 @@ export class CoursesService {
 
 				return {
 					id: test.id,
-					title: test.title,
-					description: test.description ?? '',
+					title: pickLocalized(locale, test.title, test.titleRu),
+					description: pickLocalized(locale, test.description, test.descriptionRu) ?? '',
 					passingScore: test.passingScore,
 					passed: result?.passed ?? false,
 					score: result?.score ?? null,

@@ -1,8 +1,9 @@
 'use client'
 
+import { UI_COLORS } from '@/config/colors.config'
 import { format, parseISO } from 'date-fns'
 import { m } from 'framer-motion'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from '@/components/ui/icons'
 import {
 	Area,
 	AreaChart,
@@ -104,42 +105,42 @@ export default function RegistrationsChart({
 								x2='0'
 								y2='1'
 							>
-								<stop offset='5%' stopColor='#3b82f6' stopOpacity={0.3} />
-								<stop offset='95%' stopColor='#3b82f6' stopOpacity={0} />
+								<stop offset='5%' stopColor={UI_COLORS.chart.blue} stopOpacity={0.3} />
+								<stop offset='95%' stopColor={UI_COLORS.chart.blue} stopOpacity={0} />
 							</linearGradient>
 						</defs>
 						<CartesianGrid
 							strokeDasharray='3 3'
-							stroke='#e5e7eb'
+							stroke={UI_COLORS.chart.grid}
 							className='dark:stroke-gray-800'
 							vertical={false}
 						/>
 						<XAxis
 							dataKey='date'
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							style={{ fontFamily: 'inherit' }}
 						/>
 						<YAxis
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							style={{ fontFamily: 'inherit' }}
 							domain={[0, Math.ceil(maxValue * 1.1)]}
 						/>
 						<Tooltip
 							contentStyle={{
-								backgroundColor: 'rgba(17, 24, 39, 0.95)',
+								backgroundColor: UI_COLORS.chart.tooltip,
 								border: 'none',
 								borderRadius: '12px',
-								color: '#fff',
+								color: UI_COLORS.chart.tooltipForeground,
 							}}
 							formatter={(value: number) => [`${value}`, 'Registrations']}
-							labelStyle={{ color: '#fff' }}
+							labelStyle={{ color: UI_COLORS.chart.tooltipForeground }}
 						/>
 						<Area
 							type='monotone'
 							dataKey='count'
-							stroke='#3b82f6'
+							stroke={UI_COLORS.chart.blue}
 							strokeWidth={2}
 							fill='url(#colorRegistrations)'
 							dot={false}

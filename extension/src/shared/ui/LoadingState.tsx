@@ -1,6 +1,9 @@
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 
 export function LoadingState() {
+  const { t } = useExtensionI18n()
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -17,7 +20,7 @@ export function LoadingState() {
         fontSize: 12, color: T.textDim, fontFamily: FONT_MONO,
         letterSpacing: '0.2em', textTransform: 'uppercase',
       }}>
-        Анализ страницы
+        {t('loading.analysis')}
       </span>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

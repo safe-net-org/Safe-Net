@@ -1,0 +1,101 @@
+title: "Итоговый тест: Утечки данных"
+description: "Проверка знаний о проверке утечек и случае National Public Data."
+passingScore: 80
+questions:
+  - text: "Вы узнали, что ваш пароль оказался в утечке данных. Что нужно сделать в первую очередь?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Ничего, пусть попробуют его взломать"
+        isCorrect: false
+      - text: "Немедленно сменить пароль"
+        isCorrect: true
+      - text: "Удалить аккаунт"
+        isCorrect: false
+      - text: "Подождать неделю"
+        isCorrect: false
+
+  - text: "Какой надёжный бесплатный способ проверить, появлялась ли ваша почта в известной утечке данных?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Специализированный сервис вроде Have I Been Pwned"
+        isCorrect: true
+      - text: "Случайное стороннее приложение, которое просит ваш пароль, чтобы его «проверить»"
+        isCorrect: false
+      - text: "Опубликовать свою почту в открытом доступе и ждать ответов"
+        isCorrect: false
+      - text: "Проверить это никак нельзя"
+        isCorrect: false
+
+  - text: "Вы подтвердили, что ваша почта и пароль оказались в утечке данных. Что нужно сделать?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Немедленно сменить пароль на взломанном сайте"
+        isCorrect: true
+      - text: "Сменить тот же пароль везде, где вы его повторно использовали"
+        isCorrect: true
+      - text: "Игнорировать, если утечка произошла больше года назад"
+        isCorrect: false
+      - text: "Подождать, не случится ли что-то плохое"
+        isCorrect: false
+      - text: "Полностью удалить свой адрес электронной почты"
+        isCorrect: false
+
+  - text: "Какая категория данных чаще всего встречается вместе в крупных утечках?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Адрес электронной почты, пароль и номер телефона"
+        isCorrect: true
+      - text: "Исключительно банковские PIN-коды"
+        isCorrect: false
+      - text: "Исключительно биометрические данные"
+        isCorrect: false
+      - text: "Исключительно медицинские записи"
+        isCorrect: false
+
+  - text: "В утечке National Public Data 2024 года, сколько примерно записей продавец выставил на продажу?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 2,9 миллиарда"
+        isCorrect: true
+      - text: "Около 2,9 миллиона"
+        isCorrect: false
+      - text: "Около 29 тысяч"
+        isCorrect: false
+      - text: "Около 290 миллионов"
+        isCorrect: false
+
+  - text: "Почему цифра «2,9 миллиарда записей» из утечки National Public Data требует дополнительной проверки?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Записи включают дубликаты и устаревшие данные на одного человека, поэтому число реально пострадавших людей значительно меньше 2,9 миллиарда"
+        isCorrect: true
+      - text: "Позже было доказано, что цифра полностью выдумана"
+        isCorrect: false
+      - text: "2,9 миллиарда на самом деле занижает истинное, ещё большее число"
+        isCorrect: false
+      - text: "Записи затронули только вымышленные тестовые аккаунты"
+        isCorrect: false
+
+  - text: "Что нужно сделать с паролем, который вы, как знаете, повторно использовали на нескольких сайтах, после того как один из них подвергся утечке?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Сменить его на всех сайтах, где вы его использовали, а не только на взломанном"
+        isCorrect: true
+      - text: "Сменить его только на сайте, где произошла утечка"
+        isCorrect: false
+      - text: "Оставить как есть, если другие сайты не сообщали об утечке"
+        isCorrect: false
+      - text: "Менять только при подозрительной активности"
+        isCorrect: false
+
+  - text: "Какая историческая утечка затронула примерно 3 миллиарда аккаунтов?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Yahoo (2013)"
+        isCorrect: true
+      - text: "LinkedIn (2021)"
+        isCorrect: false
+      - text: "Twitter/X (2023)"
+        isCorrect: false
+      - text: "Facebook (2019)"
+        isCorrect: false

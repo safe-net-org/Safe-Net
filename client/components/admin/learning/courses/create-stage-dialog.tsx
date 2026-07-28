@@ -2,27 +2,23 @@
 
 import { IconPicker } from '@/components/ui/icon-picker'
 import { adminService } from '@/services/admin/admin.service'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { generateSlug } from '@/utils/transliterate'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertCircle, Loader2, Plus, Sparkles, Target, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { AlertCircle, Loader2, Plus, Sparkles, Target, X } from '@/components/ui/icons'
+import { useEffect, useMemo, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const stageSchema = z.object({
-	order: z.number().int().positive('Order must be greater than 0'),
-	slug: z
-		.string()
-		.min(1, 'Slug is required')
-		.regex(/^[a-z0-9-]+$/, 'Slug may only contain letters, numbers, and hyphens'),
-	title: z.string().min(3, 'Title must be at least 3 characters').max(255),
-	subtitle: z.string().optional(),
-	icon: z.string().optional(),
-})
-
-type StageFormData = z.infer<typeof stageSchema>
+interface StageFormData {
+	order: number
+	slug: string
+	title: string
+	subtitle?: string
+	icon?: string
+}
 
 interface CreateStageDialogProps {
 	open: boolean
@@ -37,13 +33,30 @@ export default function CreateStageDialog({
 	onSuccess,
 	existingStagesCount = 0,
 }: CreateStageDialogProps) {
+	const { t } = useI18n()
+	const c = t.adminCourseComponents.createStageDialog
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const nextStageOrder = existingStagesCount + 1
+
+	const stageSchema = useMemo(
+		() =>
+			z.object({
+				order: z.number().int().positive(c.validation.orderPositive),
+				slug: z
+					.string()
+					.min(1, c.validation.slugRequired)
+					.regex(/^[a-z0-9-]+$/, c.validation.slugPattern),
+				title: z.string().min(3, c.validation.titleMin).max(255),
+				subtitle: z.string().optional(),
+				icon: z.string().optional(),
+			}),
+		[c]
+	)
 
 	const {
 		register,
 		handleSubmit,
-		watch,
+		control,
 		formState: { errors },
 		reset,
 		setValue,
@@ -58,8 +71,8 @@ export default function CreateStageDialog({
 		},
 	})
 
-	const title = watch('title')
-	const icon = watch('icon') || 'BookOpen'
+	const title = useWatch({ control, name: 'title' })
+	const icon = useWatch({ control, name: 'icon' }) || 'BookOpen'
 
 	useEffect(() => {
 		if (title) {
@@ -78,13 +91,13 @@ export default function CreateStageDialog({
 		setIsSubmitting(true)
 		try {
 			await adminService.createStage(data)
-			toast.success('Stage created successfully')
+			toast.success(c.toast.created)
 			reset()
 			onOpenChange(false)
 			onSuccess()
 		} catch (error) {
 			console.error('Create stage error:', error)
-			toast.error('Error creating stage')
+			toast.error(c.toast.error)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -94,20 +107,21 @@ export default function CreateStageDialog({
 		<AnimatePresence>
 			{open && (
 				<m.div
+					data-admin-form
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					className='fixed inset-0 z-[100] bg-[#0A0F1D] overflow-y-scroll'
+					className='fixed inset-0 z-[100] bg-overlay overflow-y-scroll'
 				>
 					{/* Header */}
-					<div className='border-b border-white/10 bg-[#0A0F1D]/80 backdrop-blur-xl'>
+					<div className='border-b border-white/10 bg-overlay/80 backdrop-blur-xl'>
 						<div className='mx-auto flex max-w-4xl items-center justify-between px-6 py-4'>
 							<div>
 								<h3 className='text-2xl font-bold text-white'>
-									Create a new stage
+									{c.header.title}
 								</h3>
 								<p className='mt-1 text-sm text-gray-500'>
-									Add a learning stage to organize courses
+									{c.header.subtitle}
 								</p>
 							</div>
 							<m.button
@@ -137,13 +151,13 @@ export default function CreateStageDialog({
 							<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 								<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 									<Sparkles className='h-5 w-5 text-blue-400' />
-									Basic information
+									{c.basicInfo.heading}
 								</h4>
 
 								<div className='space-y-6'>
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Order number
+											{c.basicInfo.orderLabel}
 										</label>
 										<input
 											{...register('order', { valueAsNumber: true })}
@@ -160,12 +174,12 @@ export default function CreateStageDialog({
 
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Stage title
+											{c.basicInfo.titleLabel}
 										</label>
 										<input
 											{...register('title')}
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10'
-											placeholder='Enter stage title'
+											placeholder={c.basicInfo.titlePlaceholder}
 										/>
 										{errors.title && (
 											<p className='mt-2 text-sm text-red-400'>
@@ -176,15 +190,15 @@ export default function CreateStageDialog({
 
 									<div>
 										<label className='mb-2 flex items-center gap-2 text-sm font-semibold text-white'>
-											Slug
+											{c.basicInfo.slugLabel}
 											<span className='text-xs font-normal text-gray-500'>
-												(generated automatically)
+												{c.basicInfo.slugHint}
 											</span>
 										</label>
 										<input
 											{...register('slug')}
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10'
-											placeholder='etap-1'
+											placeholder={c.basicInfo.slugPlaceholder}
 										/>
 										{errors.slug && (
 											<p className='mt-2 text-sm text-red-400'>
@@ -195,15 +209,15 @@ export default function CreateStageDialog({
 
 									<div>
 										<label className='mb-2 flex items-center gap-2 text-sm font-semibold text-white'>
-											Subtitle{' '}
+											{c.basicInfo.subtitleLabel}{' '}
 											<span className='text-xs font-normal text-gray-500'>
-												(optional)
+												{c.basicInfo.subtitleOptional}
 											</span>
 										</label>
 										<input
 											{...register('subtitle')}
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10'
-											placeholder='Brief stage description'
+											placeholder={c.basicInfo.subtitlePlaceholder}
 										/>
 									</div>
 								</div>
@@ -213,19 +227,19 @@ export default function CreateStageDialog({
 							<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 								<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 									<Target className='h-5 w-5 text-green-400' />
-									Appearance
+									{c.appearance.heading}
 								</h4>
 
 								<div>
 									<label className='mb-2 block text-sm font-semibold text-white'>
-										Icon (Lucide)
+										{c.appearance.iconLabel}
 									</label>
 									<IconPicker
 										value={icon}
 										onValueChange={value => setValue('icon', value)}
 									/>
 									<p className='mt-2 text-xs text-gray-500'>
-										Choose an icon from the Lucide React library
+										{c.appearance.iconHint}
 									</p>
 								</div>
 							</div>
@@ -235,11 +249,10 @@ export default function CreateStageDialog({
 								<AlertCircle className='mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400' />
 								<div>
 									<p className='text-sm font-semibold text-blue-300'>
-										Tip: Automatic transliteration
+										{c.infoBlock.title}
 									</p>
 									<p className='mt-1 text-sm text-gray-400'>
-										The slug is generated automatically from the stage title,
-										with support for Russian text
+										{c.infoBlock.body}
 									</p>
 								</div>
 							</div>
@@ -257,7 +270,7 @@ export default function CreateStageDialog({
 									disabled={isSubmitting}
 									className='flex-1 rounded-xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-gray-300 transition-all hover:bg-white/10 disabled:opacity-50'
 								>
-									Cancel
+									{c.buttons.cancel}
 								</m.button>
 								<m.button
 									type='submit'
@@ -269,12 +282,12 @@ export default function CreateStageDialog({
 									{isSubmitting ? (
 										<>
 											<Loader2 className='mr-2 inline h-5 w-5 animate-spin' />
-											Creating...
+											{c.buttons.creating}
 										</>
 									) : (
 										<>
 											<Plus className='mr-2 inline h-5 w-5' />
-											Create stage
+											{c.buttons.submit}
 										</>
 									)}
 								</m.button>

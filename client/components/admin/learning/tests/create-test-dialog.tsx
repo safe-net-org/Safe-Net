@@ -6,6 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { ICourse } from '@/services/admin/admin.types'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,20 +19,18 @@ import {
     Plus,
     Sparkles,
     X,
-} from 'lucide-react'
-import { useState } from 'react'
+} from '@/components/ui/icons'
+import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const testSchema = z.object({
-	title: z.string().min(3, 'Minimum 3 characters').max(255),
-	description: z.string().min(10, 'Minimum 10 characters').optional(),
-	courseId: z.string().optional(),
-	passingScore: z.number().min(0).max(100).optional(),
-})
-
-type TestFormData = z.infer<typeof testSchema>
+interface TestFormData {
+	title: string
+	description?: string
+	courseId?: string
+	passingScore?: number
+}
 
 interface CreateTestDialogProps {
 	open: boolean
@@ -46,7 +45,20 @@ export default function CreateTestDialog({
 	courses,
 	onSuccess,
 }: CreateTestDialogProps) {
+	const { t } = useI18n()
+	const c = t.adminTestComponents.createTestDialog
 	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	const testSchema = useMemo(
+		() =>
+			z.object({
+				title: z.string().min(3, c.validation.titleMin).max(255),
+				description: z.string().min(10, c.validation.descriptionMin).optional(),
+				courseId: z.string().optional(),
+				passingScore: z.number().min(0).max(100).optional(),
+			}),
+		[c]
+	)
 
 	const {
 		register,
@@ -68,13 +80,13 @@ export default function CreateTestDialog({
 		setIsSubmitting(true)
 		try {
 			await adminService.createTest(data)
-			toast.success('Test created successfully')
+			toast.success(c.toasts.created)
 			reset()
 			onOpenChange(false)
 			onSuccess()
 		} catch (error) {
 			console.error('Create test error:', error)
-			toast.error('Error creating test')
+			toast.error(c.toasts.createError)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -84,18 +96,19 @@ export default function CreateTestDialog({
 		<AnimatePresence>
 			{open && (
 				<m.div
+					data-admin-form
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					className='fixed inset-0 z-[100] bg-[#0A0F1D] overflow-y-scroll'
+					className='fixed inset-0 z-[100] bg-overlay overflow-y-scroll'
 				>
 					{/* Header */}
-					<div className='border-b border-white/10 bg-[#0A0F1D]/80 backdrop-blur-xl'>
+					<div className='border-b border-white/10 bg-overlay/80 backdrop-blur-xl'>
 						<div className='mx-auto flex max-w-4xl items-center justify-between px-6 py-4'>
 							<div>
-								<h3 className='text-2xl font-bold text-white'>Create Test</h3>
+								<h3 className='text-2xl font-bold text-white'>{c.header.title}</h3>
 								<p className='mt-1 text-sm text-gray-500'>
-									Add a test to check knowledge for a course
+									{c.header.subtitle}
 								</p>
 							</div>
 							<m.button
@@ -125,18 +138,18 @@ export default function CreateTestDialog({
 							<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 								<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 									<Sparkles className='h-5 w-5 text-blue-400' />
-									Basic Information
+									{c.basicInfo.heading}
 								</h4>
 
 								<div className='space-y-6'>
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Test Title
+											{c.basicInfo.titleLabel}
 										</label>
 										<input
 											{...register('title')}
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10'
-											placeholder='Cybersecurity Basics'
+											placeholder={c.basicInfo.titlePlaceholder}
 										/>
 										{errors.title && (
 											<p className='mt-2 text-sm text-red-400'>
@@ -147,13 +160,13 @@ export default function CreateTestDialog({
 
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Description
+											{c.basicInfo.descriptionLabel}
 										</label>
 										<textarea
 											{...register('description')}
 											rows={4}
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10 resize-none'
-											placeholder='A test to check basic knowledge of information security'
+											placeholder={c.basicInfo.descriptionPlaceholder}
 										/>
 										{errors.description && (
 											<p className='mt-2 text-sm text-red-400'>
@@ -168,13 +181,13 @@ export default function CreateTestDialog({
 							<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 								<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 									<FileQuestion className='h-5 w-5 text-purple-400' />
-									Test Settings
+									{c.settings.heading}
 								</h4>
 
 								<div className='grid gap-6 md:grid-cols-2'>
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Course (optional)
+											{c.settings.courseLabel}
 										</label>
 										<Controller
 											name='courseId'
@@ -188,19 +201,19 @@ export default function CreateTestDialog({
 														>
 															<span className='truncate'>
 																{field.value
-																	? courses.find((c) => c.id === field.value)
-																			?.title || 'Select a course'
-																	: 'No course'}
+																	? courses.find((course) => course.id === field.value)
+																			?.title || c.settings.selectCourse
+																	: c.settings.noCourse}
 															</span>
 															<ChevronDown className='h-4 w-4 text-gray-400 flex-shrink-0 ml-2' />
 														</button>
 													</DropdownMenuTrigger>
-													<DropdownMenuContent className='w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto bg-[#0A0F1D] border-white/10 z-[9999]'>
+													<DropdownMenuContent className='w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto bg-overlay border-white/10 z-[9999]'>
 														<DropdownMenuItem
 															onClick={() => field.onChange('')}
 															className='text-white hover:bg-white/10 cursor-pointer'
 														>
-															No course
+															{c.settings.noCourse}
 														</DropdownMenuItem>
 														{courses.map((course) => (
 															<DropdownMenuItem
@@ -219,7 +232,7 @@ export default function CreateTestDialog({
 
 									<div>
 										<label className='mb-2 block text-sm font-semibold text-white'>
-											Passing Score (%)
+											{c.settings.passingScoreLabel}
 										</label>
 										<input
 											{...register('passingScore', { valueAsNumber: true })}
@@ -227,7 +240,7 @@ export default function CreateTestDialog({
 											min='0'
 											max='100'
 											className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-all focus:border-blue-500/50 focus:bg-white/10'
-											placeholder='80'
+											placeholder={c.settings.passingScorePlaceholder}
 										/>
 									</div>
 								</div>
@@ -241,12 +254,10 @@ export default function CreateTestDialog({
 									</div>
 									<div>
 										<h5 className='font-semibold text-white'>
-											After creation
+											{c.infoBlock.heading}
 										</h5>
 										<p className='mt-1 text-sm text-gray-400'>
-											You'll be able to add questions to the test on the
-											editing page. A minimum of 5 questions is recommended
-											for a complete test.
+											{c.infoBlock.body}
 										</p>
 									</div>
 								</div>
@@ -264,7 +275,7 @@ export default function CreateTestDialog({
 									}}
 									className='flex-1 rounded-xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-gray-300 transition-all hover:bg-white/10'
 								>
-									Cancel
+									{c.buttons.cancel}
 								</m.button>
 								<m.button
 									type='submit'
@@ -276,12 +287,12 @@ export default function CreateTestDialog({
 									{isSubmitting ? (
 										<>
 											<Loader2 className='mr-2 inline h-5 w-5 animate-spin' />
-											Creating...
+											{c.buttons.creating}
 										</>
 									) : (
 										<>
 											<Plus className='mr-2 inline h-5 w-5' />
-											Create Test
+											{c.buttons.create}
 										</>
 									)}
 								</m.button>

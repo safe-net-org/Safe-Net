@@ -91,7 +91,7 @@ export function useLessonDetail() {
 			}
 
 			// Update the lesson cache
-			queryClient.setQueryData(['lesson', lessonId], (prev: any) => {
+			queryClient.setQueryData<LessonWithNav>(['lesson', lessonId], prev => {
 				if (!prev || !prev.tasks) return prev
 				return {
 					...prev,

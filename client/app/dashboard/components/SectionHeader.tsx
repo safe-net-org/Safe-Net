@@ -1,8 +1,17 @@
 import Link from 'next/link'
 
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/components/ui/icons'
 
-import { memo } from 'react'
+import { memo, type ReactNode } from 'react'
+
+interface SectionHeaderProps {
+	icon: ReactNode
+	title: string
+	subtitle: string
+	actionLabel?: string
+	actionHref?: string
+	showAction?: boolean
+}
 
 export const SectionHeader = memo(
 	({
@@ -12,7 +21,7 @@ export const SectionHeader = memo(
 		actionLabel,
 		actionHref,
 		showAction = true,
-	}: any) => {
+	}: SectionHeaderProps) => {
 		return (
 			<div className='flex items-center justify-between flex-wrap gap-4'>
 				{}
@@ -32,7 +41,7 @@ export const SectionHeader = memo(
 				{showAction && actionLabel && actionHref && (
 					<Link
 						href={actionHref}
-						className='group/btn inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-linear-to-r from-white/6 to-white/4 hover:from-white/12 hover:to-white/8 border border-white/8 hover:border-white/15 backdrop-blur-xl text-sm font-semibold text-slate-300 hover:text-white transition-all duration-500 ease-out hover:shadow-[0_8px_30px_rgba(255,255,255,0.08)] hover:scale-[1.02] active:scale-[0.98]'
+						className='group/btn inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-linear-to-r from-white/6 to-white/4 hover:from-white/12 hover:to-white/8 border border-white/8 hover:border-white/15 backdrop-blur-xl text-sm font-semibold text-slate-300 hover:text-white transition-all duration-500 ease-out hover-shadow-foreground hover:scale-[1.02] active:scale-[0.98]'
 					>
 						<span className='relative'>
 							{actionLabel}

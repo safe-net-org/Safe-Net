@@ -3,13 +3,16 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Markdown } from '@/components/ui/markdown'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { cn } from '@/lib/utils'
 import {
 	ILesson,
+	ITask,
 	ITaskAnswerResponse,
 } from '@/services/learning/learning.types'
 import { m } from 'framer-motion'
-import { BookOpen, CheckCircle2, PlayCircle, Target } from 'lucide-react'
+import { BookOpen, CheckCircle2, PlayCircle, Target } from '@/components/ui/icons'
 import { useState } from 'react'
 import { AnswerPayload, TaskModal } from './TaskModal'
 
@@ -20,21 +23,14 @@ interface AppleLessonDetailProps {
 		payload: AnswerPayload
 	) => Promise<ITaskAnswerResponse>
 	isAnswering: boolean
-	hasNextLesson?: boolean
-	hasPrevLesson?: boolean
-	onNextLesson?: () => void
-	onPrevLesson?: () => void
 }
 
 export function AppleLessonDetail({
 	lesson,
 	answerTask,
 	isAnswering,
-	hasNextLesson = false,
-	hasPrevLesson = false,
-	onNextLesson,
-	onPrevLesson,
 }: AppleLessonDetailProps) {
+	const { locale, t } = useI18n()
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [currentTaskIndex, setCurrentTaskIndex] = useState(0)
 
@@ -66,11 +62,19 @@ export function AppleLessonDetail({
 									</div>
 									<div>
 										<h3 className='text-base sm:text-lg lg:text-xl font-black text-white'>
-											Theory material
+											{t.dashboardLessonDetail.theory.title}
 										</h3>
 										<p className='text-xs sm:text-sm text-white/60'>
-											{blocks.length}{' '}
-											{blocks.length === 1 ? 'block' : 'blocks'} to study
+											{t.dashboardLessonDetail.theory.blocksTemplate
+												.replace('{count}', String(blocks.length))
+												.replace(
+													'{blockWord}',
+													selectPlural(locale, blocks.length, {
+														one: t.dashboardLessonDetail.theory.blockWordOne,
+														few: t.dashboardLessonDetail.theory.blockWordFew,
+														many: t.dashboardLessonDetail.theory.blockWordMany,
+													})
+												)}
 										</p>
 									</div>
 								</div>
@@ -120,17 +124,26 @@ export function AppleLessonDetail({
 									</div>
 									<div>
 										<h3 className='text-base sm:text-lg lg:text-xl font-black text-white'>
-											Practice tasks
+											{t.dashboardLessonDetail.practice.title}
 										</h3>
 										<p className='text-xs sm:text-sm text-white/60'>
-											{completed}/{total}{' '}
-											{total === 1 ? 'task' : 'tasks'} completed
+											{t.dashboardLessonDetail.practice.progressTemplate
+												.replace('{completed}', String(completed))
+												.replace('{total}', String(total))
+												.replace(
+													'{taskWord}',
+													selectPlural(locale, total, {
+														one: t.dashboardLessonDetail.practice.taskWordOne,
+														few: t.dashboardLessonDetail.practice.taskWordFew,
+														many: t.dashboardLessonDetail.practice.taskWordMany,
+													})
+												)}
 										</p>
 									</div>
 								</div>
 
 								<div className='space-y-2.5 sm:space-y-3'>
-									{tasks.map((task: any, taskIdx: number) => (
+									{tasks.map((task: ITask, taskIdx: number) => (
 										<button
 											key={task.id}
 											type='button'
@@ -147,7 +160,10 @@ export function AppleLessonDetail({
 													</span>
 													<div className='flex items-center gap-2 mt-1'>
 														<Badge className='bg-white/5 border-white/10 text-white/60 text-[10px] sm:text-xs px-2 py-0.5 rounded-md'>
-															{task.points} XP
+															{t.dashboardLessonDetail.xpTemplate.replace(
+																'{points}',
+																String(task.points)
+															)}
 														</Badge>
 														<Badge
 															className={cn(
@@ -160,9 +176,12 @@ export function AppleLessonDetail({
 																	'bg-red-500/10 border-red-500/20 text-red-400'
 															)}
 														>
-															{task.difficulty === 'EASY' && 'Easy'}
-															{task.difficulty === 'MEDIUM' && 'Medium'}
-															{task.difficulty === 'HARD' && 'Hard'}
+															{task.difficulty === 'EASY' &&
+																t.dashboardLessonDetail.difficulty.easy}
+															{task.difficulty === 'MEDIUM' &&
+																t.dashboardLessonDetail.difficulty.medium}
+															{task.difficulty === 'HARD' &&
+																t.dashboardLessonDetail.difficulty.hard}
 														</Badge>
 													</div>
 												</div>
@@ -189,10 +208,10 @@ export function AppleLessonDetail({
 							<BookOpen className='w-8 h-8 sm:w-10 sm:h-10 text-white/30' />
 						</div>
 						<h3 className='text-base sm:text-lg lg:text-xl font-black text-white mb-2 sm:mb-3'>
-							Lesson materials are being prepared
+							{t.dashboardLessonDetail.noContent.title}
 						</h3>
 						<p className='text-xs sm:text-sm text-white/60 max-w-md mx-auto leading-relaxed'>
-							Theory and tasks for this lesson will be added soon.
+							{t.dashboardLessonDetail.noContent.subtitle}
 						</p>
 					</Card>
 				)}
@@ -200,17 +219,12 @@ export function AppleLessonDetail({
 
 			{tasks.length > 0 && (
 				<TaskModal
+					key={tasks[currentTaskIndex]?.id ?? 'task-modal'}
 					isOpen={isModalOpen}
 					onClose={() => setIsModalOpen(false)}
 					tasks={tasks}
 					currentTaskIndex={currentTaskIndex}
 					onTaskChange={setCurrentTaskIndex}
-					lessonId={lesson.id}
-					courseSlug={lesson.courseSlug}
-					hasNextLesson={hasNextLesson}
-					hasPrevLesson={hasPrevLesson}
-					onNextLesson={onNextLesson}
-					onPrevLesson={onPrevLesson}
 					answerTask={answerTask}
 					isAnswering={isAnswering}
 				/>

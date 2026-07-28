@@ -1,64 +1,102 @@
 'use client'
-import { Shield } from 'lucide-react'
+
+import { Shield } from '@/components/ui/icons'
+import Link from 'next/link'
 
 import { useI18n } from '@/i18n/LocaleProvider'
 
 export default function Footer() {
 	const { t } = useI18n()
+	const year = new Date().getFullYear()
+
 	return (
-		<footer className='bg-slate-800/50 border-t border-slate-800 py-12'>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-				<div className='grid md:grid-cols-3 gap-8 mb-8'>
+		<footer className='border-t border-border bg-card/70 py-12'>
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='mb-8 grid gap-10 md:grid-cols-3'>
 					<div>
-						<div className='flex items-center gap-3 mb-4'>
-							<div className='w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center'>
-								<Shield className='w-6 h-6 text-white' />
+						<div className='mb-4 flex items-center gap-3'>
+							<div className='flex size-10 items-center justify-center rounded-xl bg-brand text-white'>
+								<Shield className='size-5' aria-hidden='true' />
 							</div>
 							<div>
-								<h4 className='text-lg font-bold text-white'>SafeNet</h4>
-								<p className='text-xs text-slate-400'>{t.footer.tagline}</p>
+								<p className='text-lg font-semibold text-foreground'>SafeNet</p>
+								<p className='text-xs text-muted-foreground'>{t.footer.tagline}</p>
 							</div>
 						</div>
-						<p className='text-sm text-slate-400 leading-relaxed'>
+						<p className='max-w-sm text-sm leading-6 text-muted-foreground'>
 							{t.footer.description}
 						</p>
 					</div>
 					<div>
-						<h5 className='text-white font-semibold mb-4'>
+						<h2 className='mb-4 text-sm font-semibold text-foreground'>
 							{t.footer.navigation}
-						</h5>
+						</h2>
 						<div className='space-y-2'>
 							<a
 								href='#features'
-								className='block text-sm text-slate-400 hover:text-white transition-colors'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
 							>
 								{t.nav.features}
 							</a>
 							<a
 								href='#topics'
-								className='block text-sm text-slate-400 hover:text-white transition-colors'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
 							>
 								{t.nav.topics}
 							</a>
 							<a
 								href='#stats'
-								className='block text-sm text-slate-400 hover:text-white transition-colors'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
 							>
 								{t.nav.statistics}
 							</a>
+							<Link
+								href='/guard'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
+							>
+								{t.nav.aiGuard}
+							</Link>
 						</div>
 					</div>
 					<div>
-						<h5 className='text-white font-semibold mb-4'>{t.footer.contact}</h5>
+						<h2 className='mb-4 text-sm font-semibold text-foreground'>
+							{t.footer.legal}
+						</h2>
 						<div className='space-y-2'>
-							<p className='text-sm text-slate-400'>SafeNet Team</p>
-							<p className='text-sm text-slate-400'>Moscow, 2025</p>
+							<Link
+								href='/legal/privacy'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
+							>
+								{t.footer.privacy}
+							</Link>
+							<Link
+								href='/legal/terms'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
+							>
+								{t.footer.terms}
+							</Link>
+							<Link
+								href='/legal/cookies'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
+							>
+								{t.footer.cookies}
+							</Link>
+							<Link
+								href='/legal/security'
+								className='block text-sm text-muted-foreground transition-colors hover:text-foreground'
+							>
+								{t.footer.security}
+							</Link>
 						</div>
 					</div>
 				</div>
-				<div className='pt-8 border-t border-slate-700 text-center'>
-					<p className='text-sm text-slate-500'>
-						© 2025 SafeNet — {t.footer.rights}
+				<div className='flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between'>
+					<p>
+						© {year} SafeNet — {t.footer.rights}
+					</p>
+					<p>
+						<span className='font-medium text-foreground'>{t.footer.preview}.</span>{' '}
+						{t.footer.detailsPending}
 					</p>
 				</div>
 			</div>

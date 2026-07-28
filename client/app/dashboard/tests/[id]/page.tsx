@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useTestDetail } from '@/hooks/learning/useTestDetail'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, m } from 'framer-motion'
 import {
@@ -26,7 +27,7 @@ import {
 	Timer,
 	Trophy,
 	XCircle,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 const formatTime = (seconds: number): string => {
@@ -37,6 +38,7 @@ const formatTime = (seconds: number): string => {
 
 export default function TestPage() {
 	const router = useRouter()
+	const { t } = useI18n()
 	const {
 		testState,
 		test,
@@ -47,7 +49,6 @@ export default function TestPage() {
 		progress,
 		isMultiChoice,
 		courseTitle,
-		courseSlug,
 		elapsedTime,
 		handleOptionToggle,
 		isOptionSelected,
@@ -85,16 +86,18 @@ export default function TestPage() {
 					<Card className='bg-white/5 border-red-500/20 backdrop-blur-xl'>
 						<CardContent className='p-8 text-center space-y-4'>
 							<AlertCircle className='w-16 h-16 mx-auto text-red-400' />
-							<h2 className='text-2xl font-bold text-white'>Test not found</h2>
+							<h2 className='text-2xl font-bold text-white'>
+								{t.dashboardTests.notFound.title}
+							</h2>
 							<p className='text-white/60'>
-								Check the link or contact the administrator
+								{t.dashboardTests.notFound.subtitle}
 							</p>
 							<Button
 								onClick={() => router.push(ROUTES.HOME)}
 								className='w-full'
 							>
 								<ArrowLeft className='w-4 h-4 mr-2' />
-								Go home
+								{t.dashboardTests.notFound.goHome}
 							</Button>
 						</CardContent>
 					</Card>
@@ -114,7 +117,7 @@ export default function TestPage() {
 						className='p-0 rounded-xl bg-white/5 backdrop-blur-sm border border-white/5 hover:bg-white/5 group shadow-sm shrink-0 transition-all duration-300'
 					>
 						<ArrowLeft className='w-4 h-4 mr-2' />
-						Back to course
+						{t.dashboardTests.completed.backToCourse}
 					</Button>
 
 					<m.div
@@ -133,7 +136,7 @@ export default function TestPage() {
 									transition={{ type: 'spring', duration: 0.6 }}
 								>
 									{result.passed ? (
-										<Trophy className='w-24 h-24 mx-auto text-yellow-400 drop-shadow-[0_0_24px_rgba(250,204,21,0.5)]' />
+										<Trophy className='w-24 h-24 mx-auto text-yellow-400 shadow-warning-icon' />
 									) : (
 										<XCircle className='w-24 h-24 mx-auto text-red-400' />
 									)}
@@ -141,12 +144,14 @@ export default function TestPage() {
 
 								<div>
 									<h1 className='text-4xl sm:text-5xl font-bold text-white mb-3'>
-										{result.passed ? 'Congratulations!' : 'Try again'}
+										{result.passed
+											? t.dashboardTests.completed.congratulations
+											: t.dashboardTests.completed.tryAgain}
 									</h1>
 									<p className='text-xl text-white/60'>
-										Scored{' '}
-										<span className='font-bold text-white'>{result.score}</span>{' '}
-										out of {result.totalPoints} points
+										{t.dashboardTests.completed.scoredTemplate
+											.replace('{score}', String(result.score))
+											.replace('{total}', String(result.totalPoints))}
 									</p>
 								</div>
 
@@ -159,7 +164,9 @@ export default function TestPage() {
 											)}
 											%
 										</p>
-										<p className='text-sm text-white/60'>Accuracy</p>
+										<p className='text-sm text-white/60'>
+											{t.dashboardTests.completed.accuracy}
+										</p>
 									</div>
 
 									<div className='p-4 rounded-2xl bg-white/5 border border-white/5'>
@@ -167,7 +174,9 @@ export default function TestPage() {
 										<p className='text-3xl font-bold text-white'>
 											{result.correctAnswers}/{result.totalQuestions}
 										</p>
-										<p className='text-sm text-white/60'>Correct</p>
+										<p className='text-sm text-white/60'>
+											{t.dashboardTests.completed.correct}
+										</p>
 									</div>
 								</div>
 							</CardContent>
@@ -179,7 +188,7 @@ export default function TestPage() {
 								<CardContent className='p-6 space-y-4'>
 									<h3 className='text-lg font-semibold text-white flex items-center gap-2'>
 										<FileQuestion className='w-5 h-5' />
-										Results by question
+										{t.dashboardTests.completed.resultsByQuestion}
 									</h3>
 
 									<div className='space-y-3'>
@@ -208,7 +217,10 @@ export default function TestPage() {
 															)}
 															<div className='flex-1'>
 																<p className='text-white/60 text-sm mb-1'>
-																	Question {idx + 1}
+																	{t.dashboardTests.completed.questionTemplate.replace(
+																		'{index}',
+																		String(idx + 1)
+																	)}
 																</p>
 																<p className='text-white font-medium'>
 																	{question?.text}
@@ -230,7 +242,7 @@ export default function TestPage() {
 								size='lg'
 								className='flex-1 w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-black hover:bg-white/80 shadow-2xl shadow-white/15 font-bold text-sm sm:text-base'
 							>
-								Back to course
+								{t.dashboardTests.completed.backToCourse}
 							</Button>
 							{!result.passed && (
 								<Button
@@ -239,7 +251,7 @@ export default function TestPage() {
 									variant='outline'
 									className='flex-1 h-11 rounded-xl'
 								>
-									Retake
+									{t.dashboardTests.completed.retake}
 								</Button>
 							)}
 						</div>
@@ -256,9 +268,13 @@ export default function TestPage() {
 				<Breadcrumb
 					showBackButton
 					items={[
-						{ label: 'Courses', href: ROUTES.COURSES, icon: BookOpen },
 						{
-							label: test.courseTitle ?? 'Course',
+							label: t.dashboardCourseDetail.breadcrumbCourses,
+							href: ROUTES.COURSES,
+							icon: BookOpen,
+						},
+						{
+							label: test.courseTitle ?? t.dashboardCourseDetail.progressDetails.course,
 							href: `${ROUTES.COURSES}/${test.courseSlug ?? ''}`,
 						},
 						{ label: test.title },
@@ -271,12 +287,12 @@ export default function TestPage() {
 					className='space-y-6'
 				>
 					<Card className='bg-linear-to-br from-white/5 to-white/5 border-white/15 backdrop-blur-xl overflow-hidden relative'>
-						<div className='absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]' />
+						<div className='absolute inset-0 dashboard-test-radial' />
 
 						<CardContent className='p-8 sm:p-12 space-y-8 relative z-10'>
 							<div className='space-y-3'>
 								<Badge variant='secondary' className='text-sm'>
-									Test
+									{t.dashboardTests.notStarted.badge}
 								</Badge>
 								<h1 className='text-4xl sm:text-5xl font-bold text-white'>
 									{test.title}
@@ -295,7 +311,9 @@ export default function TestPage() {
 										<p className='text-3xl font-bold text-white'>
 											{test.questions.length}
 										</p>
-										<p className='text-sm text-white/60'>questions</p>
+										<p className='text-sm text-white/60'>
+											{t.dashboardTests.notStarted.questions}
+										</p>
 									</div>
 								</div>
 
@@ -307,7 +325,9 @@ export default function TestPage() {
 										<p className='text-3xl font-bold text-white'>
 											{test.passingScore}%
 										</p>
-										<p className='text-sm text-white/60'>passing score</p>
+										<p className='text-sm text-white/60'>
+											{t.dashboardTests.notStarted.passingScore}
+										</p>
 									</div>
 								</div>
 							</div>
@@ -318,7 +338,7 @@ export default function TestPage() {
 								className='w-full h-12 rounded-xl bg-white hover:bg-white/90 text-black font-bold disabled:opacity-50 shadow-lg'
 							>
 								<Sparkles className='w-5 h-5 mr-2' />
-								Start test
+								{t.dashboardTests.notStarted.startTest}
 							</Button>
 						</CardContent>
 					</Card>
@@ -363,7 +383,9 @@ export default function TestPage() {
 						<div className='flex items-center justify-between mb-3'>
 							<div className='flex items-center gap-2'>
 								<Award className='w-5 h-5 text-blue-400' />
-								<span className='text-white/60 font-medium'>Progress</span>
+								<span className='text-white/60 font-medium'>
+									{t.dashboardTests.active.progress}
+								</span>
 							</div>
 							<div className='flex items-center gap-3'>
 								<span className='text-sm text-white/60'>
@@ -395,14 +417,16 @@ export default function TestPage() {
 										<div className='space-y-4'>
 											<div className='flex items-center justify-between flex-wrap gap-3'>
 												<Badge variant='secondary'>
-													Question {currentQuestionIndex + 1} / {totalQuestions}
+													{t.dashboardTests.active.questionOfTemplate
+														.replace('{current}', String(currentQuestionIndex + 1))
+														.replace('{total}', String(totalQuestions))}
 												</Badge>
 												{isMultiChoice && (
 													<Badge
 														variant='outline'
 														className='border-purple-400/40 text-purple-300'
 													>
-														Multiple choice
+														{t.dashboardTests.active.multipleChoice}
 													</Badge>
 												)}
 											</div>
@@ -414,7 +438,7 @@ export default function TestPage() {
 											{isMultiChoice && (
 												<p className='text-white/60 text-sm flex items-center gap-2'>
 													<CheckCircle2 className='w-4 h-4' />
-													You can select multiple options
+													{t.dashboardTests.active.canSelectMultiple}
 												</p>
 											)}
 										</div>
@@ -483,7 +507,7 @@ export default function TestPage() {
 												className='flex-1 rounded-xl'
 											>
 												<ChevronLeft className='w-4 h-4 mr-2' />
-												Back
+												{t.dashboardTests.active.back}
 											</Button>
 
 											{currentQuestionIndex === totalQuestions - 1 ? (
@@ -498,12 +522,12 @@ export default function TestPage() {
 													{isSubmitting ? (
 														<>
 															<Loader2 className='w-4 h-4 mr-2 animate-spin' />
-															Submitting...
+															{t.dashboardTests.active.submitting}
 														</>
 													) : (
 														<>
 															<Send className='w-4 h-4 mr-2' />
-															Complete
+															{t.dashboardTests.active.complete}
 														</>
 													)}
 												</Button>
@@ -513,7 +537,7 @@ export default function TestPage() {
 													size='lg'
 													className='flex-1 w-full rounded-xl bg-white hover:bg-white/90 text-black font-bold disabled:opacity-50 shadow-lg'
 												>
-													Next
+													{t.dashboardTests.active.next}
 													<ChevronRight className='w-4 h-4 ml-2' />
 												</Button>
 											)}

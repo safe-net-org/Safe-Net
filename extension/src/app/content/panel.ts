@@ -25,7 +25,11 @@ function createHostElement(): HTMLElement {
   return host
 }
 
-function buildPanelDom(shadow: ShadowRoot, iframeSrc: string): { panel: HTMLElement; backdrop: HTMLElement; iframe: HTMLIFrameElement } {
+function buildPanelDom(
+  shadow: ShadowRoot,
+  iframeSrc: string,
+  locale: ExtensionLocale,
+): { panel: HTMLElement; backdrop: HTMLElement; iframe: HTMLIFrameElement } {
   const style = document.createElement('style')
   style.textContent = `
     :host, * { box-sizing: border-box; }
@@ -106,7 +110,7 @@ function buildPanelDom(shadow: ShadowRoot, iframeSrc: string): { panel: HTMLElem
 
   const closeBtn = document.createElement('button')
   closeBtn.className = 'grip'
-  closeBtn.setAttribute('aria-label', 'Закрыть SafeNet Guard')
+  closeBtn.setAttribute('aria-label', translate(locale, 'content.panelClose'))
   closeBtn.textContent = '✕'
 
   const iframe = document.createElement('iframe')
@@ -132,7 +136,7 @@ function buildPanelDom(shadow: ShadowRoot, iframeSrc: string): { panel: HTMLElem
   return { panel, backdrop, iframe }
 }
 
-export function createPanel(): PanelHandle {
+export function createPanel(getLocale: () => ExtensionLocale): PanelHandle {
   let host: HTMLElement | null = null
   let shadow: ShadowRoot | null = null
   let panel: HTMLElement | null = null
@@ -144,7 +148,7 @@ export function createPanel(): PanelHandle {
     host = createHostElement()
     document.documentElement.appendChild(host)
     shadow = host.attachShadow({ mode: 'open' })
-    const dom = buildPanelDom(shadow, browser.runtime.getURL('/sidebar.html'))
+    const dom = buildPanelDom(shadow, browser.runtime.getURL('/sidebar.html'), getLocale())
     panel = dom.panel
     backdrop = dom.backdrop
   }
@@ -168,3 +172,4 @@ export function createPanel(): PanelHandle {
 
   return { show, hide, toggle, isOpen: () => opened }
 }
+import { translate, type ExtensionLocale } from '@/src/shared/i18n/messages'

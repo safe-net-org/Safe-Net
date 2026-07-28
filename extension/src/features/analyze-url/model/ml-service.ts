@@ -1,8 +1,9 @@
 import { applyMlBlend } from '@/src/entities/analysis'
 import type { AnalysisResult, RiskSignal } from '@/src/entities/analysis'
+import { normalizeMlServiceUrl } from '@/src/shared/lib/ml-health'
 import { getSettings } from '@/src/shared/lib/settings'
+import { sanitizeUrlForMl } from '@/src/shared/lib/url-privacy'
 
-const DEFAULT_ML_SERVICE_URL = 'http://localhost:8000/predict'
 const ML_TIMEOUT_MS = 2000
 
 export interface MlSignal {
@@ -24,27 +25,62 @@ export interface MlResponse {
   method?: string
 }
 
+function parseMlResponse(value: unknown): MlResponse | null {
+  if (!value || typeof value !== 'object') return null
+  const response = value as Partial<MlResponse>
+  if (typeof response.score !== 'number'
+    || response.score < 0
+    || response.score > 100
+    || typeof response.probability !== 'number'
+    || response.probability < 0
+    || response.probability > 1
+    || !['safe', 'suspicious', 'danger'].includes(response.level ?? '')
+    || !Array.isArray(response.signals)) {
+    return null
+  }
+  if (response.ml_probability !== undefined
+    && (typeof response.ml_probability !== 'number'
+      || response.ml_probability < 0
+      || response.ml_probability > 1)) {
+    return null
+  }
+  const signalsValid = response.signals.every((signal) =>
+    signal
+    && typeof signal.feature === 'string'
+    && typeof signal.label === 'string'
+    && typeof signal.value === 'number'
+    && typeof signal.shap_value === 'number'
+    && ['high', 'medium', 'low'].includes(signal.severity),
+  )
+  return signalsValid ? response as MlResponse : null
+}
+
 export async function queryMlService(url: string): Promise<MlResponse | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
   try {
     const settings = await getSettings()
-    if (!settings.intelEnabled) return null
-    const endpoint = settings.mlServiceUrl || DEFAULT_ML_SERVICE_URL
+    if (!settings.mlEnabled) return null
+
+    const endpoint = normalizeMlServiceUrl(settings.mlServiceUrl)
+    const sanitizedUrl = sanitizeUrlForMl(url)
+    if (!endpoint || !sanitizedUrl) return null
 
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), ML_TIMEOUT_MS)
+    timeout = setTimeout(() => controller.abort(), ML_TIMEOUT_MS)
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url: sanitizedUrl }),
       signal: controller.signal,
     })
 
-    clearTimeout(timeout)
     if (!response.ok) return null
-    return (await response.json()) as MlResponse
+    return parseMlResponse(await response.json())
   } catch {
     return null
+  } finally {
+    if (timeout) clearTimeout(timeout)
   }
 }
 

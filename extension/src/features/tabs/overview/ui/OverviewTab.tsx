@@ -1,5 +1,6 @@
 import type { AnalysisResult } from '@/src/entities/analysis'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { StatTile } from '@/src/shared/ui/StatTile'
 
 interface OverviewTabProps {
@@ -18,11 +19,14 @@ const OPEN_SOURCES: SourceBadge[] = [
 ]
 
 export function OverviewTab({ result }: OverviewTabProps) {
+  const { t } = useExtensionI18n()
   const summary = result.level === 'safe'
-    ? 'Признаков фишинга не обнаружено. URL прошёл 25+ проверок: гомограф, тайпсквоттинг, энтропия домена, обфускация и DOM-сигналы.'
+    ? t('overview.safe')
     : result.level === 'suspicious'
-    ? `Найдено ${result.signals.length} подозрительных признаков. Будь осторожен с вводом паролей и платёжных данных.`
-    : `Обнаружено ${result.signals.filter((s) => s.severity === 'high').length} критических признаков фишинга. Не вводи здесь логины и пароли.`
+      ? t('overview.suspicious', { count: result.signals.length })
+      : t('overview.danger', {
+          count: result.signals.filter((s) => s.severity === 'high').length,
+        })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -34,7 +38,7 @@ export function OverviewTab({ result }: OverviewTabProps) {
           fontSize: 11, color: T.textDim, marginBottom: 6,
           letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: FONT_MONO,
         }}>
-          Краткая сводка
+          {t('overview.title')}
         </div>
         <div style={{ fontSize: 13, color: T.textMuted, lineHeight: 1.55 }}>
           {summary}
@@ -42,10 +46,10 @@ export function OverviewTab({ result }: OverviewTabProps) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <StatTile label="Сигналов" value={result.signals.length} accent={result.signals.length ? T.warn : T.ok} />
-        <StatTile label="Длина URL" value={result.features.urlLength} sub={result.features.urlLength > 75 ? 'длинный' : 'норма'} />
-        <StatTile label="Поддомены" value={result.features.subdomainDepth} sub={result.features.subdomainDepth > 3 ? 'глубоко' : 'норма'} />
-        <StatTile label="Энтропия" value={result.features.domainEntropy.toFixed(2)} sub={result.features.domainEntropy > 3.5 ? 'высокая' : 'норма'} />
+        <StatTile label={t('overview.signals')} value={result.signals.length} accent={result.signals.length ? T.warn : T.ok} />
+        <StatTile label={t('overview.urlLength')} value={result.features.urlLength} sub={t(result.features.urlLength > 75 ? 'overview.long' : 'overview.normal')} />
+        <StatTile label={t('overview.subdomains')} value={result.features.subdomainDepth} sub={t(result.features.subdomainDepth > 3 ? 'overview.deep' : 'overview.normal')} />
+        <StatTile label={t('overview.entropy')} value={result.features.domainEntropy.toFixed(2)} sub={t(result.features.domainEntropy > 3.5 ? 'overview.high' : 'overview.normal')} />
       </div>
 
       {result.features.nearestBrand && result.features.levenshteinDistance <= 2 && (
@@ -55,7 +59,10 @@ export function OverviewTab({ result }: OverviewTabProps) {
           border: '1px solid oklch(65% 0.24 25 / 0.25)',
           fontSize: 12, color: T.danger,
         }}>
-          ⚠ Похож на бренд: <strong>{result.features.nearestBrand}</strong> (расстояние {result.features.levenshteinDistance})
+          ⚠ {t('overview.brand', {
+            brand: result.features.nearestBrand,
+            distance: result.features.levenshteinDistance,
+          })}
         </div>
       )}
 
@@ -71,13 +78,13 @@ export function OverviewTab({ result }: OverviewTabProps) {
             fontSize: 11, color: T.textDim,
             letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: FONT_MONO,
           }}>
-            Открытые базы
+            {t('overview.sources')}
           </span>
           <span style={{
             fontSize: 9.5, color: T.accentSoft, fontFamily: FONT_MONO,
             letterSpacing: '0.1em',
           }}>
-            → ВКЛАДКА «ДОМЕН»
+            {t('overview.domainTab')}
           </span>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>

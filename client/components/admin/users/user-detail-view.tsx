@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { IUserDetail } from '@/services/admin/admin.types'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { m } from 'framer-motion'
 import {
 	Activity,
@@ -11,7 +12,7 @@ import {
 	TrendingUp,
 	Trophy,
 	Zap,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useState } from 'react'
 import UserAchievementsBlock from './user-achievements-block'
 import UserActivityBlock from './user-activity-block'
@@ -36,6 +37,8 @@ export default function UserDetailView({
 	user,
 	onUserUpdated,
 }: UserDetailViewProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userDetailView
 	const [activeTab, setActiveTab] = useState<TabValue>('courses')
 
 	const completionRate =
@@ -54,39 +57,45 @@ export default function UserDetailView({
 			{/* Stats Cards */}
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4'>
 				<StatCard
-					label='Total courses'
+					label={c.stats.totalCourses}
 					value={user.statistics.totalCourses}
 					icon={<BookOpen className='w-5 h-5' />}
 					color='blue'
-					description='Enrolled'
+					description={c.stats.enrolled}
 				/>
 				<StatCard
-					label='Completed'
+					label={c.stats.completed}
 					value={user.statistics.completedCourses}
 					icon={<Trophy className='w-5 h-5' />}
 					color='emerald'
-					description={`${completionRate}% of all`}
+					description={c.stats.percentOfAllTemplate.replace(
+						'{percent}',
+						String(completionRate)
+					)}
 				/>
 				<StatCard
-					label='In progress'
+					label={c.stats.inProgress}
 					value={user.statistics.inProgressCourses}
 					icon={<TrendingUp className='w-5 h-5' />}
 					color='purple'
-					description='Active'
+					description={c.stats.active}
 				/>
 				<StatCard
-					label='Tests'
+					label={c.stats.tests}
 					value={user.statistics.totalTests}
 					icon={<FileText className='w-5 h-5' />}
 					color='amber'
-					description={`${user.statistics.averageTestScore}% average`}
+					description={c.stats.averageScoreTemplate.replace(
+						'{score}',
+						String(user.statistics.averageTestScore)
+					)}
 				/>
 				<StatCard
-					label='Certificates'
+					label={c.stats.certificates}
 					value={user.statistics.certificates}
 					icon={<Award className='w-5 h-5' />}
 					color='pink'
-					description='Received'
+					description={c.stats.received}
 				/>
 			</div>
 
@@ -100,20 +109,29 @@ export default function UserDetailView({
 				<div className='flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg'>
 					<Zap className='w-4 h-4 text-amber-400' />
 					<span className='text-sm font-semibold text-white'>
-						{user.statistics.totalLessons} lessons completed
+						{c.quickStats.lessonsCompletedTemplate.replace(
+							'{count}',
+							String(user.statistics.totalLessons)
+						)}
 					</span>
 				</div>
 				<div className='flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg'>
 					<Trophy className='w-4 h-4 text-purple-400' />
 					<span className='text-sm font-semibold text-white'>
-						{user.statistics.achievements} achievements
+						{c.quickStats.achievementsTemplate.replace(
+							'{count}',
+							String(user.statistics.achievements)
+						)}
 					</span>
 				</div>
 				{user.statistics.averageTestScore > 0 && (
 					<div className='flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg'>
 						<TrendingUp className='w-4 h-4 text-emerald-400' />
 						<span className='text-sm font-semibold text-white'>
-							{user.statistics.averageTestScore}% success rate
+							{c.quickStats.successRateTemplate.replace(
+								'{score}',
+								String(user.statistics.averageTestScore)
+							)}
 						</span>
 					</div>
 				)}
@@ -126,34 +144,34 @@ export default function UserDetailView({
 						active={activeTab === 'courses'}
 						onClick={() => setActiveTab('courses')}
 						icon={<BookOpen className='w-4 h-4' />}
-						label='Courses'
+						label={c.tabs.courses}
 						badge={user.statistics.totalCourses}
 					/>
 					<TabButton
 						active={activeTab === 'activity'}
 						onClick={() => setActiveTab('activity')}
 						icon={<Activity className='w-4 h-4' />}
-						label='Activity'
+						label={c.tabs.activity}
 					/>
 					<TabButton
 						active={activeTab === 'tests'}
 						onClick={() => setActiveTab('tests')}
 						icon={<FileText className='w-4 h-4' />}
-						label='Tests'
+						label={c.tabs.tests}
 						badge={user.statistics.totalTests}
 					/>
 					<TabButton
 						active={activeTab === 'certificates'}
 						onClick={() => setActiveTab('certificates')}
 						icon={<Award className='w-4 h-4' />}
-						label='Certificates'
+						label={c.tabs.certificates}
 						badge={user.statistics.certificates}
 					/>
 					<TabButton
 						active={activeTab === 'achievements'}
 						onClick={() => setActiveTab('achievements')}
 						icon={<Trophy className='w-4 h-4' />}
-						label='Achievements'
+						label={c.tabs.achievements}
 						badge={user.statistics.achievements}
 					/>
 				</div>

@@ -347,7 +347,7 @@ export const StageFrontmatter = z.object({
   slug: slugField,
   title: nonEmpty('stage.title'),
   subtitle: z.string().optional(),
-  icon: z.string().optional(), // lucide-react icon slug
+  icon: z.string().optional(), // Phosphor-compatible icon slug
 })
 export type StageFrontmatterInput = z.infer<typeof StageFrontmatter>
 

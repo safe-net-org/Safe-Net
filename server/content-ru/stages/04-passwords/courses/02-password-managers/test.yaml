@@ -1,0 +1,101 @@
+title: "Итоговый тест: Менеджеры паролей"
+description: "Проверка знаний о менеджерах паролей и утечке LastPass 2022 года."
+passingScore: 75
+questions:
+  - text: "В чём главное преимущество менеджера паролей?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Ускоряет работу компьютера"
+        isCorrect: false
+      - text: "Позволяет использовать уникальные пароли везде"
+        isCorrect: true
+      - text: "Защищает от вирусов"
+        isCorrect: false
+      - text: "Увеличивает скорость интернета"
+        isCorrect: false
+
+  - text: "Какой единственный пароль всё равно нужно запомнить при использовании менеджера?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Пароль от каждого отдельного сайта"
+        isCorrect: false
+      - text: "Собственный мастер-пароль менеджера"
+        isCorrect: true
+      - text: "Пароль от почты, отдельно"
+        isCorrect: false
+      - text: "Никакой -- запоминать вообще ничего не нужно"
+        isCorrect: false
+
+  - text: "Что из перечисленного менеджер паролей действительно делает?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Генерирует длинные уникальные пароли для каждого сайта"
+        isCorrect: true
+      - text: "Хранит пароли в зашифрованном виде"
+        isCorrect: true
+      - text: "Автоматически защищает от фишинга"
+        isCorrect: false
+      - text: "Предотвращает утечки данных на сайтах, которыми вы пользуетесь"
+        isCorrect: false
+      - text: "Делает двухфакторную аутентификацию ненужной"
+        isCorrect: false
+
+  - text: "Сколько примерно людей пострадало от утечки LastPass 2022 года?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 33 тысяч"
+        isCorrect: false
+      - text: "Около 33 миллионов"
+        isCorrect: true
+      - text: "Около 330 миллионов"
+        isCorrect: false
+      - text: "Около 3,3 миллиарда"
+        isCorrect: false
+
+  - text: "Почему утечка LastPass не сразу дала злоумышленникам пригодные для использования пароли от сайтов?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Данные уже были удалены"
+        isCorrect: false
+      - text: "Содержимое хранилищ оставалось зашифрованным ключом, полученным из мастер-пароля каждого пользователя"
+        isCorrect: true
+      - text: "Злоумышленники решили их не использовать"
+        isCorrect: false
+      - text: "В хранилищах вообще не было паролей"
+        isCorrect: false
+
+  - text: "Каков реальный урок утечки LastPass?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Никогда не пользоваться менеджером паролей"
+        isCorrect: false
+      - text: "Важны и архитектура шифрования менеджера, и надёжность вашего мастер-пароля"
+        isCorrect: true
+      - text: "Атакам подвергаются только бесплатные менеджеры"
+        isCorrect: false
+      - text: "К таким утечкам вообще невозможно подготовиться"
+        isCorrect: false
+
+  - text: "Что из перечисленного является реальным самостоятельным менеджером паролей?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Bitwarden"
+        isCorrect: true
+      - text: "Norton 360"
+        isCorrect: false
+      - text: "CCleaner"
+        isCorrect: false
+      - text: "TeamViewer"
+        isCorrect: false
+
+  - text: "Почему не стоит хранить пароли в обычном незашифрованном текстовом файле?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Технически это невозможно сделать"
+        isCorrect: false
+      - text: "Если устройство когда-либо будет скомпрометировано, все пароли сразу же можно будет прочитать"
+        isCorrect: true
+      - text: "Текстовые файлы нельзя резервировать"
+        isCorrect: false
+      - text: "Это противоречит большинству лицензий на ПО"
+        isCorrect: false

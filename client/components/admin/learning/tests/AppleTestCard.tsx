@@ -8,6 +8,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ROUTES } from '@/config/pages-url.config'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { cn } from '@/lib/utils'
 import { ITest } from '@/services/admin/admin.types'
 import { m } from 'framer-motion'
@@ -17,7 +19,7 @@ import {
     FileQuestion,
     MoreVertical,
     Trash2,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -28,8 +30,15 @@ interface AppleTestCardProps {
 }
 
 export function AppleTestCard({ test, index, onDelete }: AppleTestCardProps) {
+  const { locale, t } = useI18n()
+  const c = t.adminTestComponents.appleTestCard
   const [isHovered, setIsHovered] = useState(false)
   const questionsCount = test.questions?.length ?? 0
+  const questionWord = selectPlural(locale, questionsCount, {
+    one: c.questionWordOne,
+    few: c.questionWordFew,
+    many: c.questionWordMany,
+  })
 
   return (
     <m.div
@@ -83,7 +92,7 @@ export function AppleTestCard({ test, index, onDelete }: AppleTestCardProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align='end'
-                  className='bg-[#0A0F1E]/95 border-white/10 backdrop-blur-xl'
+                  className='bg-overlay/95 border-white/10 backdrop-blur-xl'
                 >
                   <DropdownMenuItem
                     onClick={e => {
@@ -94,7 +103,7 @@ export function AppleTestCard({ test, index, onDelete }: AppleTestCardProps) {
                     className='gap-2 text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer'
                   >
                     <Trash2 className='w-4 h-4' />
-                    Delete
+                    {c.delete}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -125,7 +134,9 @@ export function AppleTestCard({ test, index, onDelete }: AppleTestCardProps) {
                     <FileQuestion className='w-3.5 h-3.5 text-blue-400' />
                   </div>
                   <span className='text-sm text-gray-300 font-medium'>
-                    {questionsCount} question{questionsCount === 1 ? '' : 's'}
+                    {c.questionsCountTemplate
+                      .replace('{count}', String(questionsCount))
+                      .replace('{questionWord}', questionWord)}
                   </span>
                 </m.div>
 
@@ -148,7 +159,7 @@ export function AppleTestCard({ test, index, onDelete }: AppleTestCardProps) {
               {/* Arrow indicator */}
               <div className='flex items-center justify-between pt-2.5 border-t border-white/10'>
                 <span className='text-xs text-gray-500 font-medium'>
-                  Edit
+                  {c.edit}
                 </span>
                 <m.div
                   animate={{

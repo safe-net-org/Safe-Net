@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { IUserDetail, UserStatus } from '@/services/admin/admin.types'
 import { UserRoleLabel } from '@/services/auth/auth.types'
@@ -14,7 +15,7 @@ import {
 	Mail,
 	Shield,
 	User,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { toast } from 'sonner'
 
 interface UserInfoBlockProps {
@@ -26,6 +27,9 @@ export default function UserInfoBlock({
 	user,
 	onUserUpdated,
 }: UserInfoBlockProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userInfoBlock
+
 	const handleToggleStatus = async () => {
 		const newStatus =
 			user.status === UserStatus.ACTIVE ? UserStatus.BLOCKED : UserStatus.ACTIVE
@@ -33,13 +37,11 @@ export default function UserInfoBlock({
 		try {
 			await adminService.updateUser(user.id, { status: newStatus })
 			toast.success(
-				newStatus === UserStatus.ACTIVE
-					? 'User unblocked'
-					: 'User blocked'
+				newStatus === UserStatus.ACTIVE ? c.toasts.unblocked : c.toasts.blocked
 			)
 			onUserUpdated()
-		} catch (error) {
-			toast.error('Error updating status')
+		} catch {
+			toast.error(c.toasts.updateError)
 		}
 	}
 
@@ -48,14 +50,14 @@ export default function UserInfoBlock({
 			format: 'date-long',
 			locale: 'en-US',
 			gracefulFail: true,
-		}) || 'Unknown'
+		}) || c.unknownDate
 
 	const updatedDate =
 		formatDate(user.updatedAt, {
 			format: 'date-long',
 			locale: 'en-US',
 			gracefulFail: true,
-		}) || 'Unknown'
+		}) || c.unknownDate
 
 	return (
 		<m.div
@@ -83,12 +85,12 @@ export default function UserInfoBlock({
 					{user.status === UserStatus.ACTIVE ? (
 						<>
 							<Lock className='w-4 h-4' />
-							Block
+							{c.block}
 						</>
 					) : (
 						<>
 							<CheckCircle2 className='w-4 h-4' />
-							Unblock
+							{c.unblock}
 						</>
 					)}
 				</Button>
@@ -97,22 +99,22 @@ export default function UserInfoBlock({
 			<div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
 				<InfoItem
 					icon={<User className='w-4 h-4' />}
-					label='ID'
+					label={c.fields.id}
 					value={user.id.slice(0, 8) + '...'}
 				/>
 				<InfoItem
 					icon={<Shield className='w-4 h-4' />}
-					label='Roles'
+					label={c.fields.roles}
 					value={user.rights.map(r => UserRoleLabel[r]).join(', ')}
 				/>
 				<InfoItem
 					icon={<CalendarDays className='w-4 h-4' />}
-					label='Sign Up'
+					label={c.fields.signUp}
 					value={createdDate}
 				/>
 				<InfoItem
 					icon={<CalendarDays className='w-4 h-4' />}
-					label='Update'
+					label={c.fields.update}
 					value={updatedDate}
 				/>
 			</div>

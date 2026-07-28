@@ -7,6 +7,7 @@ interface DashboardPages {
 	readonly ADMIN: {
 		readonly ROOT: string
 		readonly USERS: string
+		readonly FEEDBACK: string
 		readonly LEARNING: {
 			readonly COURSES: string
 			readonly LESSONS: string
@@ -28,6 +29,7 @@ class Dashboard implements DashboardPages {
 	readonly ADMIN = {
 		ROOT: `${this.root}/admin`,
 		USERS: `${this.root}/admin/users`,
+		FEEDBACK: `${this.root}/admin/feedback`,
 		LEARNING: {
 			COURSES: `${this.root}/admin/learning/courses`,
 			LESSONS: `${this.root}/admin/learning/lessons`,

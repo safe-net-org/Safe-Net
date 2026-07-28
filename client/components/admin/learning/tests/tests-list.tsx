@@ -1,9 +1,10 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { useQuery } from '@tanstack/react-query'
 import { m } from 'framer-motion'
-import { Edit, FileText, HelpCircle, Trash2 } from 'lucide-react'
+import { Edit, FileText, HelpCircle, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -12,29 +13,31 @@ interface TestsListProps {
 }
 
 export default function TestsList({ onTestsChange }: TestsListProps) {
+	const { t } = useI18n()
+	const c = t.adminTestComponents.testsList
 	const { data: tests, isLoading } = useQuery({
 		queryKey: ['tests-list'],
 		queryFn: () => adminService.getTests(),
 	})
 
 	const handleDeleteTest = async (testId: string, testTitle: string) => {
-		if (window.confirm(`Delete test "${testTitle}"?`)) {
+		if (window.confirm(c.confirmDeleteTemplate.replace('{title}', testTitle))) {
 			try {
 				await adminService.deleteTest(testId)
-				toast.success('Test deleted')
+				toast.success(c.toasts.deleted)
 				onTestsChange()
-			} catch (error) {
-				toast.error('Error deleting test')
+			} catch {
+				toast.error(c.toasts.deleteError)
 			}
 		}
 	}
 
-	if (isLoading) return <div className='text-center py-4'>Loading...</div>
+	if (isLoading) return <div className='text-center py-4'>{c.loading}</div>
 
 	if (!tests || tests.length === 0) {
 		return (
 			<div className='text-center py-8 text-gray-500 dark:text-gray-400'>
-				No tests found
+				{c.empty}
 			</div>
 		)
 	}
@@ -64,7 +67,10 @@ export default function TestsList({ onTestsChange }: TestsListProps) {
 								<div className='flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400'>
 									<span className='flex items-center gap-1'>
 										<HelpCircle className='w-3 h-3' />
-										{test.questions?.length || 0} questions
+										{c.questionsCountTemplate.replace(
+											'{count}',
+											String(test.questions?.length || 0)
+										)}
 									</span>
 									{test.course && <span>{test.course.title}</span>}
 								</div>
@@ -75,14 +81,14 @@ export default function TestsList({ onTestsChange }: TestsListProps) {
 							<Link
 								href={`/dashboard/admin/learning/tests/${test.id}/edit`}
 								className='p-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition text-blue-600'
-								title='Edit'
+								title={c.editTitle}
 							>
 								<Edit className='w-4 h-4' />
 							</Link>
 							<button
 								onClick={() => handleDeleteTest(test.id, test.title)}
 								className='p-2 hover:bg-red-100 dark:hover:bg-red-900 rounded transition text-red-600'
-								title='Delete'
+								title={c.deleteTitle}
 							>
 								<Trash2 className='w-4 h-4' />
 							</button>

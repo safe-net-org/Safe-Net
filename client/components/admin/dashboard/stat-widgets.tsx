@@ -1,7 +1,7 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { IAdminStats } from '@/services/admin/admin.types'
-import { m } from 'framer-motion'
 import {
 	Award,
 	BookOpen,
@@ -9,128 +9,133 @@ import {
 	FileText,
 	TrendingUp,
 	Users,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 interface StatWidgetsProps {
 	stats: IAdminStats
 }
 
 export default function StatWidgets({ stats }: StatWidgetsProps) {
+	const { t, locale } = useI18n()
+	const c = t.adminStats.overview.widgets
+	const numberLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
+	const totalAttempts = stats.performance?.totalAttempts ?? 0
+	const correctAttempts = stats.performance?.correctAttempts ?? 0
+	const hasAttempts = totalAttempts > 0
+	const answerRate = Math.min(
+		100,
+		Math.max(0, stats.performance?.averageCorrectPercent ?? 0)
+	)
+
 	const widgets = [
 		{
-			title: 'Total users',
+			title: c.totalUsers,
 			value: stats.users?.total || 0,
-			subtitle: `${stats.users?.active || 0} active`,
+			subtitle: c.activeSuffixTemplate.replace('{count}', String(stats.users?.active || 0)),
 			icon: Users,
-			color: 'from-blue-500 to-blue-600',
-			change: stats.registrations?.week || 0,
-			changeLabel: 'this week',
+			iconClassName: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+			badge: c.thisWeekTemplate.replace(
+				'{count}',
+				String(stats.registrations?.week || 0)
+			),
 		},
 		{
-			title: 'Courses',
+			title: c.courses,
 			value: stats.content?.courses || 0,
-			subtitle: `${stats.content?.lessons || 0} lessons`,
+			subtitle: c.lessonsSuffixTemplate.replace('{count}', String(stats.content?.lessons || 0)),
 			icon: BookOpen,
-			color: 'from-purple-500 to-purple-600',
+			iconClassName: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
 		},
 		{
-			title: 'Answer success rate',
-			value: `${stats.performance?.averageCorrectPercent || 0}%`,
-			subtitle: `${stats.performance?.correctAttempts || 0}/${stats.performance?.totalAttempts || 0}`,
+			title: c.answerSuccessRate,
+			value: hasAttempts ? `${answerRate}%` : '—',
+			subtitle: hasAttempts
+				? c.correctAnswersTemplate
+						.replace('{correct}', String(correctAttempts))
+						.replace('{total}', String(totalAttempts))
+				: c.noAttempts,
 			icon: CheckCircle2,
-			color: 'from-green-500 to-green-600',
+			iconClassName: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+			progress: hasAttempts ? answerRate : undefined,
 		},
 		{
-			title: 'Certificates issued',
+			title: c.certificatesIssued,
 			value: stats.performance?.certificates || 0,
-			subtitle: 'Total',
+			subtitle: c.total,
 			icon: Award,
-			color: 'from-orange-500 to-orange-600',
+			iconClassName: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
 		},
 		{
-			title: 'Practical tasks',
+			title: c.practicalTasks,
 			value: stats.content?.tasks || 0,
-			subtitle: `${stats.content?.tests || 0} tests`,
+			subtitle: c.testsSuffixTemplate.replace('{count}', String(stats.content?.tests || 0)),
 			icon: FileText,
-			color: 'from-pink-500 to-pink-600',
+			iconClassName: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
 		},
 		{
-			title: 'Update ticks',
-			value: stats.performance?.totalAttempts || 0,
-			subtitle: 'Attempts made',
+			title: c.attempts,
+			value: totalAttempts,
+			subtitle: c.correctAttemptsTemplate.replace(
+				'{count}',
+				String(correctAttempts)
+			),
 			icon: TrendingUp,
-			color: 'from-cyan-500 to-cyan-600',
+			iconClassName: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
 		},
 	]
 
 	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-			{widgets.map((widget, i) => {
+		<div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'>
+			{widgets.map(widget => {
 				const Icon = widget.icon
 				return (
-					<m.div
+					<article
 						key={widget.title}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: i * 0.05 }}
-						whileHover={{ scale: 1.02 }}
-						className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${widget.color} p-6 text-white shadow-lg hover:shadow-xl transition-shadow cursor-default group`}
+						className='rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-colors duration-200 hover:border-border'
 					>
-						{/* Background Pattern */}
-						<div className='absolute top-0 right-0 -mt-12 -mr-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform' />
-						<div className='absolute bottom-0 left-0 -mb-12 -ml-12 w-32 h-32 bg-black/10 rounded-full blur-2xl' />
-
-						{/* Content */}
-						<div className='relative z-10'>
-							<div className='flex items-start justify-between mb-4'>
-								<div>
-									<p className='text-sm font-medium text-white/80 mb-1'>
-										{widget.title}
-									</p>
-									<div className='flex items-baseline gap-2'>
-										<p className='text-3xl font-bold'>
-											{typeof widget.value === 'number'
-												? widget.value.toLocaleString('en-US')
-												: widget.value}
-										</p>
-										{widget.change !== undefined && (
-											<m.span
-												initial={{ scale: 0 }}
-												animate={{ scale: 1 }}
-												className='text-sm font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm'
-											>
-												+{widget.change}
-											</m.span>
-										)}
-									</div>
-								</div>
-								<div className='p-3 rounded-xl bg-white/20 backdrop-blur-sm'>
-									<Icon className='w-6 h-6 text-white/90' />
-								</div>
+						<div className='flex items-start justify-between gap-4'>
+							<dl className='min-w-0'>
+								<dt className='text-sm font-medium text-muted-foreground'>
+									{widget.title}
+								</dt>
+								<dd className='mt-2 text-3xl font-semibold tracking-tight tabular-nums text-foreground'>
+									{typeof widget.value === 'number'
+										? widget.value.toLocaleString(numberLocale)
+										: widget.value}
+								</dd>
+							</dl>
+							<div
+								className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${widget.iconClassName}`}
+							>
+								<Icon className='size-5' aria-hidden='true' />
 							</div>
-
-							{/* Subtitle */}
-							<p className='text-sm text-white/70'>
-								{widget.subtitle}
-								{widget.changeLabel && ` (${widget.changeLabel})`}
-							</p>
-
-							{/* Progress Bar */}
-							{typeof widget.value === 'string' &&
-								widget.value.includes('%') && (
-									<div className='mt-4 w-full h-2 bg-white/20 rounded-full overflow-hidden'>
-										<m.div
-											initial={{ width: 0 }}
-											animate={{
-												width: `${parseInt(widget.value)}%`,
-											}}
-											transition={{ duration: 1, delay: 0.3 }}
-											className='h-full bg-white/60 rounded-full'
-										/>
-									</div>
-								)}
 						</div>
-					</m.div>
+
+						<div className='mt-3 flex min-h-5 items-center justify-between gap-3 text-xs text-muted-foreground'>
+							<p>{widget.subtitle}</p>
+							{widget.badge && (
+								<span className='shrink-0 rounded-full bg-muted px-2 py-1 font-medium text-muted-foreground'>
+									{widget.badge}
+								</span>
+							)}
+						</div>
+
+						{widget.progress !== undefined && (
+							<div
+								role='progressbar'
+								aria-label={widget.title}
+								aria-valuemin={0}
+								aria-valuemax={100}
+								aria-valuenow={widget.progress}
+								className='mt-4 h-1.5 overflow-hidden rounded-full bg-muted'
+							>
+								<div
+									className='h-full rounded-full bg-emerald-500'
+									style={{ width: `${widget.progress}%` }}
+								/>
+							</div>
+						)}
+					</article>
 				)
 			})}
 		</div>

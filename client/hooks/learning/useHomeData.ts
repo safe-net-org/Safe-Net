@@ -35,9 +35,15 @@ export function useHomeData() {
 	return {
 		stages: stagesQuery.data ?? [],
 		isStagesLoading: stagesQuery.isLoading,
+		isStagesError: stagesQuery.isError,
+		stagesError: stagesQuery.error,
+		refetchStages: stagesQuery.refetch,
 		myCourses: coursesQuery.data?.active ?? [],
 		completedCount: coursesQuery.data?.completedCount ?? 0,
 		totalXp: coursesQuery.data?.totalXp ?? 0,
 		isMyCoursesLoading: coursesQuery.isLoading,
+		isMyCoursesError: coursesQuery.isError,
+		myCoursesError: coursesQuery.error,
+		refetchMyCourses: coursesQuery.refetch,
 	}
 }

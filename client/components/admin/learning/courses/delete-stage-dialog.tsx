@@ -1,7 +1,9 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2 } from '@/components/ui/icons'
 import { useState } from 'react'
 
 interface DeleteStageDialogProps {
@@ -19,11 +21,16 @@ export function DeleteStageDialog({
 	coursesCount,
 	onConfirm,
 }: DeleteStageDialogProps) {
+	const { locale, t } = useI18n()
+	const c = t.adminCourseComponents.deleteStageDialog
 	const [isDeleting, setIsDeleting] = useState(false)
 
 	const getCourseWord = (count: number): string => {
-		if (count === 1) return 'course'
-		return 'courses'
+		return selectPlural(locale, count, {
+			one: c.courseWordOne,
+			few: c.courseWordFew,
+			many: c.courseWordMany,
+		})
 	}
 
 	const handleConfirm = () => {
@@ -50,7 +57,7 @@ export function DeleteStageDialog({
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.95, y: 20 }}
 						transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-						className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-[#0A0F1D] p-6 shadow-2xl'
+						className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-overlay p-6 shadow-2xl'
 					>
 						{/* Icon */}
 						<div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10'>
@@ -60,16 +67,16 @@ export function DeleteStageDialog({
 						{/* Content */}
 						<div className='text-center'>
 							<h3 className='mb-2 text-2xl font-bold text-white'>
-								Delete stage?
+								{c.title}
 							</h3>
 							<p className='mb-2 text-gray-400'>
-								You are about to delete the stage{' '}
+								{c.bodyPrefix}{' '}
 								<span className='font-semibold text-white'>
-									"{stageTitle}"
+									&ldquo;{stageTitle}&rdquo;
 								</span>
 								{coursesCount > 0 && (
 									<>
-										, which contains{' '}
+										{c.containingSuffix}{' '}
 										<span className='font-semibold text-white'>
 											{coursesCount} {getCourseWord(coursesCount)}
 										</span>
@@ -78,10 +85,9 @@ export function DeleteStageDialog({
 							</p>
 							{coursesCount > 0 && (
 								<div className='mx-auto mb-2 max-w-xs rounded-lg bg-yellow-500/10 p-3 text-sm text-yellow-400'>
-									<p className='font-semibold'>⚠️ Attention</p>
+									<p className='font-semibold'>{c.attention}</p>
 									<p className='mt-1 text-xs'>
-										All courses and lessons within this stage will be
-										permanently deleted. This action cannot be undone.
+										{c.cascadeWarning}
 									</p>
 								</div>
 							)}
@@ -96,7 +102,7 @@ export function DeleteStageDialog({
 								disabled={isDeleting}
 								className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-gray-300 transition-all hover:bg-white/10 disabled:opacity-50'
 							>
-								Cancel
+								{c.buttons.cancel}
 							</m.button>
 							<m.button
 								whileHover={{ scale: 1.02 }}
@@ -108,12 +114,12 @@ export function DeleteStageDialog({
 								{isDeleting ? (
 									<>
 										<Loader2 className='mr-2 inline h-4 w-4 animate-spin' />
-										Deleting...
+										{c.buttons.deleting}
 									</>
 								) : coursesCount > 0 ? (
-									'Delete all'
+									c.buttons.confirmAll
 								) : (
-									'Delete'
+									c.buttons.confirmSingle
 								)}
 							</m.button>
 						</div>

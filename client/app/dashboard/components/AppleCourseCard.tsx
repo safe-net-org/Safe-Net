@@ -1,17 +1,27 @@
 import Link from 'next/link'
 
-import { ArrowUpRight, Award, Zap } from 'lucide-react'
+import { ArrowUpRight, Award, Zap } from '@/components/ui/icons'
 
-import { memo, useState } from 'react'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { translateCourseCopy, translateStageTitle } from '@/i18n/content-translations'
+import { IUserCourse } from '@/services/learning/learning.types'
+import { memo } from 'react'
 
-export const AppleCourseCard = memo(({ course, index }: any) => {
-	const [isHovered, setIsHovered] = useState(false)
+interface AppleCourseCardProps {
+	course: IUserCourse
+	index: number
+}
+
+export const AppleCourseCard = memo(({ course, index }: AppleCourseCardProps) => {
+	const { t, locale } = useI18n()
+	const courseCopy = translateCourseCopy(locale, course.title)
+	const stageTitle = course.stageTitle
+		? translateStageTitle(locale, course.stageTitle)
+		: course.stageTitle
 	return (
 		<Link
 			href={`/dashboard/courses/${course.slug}`}
 			className='group h-64 flex flex-col'
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
 			style={{ animationDelay: `${index * 50}ms` }}
 		>
 			<div className='relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/8 hover:border-white/20 transition-all duration-400 hover:scale-[1.01] flex-1 flex flex-col'>
@@ -25,15 +35,15 @@ export const AppleCourseCard = memo(({ course, index }: any) => {
 					<div className='flex items-start justify-between gap-4 shrink-0'>
 						<div className='flex-1 space-y-2'>
 							{}
-							{course.stageTitle && (
+							{stageTitle && (
 								<div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-medium text-slate-400 group-hover:bg-white/15 transition-colors duration-300'>
 									<div className='w-1.5 h-1.5 rounded-full bg-blue-400' />
-									{course.stageTitle}
+									{stageTitle}
 								</div>
 							)}
 							{}
 							<h3 className='text-xl md:text-2xl font-bold leading-tight group-hover:text-slate-200 group-hover:drop-shadow-sm transition-all duration-400'>
-								{course.title}
+								{courseCopy.title}
 							</h3>
 						</div>
 						{}
@@ -46,7 +56,9 @@ export const AppleCourseCard = memo(({ course, index }: any) => {
 					{}
 					<div className='flex-1 flex flex-col justify-end space-y-3'>
 						<div className='flex items-center justify-between text-sm'>
-							<span className='text-slate-400 font-medium'>Progress</span>
+							<span className='text-slate-400 font-medium'>
+								{t.dashboardComponents.progress}
+							</span>
 							<span className='font-bold text-slate-200'>
 								{Math.round(course.progress)}%
 							</span>
@@ -69,7 +81,11 @@ export const AppleCourseCard = memo(({ course, index }: any) => {
 						<span className='font-medium'>{course.totalXp} XP</span>
 					</div>
 					<div className='flex items-center gap-1.5 text-sm font-medium text-slate-300 group-hover:text-blue-300 group-hover:gap-2 transition-all duration-300'>
-						<span>{course.completed ? 'Retake' : 'Continue'}</span>
+						<span>
+							{course.completed
+								? t.dashboardComponents.retake
+								: t.dashboardComponents.continueLabel}
+						</span>
 						<ArrowUpRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300' />
 					</div>
 				</div>

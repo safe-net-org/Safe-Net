@@ -4,6 +4,7 @@ import { CurrentUser } from 'src/auth/decorators/user.decorator'
 import { TProtectUserData } from 'src/types/auth.types'
 import { SubmitTestDto } from '../dto/submit-test.dto'
 import { TestsService } from '../services/tests.service'
+import { CurrentLocale, Locale } from '../../i18n/locale'
 
 @Controller('learning/tests')
 @Auth()
@@ -14,8 +15,8 @@ export class TestsController {
 		return this.testsService.getTests()
 	}
 	@Get(':id')
-	async getTest(@Param('id') id: string) {
-		return this.testsService.getTestById(id)
+	async getTest(@Param('id') id: string, @CurrentLocale() locale: Locale) {
+		return this.testsService.getTestById(id, locale)
 	}
 	@HttpCode(200)
 	@Post(':id/submit')

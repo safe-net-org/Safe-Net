@@ -79,6 +79,11 @@ export async function fetchDomainIntel(domain: string): Promise<DomainIntel> {
 }
 
 export async function loadIntel(domain: string, force = false): Promise<DomainIntel> {
+  // Do not surface old remote results after the user switches intelligence
+  // off. The disabled result is intentionally not cached.
+  const settings = await getSettings()
+  if (!settings.intelEnabled) return fetchDomainIntel(domain)
+
   if (!force) {
     const cached = await getCachedIntel(domain)
     if (cached) return cached

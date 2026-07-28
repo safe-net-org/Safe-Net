@@ -7,8 +7,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useCourses } from '@/hooks/learning/useCourses'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { cn } from '@/lib/utils'
-import { learningService } from '@/services/learning/learning.service'
+import {
+	ICertificateListItem,
+	learningService,
+} from '@/services/learning/learning.service'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, m } from 'framer-motion'
@@ -25,11 +30,13 @@ import {
 	Target,
 	TrendingUp,
 	Zap,
-} from 'lucide-react'
+	type AppIcon,
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 export default function CertificatesPage() {
+	const { locale, t } = useI18n()
 	const { data: certificates, isLoading } = useQuery({
 		queryKey: ['user', 'certificates'],
 		queryFn: () => learningService.getUserCertificates(),
@@ -66,7 +73,7 @@ export default function CertificatesPage() {
 				showBackButton
 				items={[
 					{
-						label: 'Certificates',
+						label: t.dashboardCertificates.breadcrumb,
 						href: ROUTES.CERTIFICATES,
 					},
 				]}
@@ -94,7 +101,7 @@ export default function CertificatesPage() {
 							className='flex items-center gap-4'
 						>
 							<h1 className='text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white leading-tight tracking-tight'>
-								My Certificates
+								{t.dashboardCertificates.title}
 							</h1>
 						</m.div>
 
@@ -104,18 +111,18 @@ export default function CertificatesPage() {
 							transition={{ duration: 0.5, delay: 0.2 }}
 							className='text-base sm:text-lg lg:text-xl text-white/70 max-w-2xl leading-relaxed'
 						>
-							{hasCertificates ? (
-								<>
-									Received{' '}
-									<span className='font-bold text-white'>
-										{certificates.length}
-									</span>{' '}
-									{certificates.length === 1 ? 'certificate' : 'certificates'}
-									. Each one confirms your professionalism and hard work.
-								</>
-							) : (
-								'Complete a course to earn an official certificate of completion'
-							)}
+							{hasCertificates
+								? t.dashboardCertificates.subtitleTemplate
+										.replace('{count}', String(certificates.length))
+										.replace(
+											'{certificateWord}',
+											selectPlural(locale, certificates.length, {
+												one: t.dashboardCertificates.certificateWordOne,
+												few: t.dashboardCertificates.certificateWordFew,
+												many: t.dashboardCertificates.certificateWordMany,
+											})
+										)
+								: t.dashboardCertificates.subtitleEmpty}
 						</m.p>
 
 						{hasCertificates && (
@@ -127,11 +134,14 @@ export default function CertificatesPage() {
 							>
 								<Badge className='bg-emerald-500/10 backdrop-blur-sm border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-xl text-sm font-semibold'>
 									<CheckCircle2 className='w-4 h-4 mr-1.5' />
-									All active
+									{t.dashboardCertificates.allActive}
 								</Badge>
 								<div className='flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10'>
 									<Zap className='w-4 h-4 text-yellow-400' />
-									{stats.totalXP} XP
+									{t.dashboardCertificates.xpTemplate.replace(
+										'{xp}',
+										String(stats.totalXP)
+									)}
 								</div>
 							</m.div>
 						)}
@@ -149,28 +159,28 @@ export default function CertificatesPage() {
 								<StatCard
 									icon={Award}
 									value={certificates.length}
-									label='Certificates'
+									label={t.dashboardCertificates.stats.certificates}
 									color='yellow'
 									delay={0.1}
 								/>
 								<StatCard
 									icon={TrendingUp}
 									value={certificates.length}
-									label='Courses completed'
+									label={t.dashboardCertificates.stats.coursesCompleted}
 									color='blue'
 									delay={0.15}
 								/>
 								<StatCard
 									icon={Shield}
 									value={certificates.length * 5}
-									label='Skills'
+									label={t.dashboardCertificates.stats.skills}
 									color='green'
 									delay={0.2}
 								/>
 								<StatCard
 									icon={Target}
 									value='100%'
-									label='Completed'
+									label={t.dashboardCertificates.stats.completed}
 									color='purple'
 									delay={0.25}
 								/>
@@ -184,7 +194,7 @@ export default function CertificatesPage() {
 							>
 								<Award className='w-16 h-16 mx-auto mb-4 text-white/20' />
 								<p className='text-base text-white/60 mb-6'>
-									No certificates yet
+									{t.dashboardCertificates.emptyStats.title}
 								</p>
 								<Button
 									asChild
@@ -193,7 +203,7 @@ export default function CertificatesPage() {
 								>
 									<Link href={ROUTES.COURSES}>
 										<BookOpen className='w-5 h-5 mr-2' />
-										Start learning
+										{t.dashboardCertificates.emptyStats.cta}
 									</Link>
 								</Button>
 							</m.div>
@@ -216,7 +226,7 @@ export default function CertificatesPage() {
 						>
 							<Link href={ROUTES.COURSES}>
 								<Sparkles className='w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300' />
-								Continue learning
+								{t.dashboardCertificates.continueLearning}
 								<ArrowRight className='w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300' />
 							</Link>
 						</Button>
@@ -266,10 +276,10 @@ export default function CertificatesPage() {
 
 								<div className='space-y-3'>
 									<h3 className='text-2xl sm:text-3xl font-black text-white'>
-										You don't have any certificates yet
+										{t.dashboardCertificates.emptyState.title}
 									</h3>
 									<p className='text-lg text-white/60 max-w-md leading-relaxed'>
-										Complete any course to earn your first official certificate
+										{t.dashboardCertificates.emptyState.subtitle}
 									</p>
 								</div>
 
@@ -280,7 +290,7 @@ export default function CertificatesPage() {
 								>
 									<Link href={ROUTES.COURSES}>
 										<BookOpen className='w-5 h-5 mr-2' />
-										Go to courses
+										{t.dashboardCertificates.emptyState.cta}
 									</Link>
 								</Button>
 							</CardContent>
@@ -300,7 +310,7 @@ function StatCard({
 	color,
 	delay,
 }: {
-	icon: any
+		icon: AppIcon
 	label: string
 	value: number | string
 	color: 'yellow' | 'blue' | 'green' | 'purple'
@@ -348,11 +358,12 @@ function CertificateCard({
 	isHovered,
 	onHover,
 }: {
-	certificate: any
+		certificate: ICertificateListItem
 	index: number
 	isHovered: boolean
 	onHover: (id: string | null) => void
 }) {
+	const { t } = useI18n()
 	return (
 		<m.div
 			initial={{ opacity: 0, y: 30 }}
@@ -397,7 +408,7 @@ function CertificateCard({
 							{/* Status badge */}
 							<Badge className='bg-emerald-500/10 border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-lg text-xs font-semibold'>
 								<CheckCircle2 className='w-3 h-3 mr-1' />
-								Active
+								{t.dashboardCertificates.card.active}
 							</Badge>
 						</div>
 
@@ -430,7 +441,7 @@ function CertificateCard({
 						{/* Action Button */}
 						<div className='flex items-center justify-between pt-5 border-t border-white/10 group-hover:border-white/20 transition-colors duration-300'>
 							<span className='text-sm font-bold text-white/80 group-hover:text-white transition-colors duration-300'>
-								Open certificate
+								{t.dashboardCertificates.card.openCertificate}
 							</span>
 							<div className='w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center backdrop-blur-xl shadow-lg border border-white/10 shrink-0 bg-white/5 text-white group-hover:bg-white/10 group-hover:border-white/20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500'>
 								<ExternalLink className='w-5 h-5 sm:w-6 sm:h-6' />

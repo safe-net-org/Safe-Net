@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { ChevronRight, Home } from 'lucide-react'
+import { ChevronRight, Home } from '@/components/ui/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -32,11 +32,11 @@ export default function Breadcrumbs() {
 		<m.nav
 			initial={{ opacity: 0, y: -10 }}
 			animate={{ opacity: 1, y: 0 }}
-			className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 px-6 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg'
+			className='flex items-center gap-2 rounded-lg border border-border/70 bg-card px-6 py-3 text-sm text-muted-foreground'
 		>
 			<Link
 				href='/dashboard/admin'
-				className='flex items-center gap-1 hover:text-gray-900 dark:hover:text-white transition'
+				className='flex items-center gap-1 transition-colors hover:text-foreground'
 			>
 				<Home className='w-4 h-4' />
 				<span>Home</span>
@@ -53,13 +53,13 @@ export default function Breadcrumbs() {
 					<m.div key={segment} className='flex items-center gap-2'>
 						<ChevronRight className='w-4 h-4' />
 						{isLast ? (
-							<span className='text-gray-900 dark:text-white font-medium'>
+							<span className='font-medium text-foreground'>
 								{label}
 							</span>
 						) : (
 							<Link
 								href={href}
-								className='hover:text-gray-900 dark:hover:text-white transition'
+								className='transition-colors hover:text-foreground'
 							>
 								{label}
 							</Link>

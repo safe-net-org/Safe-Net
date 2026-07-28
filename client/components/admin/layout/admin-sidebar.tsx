@@ -12,7 +12,7 @@ import {
 	Settings,
 	Users,
 	X,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -65,7 +65,7 @@ export default function AdminSidebar() {
 			await adminService.logout()
 			toast.success('You have logged out')
 			router.push('/login')
-		} catch (error) {
+		} catch {
 			toast.error('Error while logging out')
 		} finally {
 			setIsLoggingOut(false)

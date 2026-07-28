@@ -1,0 +1,23 @@
+{
+  "name": "safe-net-curated-url-regression-v1",
+  "description": "Small deterministic regression set. It is not a representative production benchmark.",
+  "decision_threshold": 40,
+  "samples": [
+    {"url": "https://sberbаnk.ru/login", "label": "phishing", "case": "Cyrillic homograph"},
+    {"url": "https://paypαl.com", "label": "phishing", "case": "Greek homograph"},
+    {"url": "https://micrοsoft.com", "label": "phishing", "case": "Greek homograph"},
+    {"url": "https://tinkkoff.ru", "label": "phishing", "case": "Typosquat"},
+    {"url": "https://sb3rbank.ru", "label": "phishing", "case": "Leet substitution"},
+    {"url": "https://paypa1.com", "label": "phishing", "case": "Course regression"},
+    {"url": "https://micros0ft-alerts.com", "label": "phishing", "case": "Brand token plus leet"},
+    {"url": "https://sberbank.com.verify-account.info/login", "label": "phishing", "case": "Brand subdomain lure"},
+    {"url": "https://sberbank.ru", "label": "benign", "case": "Known brand"},
+    {"url": "https://mail.google.com", "label": "benign", "case": "Known brand subdomain"},
+    {"url": "https://ozon.ru", "label": "benign", "case": "Known brand"},
+    {"url": "https://accounts.google.com", "label": "benign", "case": "Known brand auth"},
+    {"url": "https://github.com", "label": "benign", "case": "Common developer site"},
+    {"url": "https://www.microsoft.com", "label": "benign", "case": "Known brand"},
+    {"url": "https://web.telegram.org", "label": "benign", "case": "Known brand subdomain"},
+    {"url": "https://example.com/docs", "label": "benign", "case": "Neutral HTTPS URL"}
+  ]
+}

@@ -28,10 +28,11 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import { adminService } from '@/services/admin/admin.service'
 import { UserStatus } from '@/services/admin/admin.types'
-import { UserRoleLabel } from '@/services/auth/auth.types'
+import { UserRole, UserRoleLabel } from '@/services/auth/auth.types'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { AnimatePresence, m } from 'framer-motion'
@@ -53,18 +54,24 @@ import {
     User,
     Users,
     X,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import {
+	type Dispatch,
+	type SetStateAction,
+	useMemo,
+	useState,
+} from 'react'
 import { toast } from 'sonner'
 
 export default function UsersPage() {
+	const { t } = useI18n()
+	const c = t.adminUsers.list
 	const [search, setSearch] = useState('')
-	const [roleFilter, setRoleFilter] = useState('all')
-	const [statusFilter, setStatusFilter] = useState('all')
+	const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all')
+	const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all')
 	const [currentPage, setCurrentPage] = useState(1)
 	const [itemsPerPage, setItemsPerPage] = useState(20)
-	const [blockingUserId, setBlockingUserId] = useState<string | null>(null)
 
 	// Combobox open states
 	const [openRole, setOpenRole] = useState(false)
@@ -95,7 +102,7 @@ export default function UsersPage() {
 				user.name.toLowerCase().includes(search.toLowerCase()) ||
 				user.email.toLowerCase().includes(search.toLowerCase())
 			const matchRole =
-				roleFilter === 'all' || user.rights.includes(roleFilter as any)
+				roleFilter === 'all' || user.rights.includes(roleFilter)
 			const matchStatus = statusFilter === 'all' || user.status === statusFilter
 			return matchSearch && matchRole && matchStatus
 		})
@@ -107,10 +114,12 @@ export default function UsersPage() {
 		currentPage * itemsPerPage
 	)
 
-	const handleFilterChange = (setter: any) => (value: any) => {
-		setter(value)
-		setCurrentPage(1)
-	}
+	const handleFilterChange =
+		<T,>(setter: Dispatch<SetStateAction<T>>) =>
+		(value: T) => {
+			setter(value)
+			setCurrentPage(1)
+		}
 
 	const hasActiveFilters =
 		search || roleFilter !== 'all' || statusFilter !== 'all'
@@ -135,20 +144,18 @@ export default function UsersPage() {
 		if (!blockDialogData) return
 		const isBlocked = blockDialogData.status === UserStatus.BLOCKED
 		const newStatus = isBlocked ? UserStatus.ACTIVE : UserStatus.BLOCKED
-		setBlockingUserId(blockDialogData.userId)
 		setBlockDialogOpen(false)
 		try {
 			await adminService.updateUser(blockDialogData.userId, {
 				status: newStatus,
 			})
 			toast.success(
-				isBlocked ? `User unblocked` : `User blocked`
+				isBlocked ? c.toasts.unblocked : c.toasts.blocked
 			)
 			await refetch()
-		} catch (error: any) {
-			toast.error('Error updating status')
+		} catch {
+			toast.error(c.toasts.updateError)
 		} finally {
-			setBlockingUserId(null)
 			setBlockDialogData(null)
 		}
 	}
@@ -156,19 +163,19 @@ export default function UsersPage() {
 	const handleExportCSV = () => {
 		try {
 			const headers = [
-				'ID',
-				'Name',
-				'Email',
-				'Roles',
-				'Status',
-				'Registration date',
+				c.csv.id,
+				c.csv.name,
+				c.csv.email,
+				c.csv.roles,
+				c.csv.status,
+				c.csv.registrationDate,
 			]
 			const rows = filteredUsers.map(user => [
 				user.id,
 				user.name,
 				user.email,
 				user.rights.join('; '),
-				user.status === UserStatus.ACTIVE ? 'Active' : 'Blocked',
+				user.status === UserStatus.ACTIVE ? c.csv.active : c.csv.blocked,
 				format(new Date(user.createdAt), 'dd.MM.yyyy HH:mm'),
 			])
 			const csvContent = [
@@ -187,33 +194,37 @@ export default function UsersPage() {
 			document.body.appendChild(link)
 			link.click()
 			document.body.removeChild(link)
-		} catch (error) {
-			toast.error('Export error')
+		} catch {
+			toast.error(c.toasts.exportError)
 		}
 	}
 
 	const roles = [
-		{ value: 'all', label: 'All roles', icon: Users },
-		{ value: 'USER', label: 'User', icon: User },
-		{ value: 'ADMIN', label: 'Admin', icon: Shield },
-	]
+		{ value: 'all', label: c.roles.all, icon: Users },
+		{ value: UserRole.USER, label: c.roles.user, icon: User },
+		{ value: UserRole.ADMIN, label: c.roles.admin, icon: Shield },
+	] satisfies Array<{ value: 'all' | UserRole; label: string; icon: typeof Users }>
 
 	const statuses = [
-		{ value: 'all', label: 'All statuses', icon: Activity },
-		{ value: 'ACTIVE', label: 'Active', icon: CheckCircle2 },
-		{ value: 'BLOCKED', label: 'Blocked', icon: Lock },
-	]
+		{ value: 'all', label: c.statuses.all, icon: Activity },
+		{ value: UserStatus.ACTIVE, label: c.statuses.active, icon: CheckCircle2 },
+		{ value: UserStatus.BLOCKED, label: c.statuses.blocked, icon: Lock },
+	] satisfies Array<{
+		value: 'all' | UserStatus
+		label: string
+		icon: typeof Activity
+	}>
 
 	const limits = [
-		{ value: 10, label: '10 rows' },
-		{ value: 20, label: '20 rows' },
-		{ value: 50, label: '50 rows' },
-		{ value: 100, label: '100 rows' },
+		{ value: 10, label: c.rowsTemplate.replace('{count}', '10') },
+		{ value: 20, label: c.rowsTemplate.replace('{count}', '20') },
+		{ value: 50, label: c.rowsTemplate.replace('{count}', '50') },
+		{ value: 100, label: c.rowsTemplate.replace('{count}', '100') },
 	]
 
 	if (isLoading) {
 		return (
-			<div className='min-h-screen p-8'>
+			<div className='min-h-screen'>
 				<div className='max-w-[1400px] mx-auto space-y-6'>
 					<div className='h-12 w-64 bg-white/5 rounded-2xl animate-pulse' />
 					<div className='h-[600px] bg-white/5 rounded-3xl animate-pulse' />
@@ -224,8 +235,8 @@ export default function UsersPage() {
 
 	return (
 		<TooltipProvider delayDuration={200}>
-			<div className='min-h-screen text-white selection:bg-blue-500/30 font-sans'>
-				<div className='relative max-w-[1400px] mx-auto px-6 py-8 space-y-6'>
+			<div className='min-h-screen text-foreground selection:bg-blue-500/30 font-sans'>
+				<div className='relative max-w-[1400px] mx-auto space-y-6'>
 					{/* Header Section - Apple Style */}
 					<m.div
 						initial={{ opacity: 0, y: -20 }}
@@ -234,12 +245,12 @@ export default function UsersPage() {
 					>
 						<div className='space-y-1'>
 							<h1 className='text-5xl font-bold tracking-tight text-white'>
-								Users
+								{c.heading}
 							</h1>
 							<div className='flex items-center gap-2 text-white/50 text-sm'>
 								<Sparkles className='w-4 h-4' />
 								<span>
-									Total users:{' '}
+									{c.totalUsersLabel}{' '}
 									<span className='text-white font-semibold'>
 										{users.length}
 									</span>
@@ -253,7 +264,7 @@ export default function UsersPage() {
 							className='bg-white text-black hover:bg-white/80 font-semibold rounded-xl px-5 h-11 shadow-lg transition-all active:scale-[0.98] disabled:opacity-50'
 						>
 							<Download className='w-5 h-5 mr-2' />
-							Export CSV
+							{c.exportCsv}
 						</Button>
 					</m.div>
 
@@ -270,7 +281,7 @@ export default function UsersPage() {
 							</div>
 							<input
 								type='text'
-								placeholder='Find a user...'
+								placeholder={c.searchPlaceholder}
 								value={search}
 								onChange={e => handleFilterChange(setSearch)(e.target.value)}
 								className='w-full pl-12 pr-4 h-12 rounded-xl bg-white/5 backdrop-blur-xl border border-white/10
@@ -320,7 +331,7 @@ export default function UsersPage() {
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent
-									className='w-[200px] p-1 bg-[#0E172B] border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
+									className='w-[200px] p-1 bg-overlay border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
 									align='end'
 								>
 									<Command className='bg-transparent text-white'>
@@ -381,7 +392,7 @@ export default function UsersPage() {
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent
-									className='w-[200px] p-1 bg-[#0E172B] border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
+									className='w-[200px] p-1 bg-overlay border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
 									align='end'
 								>
 									<Command className='bg-transparent text-white'>
@@ -422,7 +433,7 @@ export default function UsersPage() {
 										onClick={clearFilters}
 										className='h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center
                       text-white/40 hover:text-white hover:bg-white/10 transition-all shrink-0'
-										title='Reset all filters'
+										title={c.resetFiltersTitle}
 									>
 										<X className='w-5 h-5' />
 									</m.button>
@@ -443,17 +454,17 @@ export default function UsersPage() {
 									<Filter className='w-8 h-8 text-white/20' />
 								</div>
 								<h3 className='text-xl font-semibold text-white mb-1.5'>
-									Nothing found
+									{c.empty.title}
 								</h3>
 								<p className='text-white/50 mb-6 text-sm'>
-									Try changing your search parameters
+									{c.empty.subtitle}
 								</p>
 								<Button
 									onClick={clearFilters}
 									variant='outline'
 									className='h-10 px-6 rounded-xl border-white/10 text-white hover:bg-white/5 bg-transparent font-medium'
 								>
-									Reset filters
+									{c.empty.cta}
 								</Button>
 							</m.div>
 						) : (
@@ -467,12 +478,12 @@ export default function UsersPage() {
 										<thead className='bg-white/[0.02] border-b border-white/5'>
 											<tr>
 												{[
-													'User',
-													'Email',
-													'Roles',
-													'Status',
-													'Date',
-													'Actions',
+													c.table.user,
+													c.table.email,
+													c.table.roles,
+													c.table.status,
+													c.table.date,
+													c.table.actions,
 												].map(h => (
 													<th
 														key={h}
@@ -513,8 +524,8 @@ export default function UsersPage() {
 																	className={cn(
 																		'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold',
 																		role === 'ADMIN'
-																			? 'bg-amber-500/10 text-amber-300'
-																			: 'bg-blue-500/10 text-blue-300'
+																			? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300'
+																			: 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-300'
 																	)}
 																>
 																	{role === 'ADMIN' ? (
@@ -532,8 +543,8 @@ export default function UsersPage() {
 															className={cn(
 																'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold',
 																user.status === UserStatus.ACTIVE
-																	? 'bg-emerald-500/10 text-emerald-400'
-																	: 'bg-red-500/10 text-red-400'
+																	? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400'
+																	: 'bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400'
 															)}
 														>
 															{user.status === UserStatus.ACTIVE ? (
@@ -542,8 +553,8 @@ export default function UsersPage() {
 																<Lock className='w-3 h-3' />
 															)}
 															{user.status === UserStatus.ACTIVE
-																? 'Active'
-																: 'Blocked'}
+																? c.statuses.active
+																: c.statuses.blocked}
 														</span>
 													</td>
 													<td className='px-5 py-4 text-sm font-medium text-white/50'>
@@ -560,8 +571,8 @@ export default function UsersPage() {
 																		<Eye className='w-4.5 h-4.5' />
 																	</Link>
 																</TooltipTrigger>
-																<TooltipContent className='bg-[#0E172B] border-white/10 text-white text-xs'>
-																	Profile
+																<TooltipContent className='bg-overlay border-white/10 text-white text-xs'>
+																	{c.tooltips.profile}
 																</TooltipContent>
 															</Tooltip>
 
@@ -589,10 +600,10 @@ export default function UsersPage() {
 																		)}
 																	</button>
 																</TooltipTrigger>
-																<TooltipContent className='bg-[#0E172B] border-white/10 text-white text-xs'>
+																<TooltipContent className='bg-overlay border-white/10 text-white text-xs'>
 																	{user.status === UserStatus.BLOCKED
-																		? 'Unblock'
-																		: 'Block'}
+																		? c.tooltips.unblock
+																		: c.tooltips.block}
 																</TooltipContent>
 															</Tooltip>
 														</div>
@@ -614,12 +625,14 @@ export default function UsersPage() {
 													aria-expanded={openLimit}
 													className='h-9 gap-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg px-3'
 												>
-													<span className='text-sm'>{itemsPerPage} rows</span>
+													<span className='text-sm'>
+														{c.rowsTemplate.replace('{count}', String(itemsPerPage))}
+													</span>
 													<ChevronsUpDown className='h-3.5 w-3.5 opacity-50' />
 												</Button>
 											</PopoverTrigger>
 											<PopoverContent
-												className='w-[130px] p-1 bg-[#0E172B] border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
+												className='w-[130px] p-1 bg-overlay border-white/10 shadow-2xl rounded-xl backdrop-blur-2xl'
 												align='start'
 											>
 												<Command className='bg-transparent text-white'>
@@ -637,7 +650,7 @@ export default function UsersPage() {
 																	className='text-white/70 hover:bg-white/10 hover:text-white cursor-pointer rounded-lg py-2.5 px-3 text-sm mb-0.5 last:mb-0 transition-colors'
 																>
 																	<span className='font-medium'>
-																		{limit.value} rows
+																		{c.rowsTemplate.replace('{count}', String(limit.value))}
 																	</span>
 																	{itemsPerPage === limit.value && (
 																		<Check className='ml-auto h-3.5 w-3.5 text-blue-400' />
@@ -650,12 +663,13 @@ export default function UsersPage() {
 											</PopoverContent>
 										</Popover>
 										<span className='hidden sm:inline text-sm'>
-											{(currentPage - 1) * itemsPerPage + 1}-
-											{Math.min(
-												currentPage * itemsPerPage,
-												filteredUsers.length
-											)}{' '}
-											of {filteredUsers.length}
+											{c.paginationTemplate
+												.replace('{start}', String((currentPage - 1) * itemsPerPage + 1))
+												.replace(
+													'{end}',
+													String(Math.min(currentPage * itemsPerPage, filteredUsers.length))
+												)
+												.replace('{total}', String(filteredUsers.length))}
 										</span>
 									</div>
 
@@ -689,15 +703,15 @@ export default function UsersPage() {
 
 				{/* Block Dialog */}
 				<AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
-					<AlertDialogContent className='bg-[#0A0F1D] border-white/10 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md'>
+					<AlertDialogContent className='bg-overlay border-white/10 backdrop-blur-2xl rounded-2xl shadow-2xl max-w-md'>
 						<AlertDialogHeader>
 							<AlertDialogTitle className='text-xl font-bold text-white'>
 								{blockDialogData?.status === UserStatus.BLOCKED
-									? 'Unblock?'
-									: 'Block?'}
+									? c.blockDialog.unblockTitle
+									: c.blockDialog.blockTitle}
 							</AlertDialogTitle>
 							<AlertDialogDescription className='text-white/60 text-sm mt-1.5'>
-								Are you sure you want to change the status of user
+								{c.blockDialog.descriptionPrefix}
 								<br />
 								<span className='text-white font-semibold bg-white/5 px-2 py-0.5 rounded-md'>
 									{blockDialogData?.userName}
@@ -707,7 +721,7 @@ export default function UsersPage() {
 						</AlertDialogHeader>
 						<AlertDialogFooter className='mt-4 gap-2'>
 							<AlertDialogCancel className='bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white rounded-xl h-10 px-5 font-medium'>
-								Cancel
+								{c.blockDialog.cancel}
 							</AlertDialogCancel>
 							<AlertDialogAction
 								onClick={confirmToggleBlockUser}
@@ -718,7 +732,7 @@ export default function UsersPage() {
 										: 'bg-red-600 hover:bg-red-700'
 								)}
 							>
-								Confirm
+								{c.blockDialog.confirm}
 							</AlertDialogAction>
 						</AlertDialogFooter>
 					</AlertDialogContent>

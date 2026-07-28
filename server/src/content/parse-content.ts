@@ -191,63 +191,135 @@ function loadStage(stageDir: string, problems: Problem[]): ParsedStage | null {
   return { dir: stageDir, data: stageResult.data, courses }
 }
 
-function compile(stages: ParsedStage[]) {
-  return stages.map(stage => ({
-    ...stage.data,
-    courses: stage.courses.map(course => ({
-      ...course.data,
-      lessons: course.lessons.map(lesson => {
-        const l = lesson.data
+/**
+ * A Russian content tree, keyed for cheap lookup while compiling the English
+ * tree. Stage/course are matched by slug (globally unique, per
+ * validateContentTree); lesson/block/task/question/option are matched by
+ * their 1-based `order` within the parent, since translated content is
+ * expected to mirror the English tree's structure exactly (same counts, same
+ * order) -- only the text changes.
+ */
+interface RuOverlay {
+  stagesBySlug: Map<string, ParsedStage>
+  coursesBySlug: Map<string, ParsedCourse>
+}
+
+function buildRuOverlay(ruStages: ParsedStage[]): RuOverlay {
+  const stagesBySlug = new Map<string, ParsedStage>()
+  const coursesBySlug = new Map<string, ParsedCourse>()
+  for (const stage of ruStages) {
+    stagesBySlug.set(stage.data.slug, stage)
+    for (const course of stage.courses) {
+      coursesBySlug.set(course.data.slug, course)
+    }
+  }
+  return { stagesBySlug, coursesBySlug }
+}
+
+function compile(stages: ParsedStage[], ru?: RuOverlay) {
+  return stages.map(stage => {
+    const ruStage = ru?.stagesBySlug.get(stage.data.slug)
+    return {
+      ...stage.data,
+      titleRu: ruStage?.data.title,
+      subtitleRu: ruStage?.data.subtitle,
+      courses: stage.courses.map(course => {
+        const ruCourse = ru?.coursesBySlug.get(course.data.slug)
         return {
-          order: l.order,
-          title: l.title,
-          estimatedDuration: calculateEstimatedDuration(l.theory.length, l.tasks.length),
-          blocks: l.theory.map((block, i) => ({
-            order: i + 1,
-            type: 'THEORY' as const,
-            title: block.title,
-            content: block.content,
-          })),
-          tasks: l.tasks.map((task, i) => {
-            const compiled: Record<string, unknown> = {
-              order: i + 1,
-              type: task.type,
-              title: task.title,
-              question: 'question' in task ? task.question : undefined,
-              explanation: task.explanation,
-              points: task.points,
-              difficulty: task.difficulty,
-              meta: 'meta' in task ? task.meta : undefined,
+          ...course.data,
+          titleRu: ruCourse?.data.title,
+          descriptionRu: ruCourse?.data.description,
+          lessons: course.lessons.map(lesson => {
+            const l = lesson.data
+            const ruLesson = ruCourse?.lessons.find(rl => rl.data.order === l.order)?.data
+            return {
+              order: l.order,
+              title: l.title,
+              titleRu: ruLesson?.title,
+              estimatedDuration: calculateEstimatedDuration(l.theory.length, l.tasks.length),
+              blocks: l.theory.map((block, i) => {
+                const ruBlock = ruLesson?.theory[i]
+                return {
+                  order: i + 1,
+                  type: 'THEORY' as const,
+                  title: block.title,
+                  content: block.content,
+                  titleRu: ruBlock?.title,
+                  contentRu: ruBlock?.content,
+                }
+              }),
+              tasks: l.tasks.map((task, i) => {
+                const ruTask = ruLesson?.tasks[i]
+                const compiled: Record<string, unknown> = {
+                  order: i + 1,
+                  type: task.type,
+                  title: task.title,
+                  question: 'question' in task ? task.question : undefined,
+                  explanation: task.explanation,
+                  points: task.points,
+                  difficulty: task.difficulty,
+                  meta: 'meta' in task ? task.meta : undefined,
+                  titleRu: ruTask?.title,
+                  questionRu: ruTask && 'question' in ruTask ? ruTask.question : undefined,
+                  explanationRu: ruTask?.explanation,
+                  metaRu: ruTask && 'meta' in ruTask ? ruTask.meta : undefined,
+                }
+                if (task.type === 'SINGLE_CHOICE' || task.type === 'MULTI_CHOICE') {
+                  const ruOptions =
+                    ruTask && (ruTask.type === 'SINGLE_CHOICE' || ruTask.type === 'MULTI_CHOICE')
+                      ? ruTask.options
+                      : undefined
+                  compiled.options = task.options.map((o, oi) => ({
+                    order: oi + 1,
+                    text: o.text,
+                    isCorrect: o.isCorrect,
+                    textRu: ruOptions?.[oi]?.text,
+                  }))
+                  if (task.type === 'SINGLE_CHOICE') {
+                    compiled.correctAnswerIndex = task.options.findIndex(o => o.isCorrect)
+                  }
+                }
+                if (task.type === 'SHORT_ANSWER' || task.type === 'TEXT_INPUT') {
+                  compiled.correctAnswer = task.correctAnswer
+                  compiled.correctAnswerRu =
+                    ruTask && (ruTask.type === 'SHORT_ANSWER' || ruTask.type === 'TEXT_INPUT')
+                      ? ruTask.correctAnswer
+                      : undefined
+                }
+                return compiled
+              }),
             }
-            if (task.type === 'SINGLE_CHOICE' || task.type === 'MULTI_CHOICE') {
-              compiled.options = task.options.map((o, oi) => ({ order: oi + 1, text: o.text, isCorrect: o.isCorrect }))
-              if (task.type === 'SINGLE_CHOICE') {
-                compiled.correctAnswerIndex = task.options.findIndex(o => o.isCorrect)
-              }
-            }
-            if (task.type === 'SHORT_ANSWER' || task.type === 'TEXT_INPUT') {
-              compiled.correctAnswer = task.correctAnswer
-            }
-            return compiled
           }),
+          test: course.test
+            ? {
+                title: course.test.title,
+                description: course.test.description,
+                passingScore: course.test.passingScore,
+                titleRu: ruCourse?.test?.title,
+                descriptionRu: ruCourse?.test?.description,
+                questions: course.test.questions.map((q, i) => {
+                  const ruQuestion = ruCourse?.test?.questions[i]
+                  return {
+                    order: i + 1,
+                    text: q.text,
+                    type: q.type,
+                    textRu: ruQuestion?.text,
+                    options: q.options.map((o, oi) => ({
+                      order: oi + 1,
+                      text: o.text,
+                      isCorrect: o.isCorrect,
+                      textRu: ruQuestion?.options[oi]?.text,
+                    })),
+                    correctAnswerIndex:
+                      q.type === 'SINGLE_CHOICE' ? q.options.findIndex(o => o.isCorrect) : undefined,
+                  }
+                }),
+              }
+            : undefined,
         }
       }),
-      test: course.test
-        ? {
-            title: course.test.title,
-            description: course.test.description,
-            passingScore: course.test.passingScore,
-            questions: course.test.questions.map((q, i) => ({
-              order: i + 1,
-              text: q.text,
-              type: q.type,
-              options: q.options.map((o, oi) => ({ order: oi + 1, text: o.text, isCorrect: o.isCorrect })),
-              correctAnswerIndex: q.type === 'SINGLE_CHOICE' ? q.options.findIndex(o => o.isCorrect) : undefined,
-            })),
-          }
-        : undefined,
-    })),
-  }))
+    }
+  })
 }
 
 export interface ContentStats {
@@ -272,7 +344,7 @@ export interface LoadedContent {
  * Throws on the first validation failure rather than returning partial data —
  * a seed must never write content that failed its own quality checks.
  */
-export function loadContent(contentDir: string): LoadedContent {
+function loadStagesTree(contentDir: string): { stages: ParsedStage[]; problems: Problem[] } {
 	const stagesDir = join(contentDir, 'stages')
 	if (!existsSync(stagesDir)) {
 		throw new Error(`No "stages" directory found under ${contentDir}`)
@@ -295,13 +367,37 @@ export function loadContent(contentDir: string): LoadedContent {
 		)
 	}
 
+	return { stages, problems }
+}
+
+/**
+ * @param ruContentDir Optional Russian content tree (e.g. `content-ru/`),
+ * mirroring `contentDir`'s stage/course slugs and lesson/task/question
+ * ordering exactly. Validated against the same schema as the English tree —
+ * a translated lesson must independently satisfy the same word-count,
+ * distractor-count, and red-flag-substring rules. Items with no Russian
+ * counterpart simply compile with undefined `*Ru` fields (English fallback).
+ */
+export function loadContent(contentDir: string, ruContentDir?: string): LoadedContent {
+	const { stages, problems } = loadStagesTree(contentDir)
+
+	let ruOverlay: RuOverlay | undefined
+	if (ruContentDir && existsSync(ruContentDir)) {
+		const ruTree = loadStagesTree(ruContentDir)
+		if (ruTree.problems.length > 0) {
+			const details = ruTree.problems.map(p => `  [${p.file}]\n    ${p.message}`).join('\n')
+			throw new Error(`${ruTree.problems.length} content problem(s) found in ${ruContentDir}:\n\n${details}`)
+		}
+		ruOverlay = buildRuOverlay(ruTree.stages)
+	}
+
 	if (problems.length > 0) {
 		const details = problems.map(p => `  [${p.file}]\n    ${p.message}`).join('\n')
 		throw new Error(`${problems.length} content problem(s) found:\n\n${details}`)
 	}
 
 	return {
-		stages: compile(stages),
+		stages: compile(stages, ruOverlay),
 		stats: {
 			stages: stages.length,
 			courses: stages.reduce((n, s) => n + s.courses.length, 0),

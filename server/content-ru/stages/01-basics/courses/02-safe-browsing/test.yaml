@@ -1,0 +1,103 @@
+title: "Итоговый тест: Безопасный веб-сёрфинг"
+description: "Проверка знаний о HTTPS, рисках публичного Wi-Fi и безопасности сессий."
+passingScore: 75
+questions:
+  - text: "Какой признак указывает на безопасное соединение с сайтом?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Сайт быстро загружается"
+        isCorrect: false
+      - text: "Значок замка и https:// в адресной строке"
+        isCorrect: true
+      - text: "Красивый дизайн сайта"
+        isCorrect: false
+      - text: "Сайт на вашем языке"
+        isCorrect: false
+
+  - text: "Сайт показывает https и замок. Что это на самом деле гарантирует?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Оператор сайта заслуживает доверия"
+        isCorrect: false
+      - text: "Соединение с этим сервером зашифровано при передаче"
+        isCorrect: true
+      - text: "Сайт проверен на мошенничество"
+        isCorrect: false
+      - text: "Сайт не может содержать фишинговую форму"
+        isCorrect: false
+
+  - text: "Что из перечисленного действительно безопаснее в публичном Wi-Fi?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Использование VPN перед входом в что-либо важное"
+        isCorrect: true
+      - text: "Ожидание мобильного интернета перед любыми банковскими операциями"
+        isCorrect: true
+      - text: "Отключение автоподключения к открытым сетям"
+        isCorrect: true
+      - text: "Подключение к любой сети с названием кафе, в котором вы сидите"
+        isCorrect: false
+      - text: "Отключение файрвола ради скорости"
+        isCorrect: false
+      - text: "Предположение, что значок замка означает безопасность самой сети Wi-Fi"
+        isCorrect: false
+
+  - text: "Что на самом деле перехватывал инструмент Firesheep 2010 года, чтобы захватывать аккаунты?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Введённый пользователем пароль"
+        isCorrect: false
+      - text: "Сессионную куки, отправленную после входа, без шифрования"
+        isCorrect: true
+      - text: "Пароль от Wi-Fi роутера"
+        isCorrect: false
+      - text: "Сохранённые контакты пользователя"
+        isCorrect: false
+
+  - text: "Каким было настоящее долгосрочное решение проблемы, которую выявил Firesheep?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Сайты стали шифровать всю сессию, а не только страницу входа"
+        isCorrect: true
+      - text: "Все стали выбирать более длинные пароли"
+        isCorrect: false
+      - text: "Немедленный выход из аккаунта сразу после входа"
+        isCorrect: false
+      - text: "Ежедневная очистка кэша браузера"
+        isCorrect: false
+
+  - text: "Как примерно изменилось распространение HTTPS в интернете с 2010 года по сегодняшний день?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Осталось на уровне около 30%"
+        isCorrect: false
+      - text: "Выросло примерно с 30% до более чем 95%"
+        isCorrect: true
+      - text: "Снизилось, так как сайты вернулись к HTTP"
+        isCorrect: false
+      - text: "HTTPS не существовал до 2010 года"
+        isCorrect: false
+
+  - text: "От какой из этих ситуаций HTTPS специально предназначен защищать?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "От перехвата ваших данных при передаче между браузером и сервером"
+        isCorrect: true
+      - text: "От продажи ваших данных рекламодателям владельцем сайта"
+        isCorrect: false
+      - text: "От того, что сайт создан для мошенничества"
+        isCorrect: false
+      - text: "От слабого пароля вашего собственного аккаунта"
+        isCorrect: false
+
+  - text: "Почему публичный Wi-Fi остаётся рискованным, даже если посещаемые сайты используют HTTPS?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "HTTPS не защищает метаданные -- какие сайты вы посещаете и когда"
+        isCorrect: true
+      - text: "HTTPS автоматически отключается в публичных сетях"
+        isCorrect: false
+      - text: "Публичный Wi-Fi всегда блокирует HTTPS-трафик"
+        isCorrect: false
+      - text: "Риска нет, если сайт использует HTTPS -- больше ничего не имеет значения"
+        isCorrect: false

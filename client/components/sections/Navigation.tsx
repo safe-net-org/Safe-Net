@@ -1,194 +1,199 @@
 'use client'
-import { useRouter } from 'next/navigation'
 
-import { LogOut, Menu, Shield, X } from 'lucide-react'
+import Link from 'next/link'
+import { LogIn, LogOut, Menu, Shield, X } from '@/components/ui/icons'
+import { useState } from 'react'
 
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { AuthDialog } from '@/components/Auth/AuthDialog'
+import { PreferencesControls } from '@/components/preferences/PreferencesControls'
 import { useLogout } from '@/hooks/user/useLogout'
 import { useProfile } from '@/hooks/user/useProfile'
 import { useI18n } from '@/i18n/LocaleProvider'
-import { useEffect, useRef, useState } from 'react'
 
 export default function Navigation() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-	const [showLogout, setShowLogout] = useState(false)
 	const { user, isLoading } = useProfile()
 	const { logout } = useLogout()
 	const { t } = useI18n()
-	const router = useRouter()
-	const profileRef = useRef<HTMLDivElement>(null)
 	const isAuthenticated = !!user?.isLoggedIn
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				profileRef.current &&
-				!profileRef.current.contains(event.target as Node)
-			) {
-				setShowLogout(false)
-			}
-		}
-		if (showLogout) {
-			document.addEventListener('mousedown', handleClickOutside)
-		}
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside)
-		}
-	}, [showLogout])
-
-	const handleLogout = () => logout()
-
-	const handleProfileClick = () => {
-		setShowLogout(!showLogout)
+	const handleLogout = () => {
+		setMobileMenuOpen(false)
 		logout()
 	}
 
 	return (
-		<nav className='sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800'>
+		<nav
+			className='sticky top-0 z-50 border-b border-landing-border bg-landing/80 backdrop-blur-xl'
+			aria-label={t.nav.primaryNavigation}
+		>
 			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 				<div className='flex items-center justify-between h-16'>
-					<div className='flex items-center gap-3'>
+					<a
+						href='#top'
+						className='flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
+						aria-label='SafeNet'
+					>
 						<div className='w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center'>
 							<Shield className='w-6 h-6 text-white' />
 						</div>
 						<div>
-							<h1 className='text-lg font-bold'>SafeNet</h1>
-							<p className='text-xs text-slate-400 -mt-1'>
-								{t.footer.tagline}
-							</p>
+							<span className='block text-lg font-bold'>SafeNet</span>
+							<p className='-mt-1 text-xs text-muted-foreground'>{t.footer.tagline}</p>
 						</div>
-					</div>
+					</a>
 
 					{/* Desktop Navigation */}
-					<div className='hidden md:flex items-center gap-6'>
+					<div className='hidden lg:flex items-center gap-5'>
 						<a
 							href='#features'
-							className='text-sm text-slate-300 hover:text-white transition-colors'
+							className='text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.features}
 						</a>
 						<a
 							href='#topics'
-							className='text-sm text-slate-300 hover:text-white transition-colors'
+							className='text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.topics}
 						</a>
 						<a
 							href='#stats'
-							className='text-sm text-slate-300 hover:text-white transition-colors'
+							className='text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.statistics}
 						</a>
 						<a
 							href='#guard'
-							className='text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
+							className='text-sm font-medium text-landing-accent hover:text-landing-accent-hover transition-colors'
 						>
 							{t.nav.aiGuard}
 						</a>
 
-						<LanguageSwitcher />
+						<PreferencesControls />
 
-						{/* User Profile with Logout */}
+						{!isLoading && !isAuthenticated && (
+							<AuthDialog
+								triggerButton={{
+									text: t.nav.signIn,
+									icon: <LogIn className='size-4' aria-hidden='true' />,
+									position: 'start',
+									className:
+										'inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-[transform,background-color] duration-200 hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
+								}}
+							/>
+						)}
+
 						{!isLoading && isAuthenticated && user && (
-							<div className='relative' ref={profileRef}>
-								<button
-									onClick={handleProfileClick}
-									className='relative w-10 h-10 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg cursor-pointer overflow-hidden group'
-									title='Profile'
+							<div className='flex items-center gap-1.5'>
+								<Link
+									href='/dashboard'
+									className='relative flex size-9 items-center justify-center rounded-full bg-linear-to-r from-indigo-500 to-purple-500 text-base font-semibold text-white shadow-sm transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
+									aria-label={t.nav.profile}
+									title={t.nav.profile}
 								>
-									{/* User Initial */}
-									<span
-										className={`relative z-10 transition-opacity duration-300 ${showLogout ? 'opacity-0' : 'md:group-hover:opacity-0'}`}
-									>
-										{user?.name?.charAt(0).toUpperCase() ||
-											user?.email?.charAt(0).toUpperCase() ||
-											'?'}
-									</span>
-
-									{/* Dark Overlay */}
-									<div
-										className={`absolute inset-0 bg-black/60 transition-opacity duration-300 z-20 ${showLogout ? 'opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
-									/>
-
-									{/* Logout Icon */}
-									<LogOut
-										className={`w-[18px] h-[18px] absolute inset-0 m-auto transition-opacity duration-300 z-30 text-red-400 ${showLogout ? 'opacity-100' : 'opacity-0 md:group-hover:opacity-100'}`}
-									/>
-								</button>
-
-								{/* Logout Button for Touch Devices */}
-								{showLogout && (
-									<button
-										onClick={handleLogout}
-										className='absolute top-full right-0 mt-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-red-400 text-sm font-medium flex items-center gap-2 shadow-lg border border-slate-700 transition-colors md:hidden'
-									>
-										<LogOut className='w-4 h-4' />
-										Log Out
-									</button>
-								)}
-
-								{/* Logout action on desktop hover */}
-								<div
-									className='hidden md:block absolute inset-0 rounded-full cursor-pointer'
+									{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
+								</Link>
+								<button
+									type='button'
 									onClick={handleLogout}
-								/>
+									className='flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40'
+									aria-label={t.nav.logout}
+									title={t.nav.logout}
+								>
+									<LogOut className='size-4' aria-hidden='true' />
+								</button>
 							</div>
 						)}
 					</div>
 
 					{/* Mobile Menu Button */}
 					<button
-						className='md:hidden text-slate-300'
+						type='button'
+						className='lg:hidden rounded-lg p-2 text-landing-muted transition-colors hover:bg-landing-surface hover:text-landing-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
+						aria-expanded={mobileMenuOpen}
+						aria-controls='landing-mobile-menu'
 					>
 						{mobileMenuOpen ? (
-							<X className='w-6 h-6' />
+							<X className='w-6 h-6' aria-hidden='true' />
 						) : (
-							<Menu className='w-6 h-6' />
+							<Menu className='w-6 h-6' aria-hidden='true' />
 						)}
 					</button>
 				</div>
 
 				{/* Mobile Menu */}
 				{mobileMenuOpen && (
-					<div className='md:hidden py-4 space-y-3 border-t border-slate-800'>
+					<div
+						id='landing-mobile-menu'
+						className='lg:hidden space-y-3 border-t border-landing-border py-4'
+						aria-label={t.nav.mobileMenu}
+					>
 						<a
 							href='#features'
-							className='block text-sm text-slate-300 hover:text-white transition-colors'
+							onClick={() => setMobileMenuOpen(false)}
+							className='block text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.features}
 						</a>
 						<a
 							href='#topics'
-							className='block text-sm text-slate-300 hover:text-white transition-colors'
+							onClick={() => setMobileMenuOpen(false)}
+							className='block text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.topics}
 						</a>
 						<a
 							href='#stats'
-							className='block text-sm text-slate-300 hover:text-white transition-colors'
+							onClick={() => setMobileMenuOpen(false)}
+							className='block text-sm text-landing-muted hover:text-landing-foreground transition-colors'
 						>
 							{t.nav.statistics}
 						</a>
 						<a
 							href='#guard'
-							className='block text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors'
+							onClick={() => setMobileMenuOpen(false)}
+							className='block text-sm font-medium text-landing-accent hover:text-landing-accent-hover transition-colors'
 						>
 							{t.nav.aiGuard}
 						</a>
 
-						<LanguageSwitcher />
+						<PreferencesControls />
+
+						{!isLoading && !isAuthenticated && (
+							<AuthDialog
+								triggerButton={{
+									text: t.nav.signIn,
+									icon: <LogIn className='size-4' aria-hidden='true' />,
+									position: 'start',
+									className:
+										'flex h-10 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
+								}}
+							/>
+						)}
 
 						{!isLoading && isAuthenticated && user && (
 							<>
-								<div className='text-sm text-slate-300 p-2 bg-slate-800/50 rounded'>
-									{user.name || user.email}
-								</div>
-								<button
-									onClick={handleLogout}
-									className='text-left w-full text-red-400 hover:text-red-300 transition-colors flex items-center gap-2'
+								<Link
+									href='/dashboard'
+									onClick={() => setMobileMenuOpen(false)}
+									className='flex items-center gap-3 rounded-xl border border-landing-border bg-landing-surface p-3 text-sm text-landing-foreground'
 								>
-									<LogOut className='w-4 h-4' />
+									<span className='flex size-8 items-center justify-center rounded-full bg-linear-to-r from-indigo-500 to-purple-500 font-semibold text-white'>
+										{user.name?.charAt(0).toUpperCase() ||
+											user.email?.charAt(0).toUpperCase() ||
+											'?'}
+									</span>
+									<span className='min-w-0 truncate'>{user.name || user.email}</span>
+								</Link>
+								<button
+									type='button'
+									onClick={handleLogout}
+									className='flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40'
+								>
+									<LogOut className='w-4 h-4' aria-hidden='true' />
 									{t.nav.logout}
 								</button>
 							</>

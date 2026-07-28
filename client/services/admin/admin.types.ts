@@ -80,7 +80,7 @@ export interface IAdminStats {
 		userEmail: string
 		description: string
 		timestamp: string
-		metadata?: Record<string, any>
+		metadata?: Record<string, unknown>
 	}[]
 	userGrowth: {
 		period: string // "2024-01", "2024-02"
@@ -197,7 +197,7 @@ export interface IUserActivity {
 	type: ActivityType
 	description: string
 	timestamp: string
-	metadata?: Record<string, any>
+	metadata?: Record<string, unknown>
 }
 
 export interface IUserAchievement {
@@ -288,7 +288,7 @@ export interface ITask {
 	explanation?: string
 	points?: number
 	difficulty?: Difficulty
-	meta?: Record<string, any>
+	meta?: Record<string, unknown>
 	options?: ITaskOption[]
 }
 
@@ -359,7 +359,7 @@ export interface CreateTaskDto {
 	explanation?: string
 	points?: number
 	difficulty?: Difficulty
-	meta?: Record<string, any>
+	meta?: Record<string, unknown>
 	options?: Omit<ITaskOption, 'id'>[]
 }
 

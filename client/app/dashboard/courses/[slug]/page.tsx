@@ -15,7 +15,7 @@ import {
 	Target,
 	Users,
 	Zap,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
@@ -25,18 +25,32 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useCourseDetail } from '@/hooks/learning/useCourseDetail'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { translateCourseCopy, translateStageTitle } from '@/i18n/content-translations'
 import { cn } from '@/lib/utils'
-import { DifficultyLabel } from '@/services/learning/learning.types'
+import {
+	getDifficultyLabel,
+	ICourseDetail,
+} from '@/services/learning/learning.types'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { secondsToHMS } from '@/utils/date-time/secondsToHMS'
-import { useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import AppleLessonCard from './AppleLessonCard'
 
+type CourseTest = ICourseDetail['tests'][number]
+
 export default function CourseDetailPage() {
+	const { t, locale } = useI18n()
 	const { course, isLoading, lessons, tests } = useCourseDetail()
 	const [activeTab, setActiveTab] = useState<'lessons' | 'tests'>('lessons')
+	const courseCopy = course
+		? translateCourseCopy(locale, course.title, course.description)
+		: null
+	const stageTitle = course?.stage?.title
+		? translateStageTitle(locale, course.stage.title)
+		: course?.stage?.title
 	const stats = useMemo(() => {
-		const completedLessons = lessons.filter((l: any) => l.completed).length
+		const completedLessons = lessons.filter(lesson => lesson.completed).length
 		const totalLessons = lessons.length
 		return { completedLessons, totalLessons }
 	}, [lessons])
@@ -56,8 +70,12 @@ export default function CourseDetailPage() {
 				<Breadcrumb
 					showBackButton
 					items={[
-						{ label: 'Courses', href: ROUTES.COURSES, icon: BookOpen },
-						{ label: course.title },
+						{
+							label: t.dashboardCourseDetail.breadcrumbCourses,
+							href: ROUTES.COURSES,
+							icon: BookOpen,
+						},
+						{ label: courseCopy!.title },
 					]}
 				/>
 
@@ -72,27 +90,35 @@ export default function CourseDetailPage() {
 						<div className='lg:col-span-3 space-y-4 sm:space-y-5'>
 							<Badge className='bg-white/10 backdrop-blur-sm border-white/20 text-white/80 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl w-fit text-xs sm:text-sm'>
 								<Users className='w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 opacity-80' />
-								{course.stage?.title || 'General course'}
+								{stageTitle || t.dashboardCourseDetail.generalCourse}
 							</Badge>
 							<div>
 								<CardTitle className='text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-black text-white leading-tight mb-3 sm:mb-4 tracking-tight'>
-									{course.title}
+									{courseCopy!.title}
 								</CardTitle>
 								<p className='text-base sm:text-lg lg:text-xl text-white/70 max-w-2xl leading-relaxed font-light'>
-									{course.description}
+									{courseCopy!.description}
 								</p>
 							</div>
 							<div className='flex flex-wrap items-center gap-2.5 sm:gap-3 md:gap-4 pt-2 sm:pt-4'>
 								<Badge className='bg-white/10 backdrop-blur-sm border-white/20 text-white/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl capitalize text-xs sm:text-sm'>
-									{DifficultyLabel[course.difficulty]}
+									{getDifficultyLabel(
+										course.difficulty,
+										t.dashboardLessonDetail.difficulty
+									)}
 								</Badge>
 								<div className='text-sm sm:text-base text-white/60 flex items-center gap-1.5 sm:gap-2'>
 									<Clock className='w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70' />
-									{stats.completedLessons}/{stats.totalLessons} lessons
+									{t.dashboardCourseDetail.lessonsCountTemplate
+										.replace('{completed}', String(stats.completedLessons))
+										.replace('{total}', String(stats.totalLessons))}
 								</div>
 								<div className='text-sm sm:text-base font-semibold text-white flex items-center gap-1.5 sm:gap-2'>
 									<Zap className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400' />
-									{course.totalXp} XP
+									{t.dashboardCourseDetail.xpTemplate.replace(
+										'{xp}',
+										String(course.totalXp)
+									)}
 								</div>
 							</div>
 						</div>
@@ -100,7 +126,9 @@ export default function CourseDetailPage() {
 						<div className='lg:col-span-2 space-y-4 sm:space-y-5'>
 							<div className='space-y-2.5 sm:space-y-3'>
 								<div className='flex justify-between text-xs sm:text-sm text-white/60'>
-									<span className='font-medium'>Overall progress</span>
+									<span className='font-medium'>
+										{t.dashboardCourseDetail.overallProgress}
+									</span>
 									<span className='font-bold text-white'>
 										{course.progress}%
 									</span>
@@ -116,7 +144,7 @@ export default function CourseDetailPage() {
 										{stats.completedLessons}
 									</div>
 									<div className='text-[10px] sm:text-xs text-white/60'>
-										of {stats.totalLessons}
+										/ {stats.totalLessons}
 									</div>
 								</div>
 								<div className='text-center p-3 sm:p-4 bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10'>
@@ -124,7 +152,7 @@ export default function CourseDetailPage() {
 										{tests.length}
 									</div>
 									<div className='text-[10px] sm:text-xs text-white/60'>
-										tests
+										{t.dashboardCourseDetail.testsCountLabel}
 									</div>
 								</div>
 							</div>
@@ -155,8 +183,10 @@ export default function CourseDetailPage() {
 							)}
 							<span className='relative z-10 flex items-center justify-center gap-1.5 sm:gap-2'>
 								<BookOpen className='w-3.5 h-3.5 sm:w-4.5 sm:h-4.5' />
-								<span className='hidden xs:inline'>Lessons</span> (
-								{lessons.length})
+								<span className='hidden xs:inline'>
+									{t.dashboardCourseDetail.tabs.lessons}
+								</span>{' '}
+								({lessons.length})
 							</span>
 						</button>
 						<button
@@ -177,7 +207,10 @@ export default function CourseDetailPage() {
 							)}
 							<span className='relative z-10 flex items-center justify-center gap-1.5 sm:gap-2'>
 								<Award className='w-3.5 h-3.5 sm:w-4.5 sm:h-4.5' />
-								<span className='hidden xs:inline'>Tests</span> ({tests.length})
+								<span className='hidden xs:inline'>
+									{t.dashboardCourseDetail.tabs.tests}
+								</span>{' '}
+								({tests.length})
 							</span>
 						</button>
 					</div>
@@ -188,7 +221,7 @@ export default function CourseDetailPage() {
 					<section className='xl:col-span-2 space-y-4 sm:space-y-5'>
 						{activeTab === 'lessons' ? (
 							lessons.length > 0 ? (
-								lessons.map((lesson: any, index: number) => (
+									lessons.map((lesson, index) => (
 									<AppleLessonCard
 										key={lesson.id}
 										lesson={lesson}
@@ -201,11 +234,11 @@ export default function CourseDetailPage() {
 									icon={
 										<BookOpen className='w-12 h-12 sm:w-16 sm:h-16 text-white/20' />
 									}
-									title='Lessons coming soon'
+									title={t.dashboardCourseDetail.emptyLessons}
 								/>
 							)
 						) : tests.length > 0 ? (
-							tests.map((test: any) => (
+								tests.map(test => (
 								<AppleTestCard key={test.id} test={test} />
 							))
 						) : (
@@ -213,7 +246,7 @@ export default function CourseDetailPage() {
 								icon={
 									<Award className='w-12 h-12 sm:w-16 sm:h-16 text-white/20' />
 								}
-								title='Tests coming soon'
+								title={t.dashboardCourseDetail.emptyTests}
 							/>
 						)}
 					</section>
@@ -230,10 +263,10 @@ export default function CourseDetailPage() {
 									<Sparkles className='w-6 h-6 sm:w-8 sm:h-8 text-white' />
 								</m.div>
 								<h3 className='text-lg sm:text-xl font-black text-white mb-2 sm:mb-3 leading-tight'>
-									Start now
+									{t.dashboardCourseDetail.startNow.title}
 								</h3>
 								<p className='text-white/60 mb-5 sm:mb-6 text-xs sm:text-sm leading-relaxed'>
-									Your first lesson awaits
+									{t.dashboardCourseDetail.startNow.subtitle}
 								</p>
 								{lessons[0] && (
 									<Link
@@ -244,7 +277,7 @@ export default function CourseDetailPage() {
 											className='w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-black hover:bg-white/80 shadow-2xl shadow-white/20 font-bold text-sm sm:text-base'
 										>
 											<Play className='w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2' />
-											First lesson
+											{t.dashboardCourseDetail.startNow.cta}
 										</Button>
 									</Link>
 								)}
@@ -255,13 +288,13 @@ export default function CourseDetailPage() {
 							<CardHeader className='pb-3 sm:pb-4'>
 								<CardTitle className='text-base sm:text-lg font-black text-white flex items-center gap-2'>
 									<Target className='w-4 h-4 sm:w-5 sm:h-5 text-blue-400' />
-									Progress details
+									{t.dashboardCourseDetail.progressDetails.title}
 								</CardTitle>
 							</CardHeader>
 							<CardContent className='space-y-4 sm:space-y-5 pt-0'>
 								<div className='space-y-2.5 sm:space-y-3'>
 									<div className='flex justify-between text-xs sm:text-sm text-white/60'>
-										<span>Course</span>
+										<span>{t.dashboardCourseDetail.progressDetails.course}</span>
 										<span className='font-semibold text-white'>
 											{course.progress}%
 										</span>
@@ -273,7 +306,7 @@ export default function CourseDetailPage() {
 								</div>
 								<div className='space-y-2.5 sm:space-y-3'>
 									<div className='flex justify-between text-xs sm:text-sm text-white/60'>
-										<span>Lessons</span>
+										<span>{t.dashboardCourseDetail.progressDetails.lessons}</span>
 										<span className='font-semibold text-white'>
 											{Math.round(
 												(stats.completedLessons / stats.totalLessons) * 100
@@ -301,25 +334,31 @@ export default function CourseDetailPage() {
 									<h4 className='text-sm sm:text-base font-black text-white mb-1.5 sm:mb-2 leading-tight'>
 										{tests[0].title}
 									</h4>
-									{tests[0].score ? (
+									{tests[0].score !== null ? (
 										<>
 											<div className='text-xs sm:text-sm text-white/60 mb-4 sm:mb-5'>
-												Result: {tests[0].score}%
+												{t.dashboardCourseDetail.testCard.resultTemplate.replace(
+													'{score}',
+													String(tests[0].score)
+												)}
 											</div>
 											<Link href={`${ROUTES.HOME}/tests/${tests[0].id}`}>
 												<Button className='w-full h-10 sm:h-11 rounded-xl sm:rounded-2xl border-white/20 bg-white/2 backdrop-blur-sm hover:bg-white/5 font-semibold text-white hover:text-white text-xs sm:text-sm'>
-													Retake
+													{t.dashboardCourseDetail.testCard.retake}
 												</Button>
 											</Link>
 										</>
 									) : (
 										<>
 											<div className='text-xs sm:text-sm text-white/60 mb-4 sm:mb-5'>
-												Passing score: {tests[0].passingScore}%
+												{t.dashboardCourseDetail.testCard.passingScoreTemplate.replace(
+													'{score}',
+													String(tests[0].passingScore)
+												)}
 											</div>
 											<Link href={`${ROUTES.HOME}/tests/${tests[0].id}`}>
 												<Button className='w-full h-10 sm:h-11 rounded-xl sm:rounded-2xl border-white/20 bg-white/2 backdrop-blur-sm hover:bg-white/5 font-semibold text-white hover:text-white text-xs sm:text-sm'>
-													Take test
+													{t.dashboardCourseDetail.testCard.takeTest}
 												</Button>
 											</Link>
 										</>
@@ -333,7 +372,9 @@ export default function CourseDetailPage() {
 		</>
 	)
 }
-const AppleTestCard = ({ test }: any) => (
+const AppleTestCard = ({ test }: { test: CourseTest }) => {
+	const { t, locale } = useI18n()
+	return (
 	<Link href={`${ROUTES.TESTS}/${test.id}`} className='block group'>
 		<Card className='group relative overflow-hidden bg-white/3 backdrop-blur-2xl border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-700 hover:shadow-2xl hover:shadow-white/10 hover:scale-[1.01] rounded-2xl sm:rounded-3xl'>
 			<CardContent className='p-5 sm:p-6 lg:p-8 relative z-10'>
@@ -344,11 +385,13 @@ const AppleTestCard = ({ test }: any) => (
 					{test.title}
 				</h3>
 				<div className='flex items-center justify-between pt-4 sm:pt-5 border-t border-white/10'>
-					{test.score ? (
+					{test.score !== null &&
+					test.time !== null &&
+					test.lastAttemptDate !== null ? (
 						<div className='flex flex-col gap-3'>
 							<div className='flex gap-3 items-center'>
 								<p className='text-xs sm:text-base font-semibold text-white/60'>
-									Result:
+									{t.dashboardCourseDetail.testListCard.resultLabel}
 								</p>
 								<Badge className='bg-green-500/10 text-green-400 border-yellow-500/20 font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl backdrop-blur-sm text-xs sm:text-sm'>
 									{test.score}%
@@ -356,15 +399,15 @@ const AppleTestCard = ({ test }: any) => (
 							</div>
 							<div className='flex gap-2'>
 								<p className='text-xs sm:text-base font-semibold text-white/60'>
-									Completed in:
+									{t.dashboardCourseDetail.testListCard.completedInLabel}
 								</p>
 								<p className='text-xs sm:text-base text-white'>
-									{secondsToHMS(test.time)}
+									{secondsToHMS(test.time, locale)}
 								</p>
 							</div>
 							<div className='flex gap-2'>
 								<p className='text-xs sm:text-base font-semibold text-white/60'>
-									Date:
+									{t.dashboardCourseDetail.testListCard.dateLabel}
 								</p>
 								<p className='text-xs sm:text-base text-white'>
 									{formatDate(test.lastAttemptDate)}
@@ -374,7 +417,7 @@ const AppleTestCard = ({ test }: any) => (
 					) : (
 						<div className='flex gap-3 items-center'>
 							<p className='text-xs sm:text-base font-semibold text-white/60'>
-								Passing score
+								{t.dashboardCourseDetail.testListCard.passingScoreLabel}
 							</p>
 							<Badge className='bg-yellow-500/10 text-yellow-400 border-yellow-500/20 font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl backdrop-blur-sm text-xs sm:text-sm'>
 								{test.passingScore}%
@@ -385,12 +428,12 @@ const AppleTestCard = ({ test }: any) => (
 						className={cn(
 							'w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center backdrop-blur-xl shadow-lg border border-white/10 shrink-0',
 							'transition-all duration-700',
-							test.score
+							test.score ?? 0
 								? 'bg-emerald-500/10 text-emerald-400'
 								: 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 group-hover:scale-110 group-hover:rotate-12'
 						)}
 					>
-						{test.score ? (
+						{test.score !== null ? (
 							<CheckCircle2 className='w-5 h-5 sm:w-6 sm:h-6' />
 						) : (
 							<Play className='w-5 h-5 sm:w-6 sm:h-6 ml-0.5' />
@@ -400,8 +443,11 @@ const AppleTestCard = ({ test }: any) => (
 			</CardContent>
 		</Card>
 	</Link>
-)
-const AppleEmptyState = ({ icon, title }: any) => (
+	)
+}
+const AppleEmptyState = ({ icon, title }: { icon: ReactNode; title: string }) => {
+	const { t } = useI18n()
+	return (
 	<Card className='relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/5 bg-white/2 backdrop-blur-2xl shadow-2xl p-8 sm:p-12 text-center'>
 		<div className='relative z-10 flex flex-col items-center justify-center space-y-3 sm:space-y-4'>
 			<div className='w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center border border-white/20 shadow-lg mb-1 sm:mb-2'>
@@ -409,11 +455,12 @@ const AppleEmptyState = ({ icon, title }: any) => (
 			</div>
 			<h3 className='text-xl sm:text-2xl font-black text-white'>{title}</h3>
 			<p className='text-base sm:text-lg text-white/60 max-w-md leading-relaxed'>
-				Content coming soon
+				{t.dashboardCourseDetail.contentComingSoon}
 			</p>
 		</div>
 	</Card>
-)
+	)
+}
 const AppleSkeleton = () => (
 	<>
 		<m.div
@@ -447,21 +494,22 @@ const AppleSkeleton = () => (
 )
 const AppleNotFound = () => {
 	const router = useRouter()
+	const { t } = useI18n()
 	return (
 		<div className='min-h-screen flex items-center justify-center'>
 			<Card className='w-full max-w-lg bg-white/3 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl p-8 sm:p-12 text-center'>
 				<BookOpen className='w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 sm:mb-6 text-white/20' />
 				<CardTitle className='text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3'>
-					Course not found
+					{t.dashboardCourseDetail.notFound.title}
 				</CardTitle>
 				<p className='text-base sm:text-lg text-white/60 mb-6 sm:mb-8 leading-relaxed'>
-					Unfortunately, this course doesn't exist
+					{t.dashboardCourseDetail.notFound.subtitle}
 				</p>
 				<Button
 					onClick={() => router.back()}
 					className='w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-black hover:bg-white/80 shadow-2xl font-bold text-sm sm:text-base'
 				>
-					← Back to courses
+					{t.dashboardCourseDetail.notFound.back}
 				</Button>
 			</Card>
 		</div>

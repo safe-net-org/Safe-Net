@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AdminModule } from './admin/admin.module'
 import { AuthModule } from './auth/auth.module'
+import { FeedbackModule } from './feedback/feedback.module'
 import { LearningModule } from './learning/learning.module'
 import { PublicModule } from './public/public.module'
 import { UserModule } from './user/user.module'
@@ -21,6 +22,7 @@ const REQUESTS_PER_MINUTE = 120
 			{ ttl: ONE_MINUTE_MS, limit: REQUESTS_PER_MINUTE },
 		]),
 		AuthModule,
+		FeedbackModule,
 		UserModule,
 		LearningModule,
 		AdminModule,

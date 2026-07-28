@@ -1,4 +1,6 @@
 import { T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
+import type { ExtensionMessageKey } from '@/src/shared/i18n/messages'
 
 export type PopupTab = 'overview' | 'domain' | 'signals' | 'features' | 'stats' | 'settings' | 'about'
 
@@ -8,17 +10,19 @@ interface TabBarProps {
   onChange: (tab: PopupTab) => void
 }
 
-const TABS: ReadonlyArray<readonly [PopupTab, string]> = [
-  ['overview', 'Обзор'],
-  ['domain', 'Домен'],
-  ['signals', 'Сигналы'],
-  ['features', 'URL'],
-  ['stats', 'Статистика'],
-  ['settings', 'Настройки'],
-  ['about', 'О защите'],
+const TABS: ReadonlyArray<readonly [PopupTab, ExtensionMessageKey]> = [
+  ['overview', 'tab.overview'],
+  ['domain', 'tab.domain'],
+  ['signals', 'tab.signals'],
+  ['features', 'tab.features'],
+  ['stats', 'tab.stats'],
+  ['settings', 'tab.settings'],
+  ['about', 'tab.about'],
 ]
 
 export function TabBar({ active, signalCount, onChange }: TabBarProps) {
+  const { t } = useExtensionI18n()
+
   return (
     <div style={{
       display: 'flex',
@@ -29,7 +33,8 @@ export function TabBar({ active, signalCount, onChange }: TabBarProps) {
       background: T.bgElev,
       overflowX: 'auto',
     }}>
-      {TABS.map(([key, label]) => {
+      {TABS.map(([key, labelKey]) => {
+        const label = t(labelKey)
         const labelText = key === 'signals' && signalCount > 0 ? `${label} ${signalCount}` : label
         const isActive = active === key
         return (

@@ -8,7 +8,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Edit, ExternalLink, MoreVertical, Trash2 } from 'lucide-react'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { Edit, ExternalLink, MoreVertical, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
 
 interface TestCardActionsProps {
@@ -26,6 +27,8 @@ export function TestCardActions({
 	testTitle,
 	onDelete,
 }: TestCardActionsProps) {
+	const { t } = useI18n()
+	const c = t.adminTestComponents.testCardActions
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -33,7 +36,7 @@ export function TestCardActions({
 					variant='ghost'
 					size='icon'
 					className='h-8 w-8'
-					aria-label={`Actions for test ${testTitle}`}
+					aria-label={c.ariaLabelTemplate.replace('{title}', testTitle)}
 				>
 					<MoreVertical className='h-4 w-4' />
 				</Button>
@@ -45,7 +48,7 @@ export function TestCardActions({
 						className='cursor-pointer'
 					>
 						<Edit className='mr-2 h-4 w-4' />
-						Edit
+						{c.edit}
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
@@ -55,7 +58,7 @@ export function TestCardActions({
 						className='cursor-pointer'
 					>
 						<ExternalLink className='mr-2 h-4 w-4' />
-						Open Test
+						{c.openTest}
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
@@ -64,7 +67,7 @@ export function TestCardActions({
 					className='text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer'
 				>
 					<Trash2 className='mr-2 h-4 w-4' />
-					Delete
+					{c.delete}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

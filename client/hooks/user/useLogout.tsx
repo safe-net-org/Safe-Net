@@ -1,17 +1,17 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import authService from '@/services/auth/auth.service'
 
 export function useLogout() {
-	const router = useRouter()
+	const { t } = useI18n()
 
 	const logout = async (redirectTo?: string) => {
 		try {
 			await authService.logout()
-			toast.success('You have successfully logged out')
+			toast.success(t.nav.logoutSuccess)
 
 			if (redirectTo) {
 				// Full page reload on redirect
@@ -21,7 +21,7 @@ export function useLogout() {
 				window.location.reload()
 			}
 		} catch (error) {
-			toast.error('Error logging out')
+			toast.error(t.nav.logoutError)
 			console.error('Logout error:', error)
 		}
 	}

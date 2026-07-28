@@ -2,6 +2,7 @@ import type { AnalysisResult } from '@/src/entities/analysis'
 import { RecheckButton } from '@/src/features/recheck/ui/RecheckButton'
 import { ReportButton } from '@/src/features/report/ui/ReportButton'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { fmtTime } from '@/src/shared/lib/format'
 
 interface PopupFooterProps {
@@ -10,6 +11,8 @@ interface PopupFooterProps {
 }
 
 export function PopupFooter({ result, onRecheck }: PopupFooterProps) {
+  const { locale } = useExtensionI18n()
+
   return (
     <div style={{
       padding: '10px 14px',
@@ -24,7 +27,7 @@ export function PopupFooter({ result, onRecheck }: PopupFooterProps) {
         fontFamily: FONT_MONO,
         letterSpacing: '0.08em',
       }}>
-        {fmtTime(result.analyzedAt)}
+        {fmtTime(result.analyzedAt, locale)}
       </span>
     </div>
   )

@@ -1,9 +1,10 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { m } from 'framer-motion'
-import * as icons from 'lucide-react'
-import { LucideIcon, Trophy } from 'lucide-react'
+import * as icons from '@/components/ui/icons'
+import { AppIcon, Trophy } from '@/components/ui/icons'
 
 interface Achievement {
 	id: string
@@ -24,22 +25,25 @@ const appleEasing = [0.42, 0, 0.58, 1] as const
 const appleEaseOut = [0.16, 1, 0.3, 1] as const
 
 // Get an icon component by slug
-const getIconBySlug = (slug: string): LucideIcon => {
+const getIconBySlug = (slug: string): AppIcon => {
 	const pascalCase = slug
 		.split('-')
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 		.join('')
 
 	// Indexed off lucide's own export map rather than cast through
-	// Record<string, LucideIcon>: the module also exports non-icon members, so
+	// Record<string, AppIcon>: the module also exports non-icon members, so
 	// that cast is a lie TypeScript rightly rejects.
 	const icon = icons[pascalCase as keyof typeof icons]
-	return (icon as LucideIcon) || Trophy
+	return (icon as AppIcon) || Trophy
 }
 
 export default function UserAchievementsBlock({
 	achievements,
 }: UserAchievementsBlockProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userAchievementsBlock
+
 	if (!achievements || achievements.length === 0) {
 		return (
 			<m.div
@@ -62,7 +66,7 @@ export default function UserAchievementsBlock({
 					transition={{ delay: 0.3, duration: 0.6, ease: appleEasing }}
 					className='text-lg font-bold text-white mb-2'
 				>
-					No achievements
+					{c.empty.title}
 				</m.h3>
 				<m.p
 					initial={{ opacity: 0, y: 10 }}
@@ -70,7 +74,7 @@ export default function UserAchievementsBlock({
 					transition={{ delay: 0.4, duration: 0.6, ease: appleEasing }}
 					className='text-white/50 text-sm'
 				>
-					Achievements will appear after completing certain tasks
+					{c.empty.description}
 				</m.p>
 			</m.div>
 		)
@@ -84,7 +88,7 @@ export default function UserAchievementsBlock({
 						format: 'date-medium',
 						locale: 'en-US',
 						gracefulFail: true,
-					}) || 'Date unknown'
+					}) || c.dateUnknown
 
 				const Icon = getIconBySlug(achievement.icon || 'trophy')
 
@@ -137,7 +141,7 @@ export default function UserAchievementsBlock({
 							<m.div
 								className='absolute inset-0 rounded-2xl border border-purple-400/0'
 								whileHover={{
-									borderColor: 'rgba(168, 85, 247, 0.3)',
+									borderColor: 'color-mix(in oklab, var(--chart-purple) 30%, transparent)',
 									transition: { duration: 0.4, ease: appleEasing },
 								}}
 								transition={{

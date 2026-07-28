@@ -1,7 +1,8 @@
 'use client'
 
+import { UI_COLORS } from '@/config/colors.config'
 import { m } from 'framer-motion'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3 } from '@/components/ui/icons'
 import {
 	Bar,
 	BarChart,
@@ -24,8 +25,6 @@ interface CourseData {
 interface PerformanceChartProps {
 	data: CourseData[]
 }
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 export default function PerformanceChart({ data }: PerformanceChartProps) {
 	const chartData = data.slice(0, 5).map(course => ({
@@ -75,13 +74,13 @@ export default function PerformanceChart({ data }: PerformanceChartProps) {
 					>
 						<CartesianGrid
 							strokeDasharray='3 3'
-							stroke='#e5e7eb'
+							stroke={UI_COLORS.chart.grid}
 							className='dark:stroke-gray-800'
 							vertical={false}
 						/>
 						<XAxis
 							dataKey='name'
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							angle={-45}
 							textAnchor='end'
@@ -89,7 +88,7 @@ export default function PerformanceChart({ data }: PerformanceChartProps) {
 							style={{ fontFamily: 'inherit' }}
 						/>
 						<YAxis
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							style={{ fontFamily: 'inherit' }}
 							label={{ value: 'Score (%)', angle: -90, position: 'insideLeft' }}
@@ -97,13 +96,13 @@ export default function PerformanceChart({ data }: PerformanceChartProps) {
 						/>
 						<Tooltip
 							contentStyle={{
-								backgroundColor: 'rgba(17, 24, 39, 0.95)',
+								backgroundColor: UI_COLORS.chart.tooltip,
 								border: 'none',
 								borderRadius: '12px',
-								color: '#fff',
+								color: UI_COLORS.chart.tooltipForeground,
 							}}
-							cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
-							labelStyle={{ color: '#fff' }}
+							cursor={{ fill: 'color-mix(in oklab, var(--chart-blue) 10%, transparent)' }}
+							labelStyle={{ color: UI_COLORS.chart.tooltipForeground }}
 							formatter={(value: number, name: string) => {
 								if (name === 'score') return [`${value}%`, 'Average score']
 								if (name === 'completion') return [`${value}%`, 'Completion']
@@ -113,14 +112,14 @@ export default function PerformanceChart({ data }: PerformanceChartProps) {
 						<Legend wrapperStyle={{ paddingTop: '20px' }} iconType='circle' />
 						<Bar
 							dataKey='score'
-							fill='#3b82f6'
+							fill={UI_COLORS.chart.blue}
 							radius={[8, 8, 0, 0]}
 							name='Average score'
 							animationDuration={800}
 						/>
 						<Bar
 							dataKey='completion'
-							fill='#10b981'
+							fill={UI_COLORS.chart.green}
 							radius={[8, 8, 0, 0]}
 							name='% Completion'
 							animationDuration={800}

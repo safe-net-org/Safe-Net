@@ -1,7 +1,41 @@
 import type { AnalysisResult, DomFeatures, ExtensionMessage } from '@/src/entities/analysis'
+import {
+  translate,
+  translateRiskSignal,
+  type ExtensionLocale,
+} from '@/src/shared/i18n/messages'
+import { getBrowserLocale, getSettings } from '@/src/shared/lib/settings'
 import { createPanel } from './panel'
 
 const BANK_KEYWORDS = ['sber', 'tinkoff', 'vtb', 'alfa', 'gosuslugi', 'nalog']
+
+// "Всё равно войти" is remembered per tab session so the overlay does not
+// reappear on every in-site navigation. sessionStorage is page-writable, but a
+// page that wants the overlay gone can simply remove the node — this adds no
+// new attack surface.
+const DISMISS_KEY = 'safenet_guard_dismissed'
+
+function isDismissed(): boolean {
+  try { return sessionStorage.getItem(DISMISS_KEY) === '1' } catch { return false }
+}
+
+function rememberDismissed(): void {
+  try { sessionStorage.setItem(DISMISS_KEY, '1') } catch { /* sandboxed page */ }
+}
+
+/** Signal messages and the URL end up in innerHTML — escape them. */
+function esc(text: string): string {
+  return text.replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c,
+  )
+}
+
+function requestTrust(): void {
+  browser.runtime.sendMessage({
+    type: 'TRUST_SITE',
+    host: window.location.hostname,
+  } satisfies ExtensionMessage).catch(() => { /* extension reloaded */ })
+}
 
 function analyzeDom(): DomFeatures {
   const currentOrigin = window.location.origin
@@ -62,14 +96,19 @@ function analyzeDom(): DomFeatures {
   }
 }
 
-function showBanner(result: AnalysisResult, onClose: () => void): HTMLElement {
+function showBanner(
+  result: AnalysisResult,
+  locale: ExtensionLocale,
+  onClose: () => void,
+): HTMLElement {
+  const isDanger = result.level === 'danger'
   const banner = document.createElement('div')
   banner.id = 'safenet-guard-banner'
   banner.setAttribute('style', [
     'position: fixed', 'top: 0', 'left: 0', 'right: 0',
     'z-index: 2147483647',
-    'background: linear-gradient(135deg, #78350f, #92400e)',
-    'color: #fef3c7',
+    `background: linear-gradient(135deg, ${isDanger ? '#7f1d1d, #991b1b' : '#78350f, #92400e'})`,
+    `color: ${isDanger ? '#fee2e2' : '#fef3c7'}`,
     'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     'font-size: 14px',
     'padding: 12px 16px',
@@ -81,7 +120,7 @@ function showBanner(result: AnalysisResult, onClose: () => void): HTMLElement {
   ].join('; '))
 
   const signalsHtml = result.signals.slice(0, 2)
-    .map((s) => `<div style="font-size:12px;opacity:0.85;margin-top:3px">⚠ ${s.message}</div>`)
+    .map((s) => `<div style="font-size:12px;opacity:0.85;margin-top:3px">⚠ ${esc(translateRiskSignal(s, locale))}</div>`)
     .join('')
 
   banner.innerHTML = `
@@ -92,17 +131,27 @@ function showBanner(result: AnalysisResult, onClose: () => void): HTMLElement {
       }
     </style>
     <div style="flex:1">
-      <div style="font-weight:700;font-size:15px">🟡 SafeNet Guard — Подозрительный сайт</div>
+      <div style="font-weight:700;font-size:15px">${isDanger ? '🔴' : '🟡'} SafeNet Guard — ${translate(locale, isDanger ? 'content.dangerSite' : 'content.suspiciousSite')}</div>
       ${signalsHtml}
     </div>
+    <button id="safenet-trust-btn" style="
+      background:transparent;border:1px solid rgba(255,255,255,0.25);color:inherit;
+      padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;
+      flex-shrink:0;margin-top:2px;opacity:0.8
+    ">${translate(locale, 'content.trust')}</button>
     <button id="safenet-close-btn" style="
       background:rgba(255,255,255,0.15);border:none;color:inherit;
       padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;
       flex-shrink:0;margin-top:2px
-    ">✕ Закрыть</button>
+    ">✕ ${translate(locale, 'content.close')}</button>
   `
 
   document.body.prepend(banner)
+  banner.querySelector('#safenet-trust-btn')?.addEventListener('click', () => {
+    requestTrust()
+    banner.remove()
+    onClose()
+  })
   banner.querySelector('#safenet-close-btn')?.addEventListener('click', () => {
     banner.remove()
     onClose()
@@ -110,7 +159,11 @@ function showBanner(result: AnalysisResult, onClose: () => void): HTMLElement {
   return banner
 }
 
-function showOverlay(result: AnalysisResult, onDismiss: () => void): HTMLElement {
+function showOverlay(
+  result: AnalysisResult,
+  locale: ExtensionLocale,
+  onDismiss: () => void,
+): HTMLElement {
   const overlay = document.createElement('div')
   overlay.id = 'safenet-guard-overlay'
   overlay.setAttribute('style', [
@@ -132,7 +185,7 @@ function showOverlay(result: AnalysisResult, onDismiss: () => void): HTMLElement
       border-radius:8px;padding:10px 14px;margin-bottom:8px
     ">
       <span style="color:#f87171;font-size:16px;flex-shrink:0">${s.severity === 'high' ? '🔴' : '🟡'}</span>
-      <span style="font-size:14px;line-height:1.4">${s.message}</span>
+      <span style="font-size:14px;line-height:1.4">${esc(translateRiskSignal(s, locale))}</span>
     </div>
   `).join('')
 
@@ -143,20 +196,20 @@ function showOverlay(result: AnalysisResult, onDismiss: () => void): HTMLElement
     <div style="max-width:560px;width:90%;padding:32px">
       <div style="text-align:center;margin-bottom:28px">
         <div style="font-size:56px;margin-bottom:12px">🔴</div>
-        <div style="font-size:26px;font-weight:800;color:#fca5a5;margin-bottom:8px">Опасный сайт!</div>
+        <div style="font-size:26px;font-weight:800;color:#fca5a5;margin-bottom:8px">${translate(locale, 'content.dangerTitle')}</div>
         <div style="font-size:15px;opacity:0.7;word-break:break-all">
-          ${result.url.slice(0, 80)}${result.url.length > 80 ? '…' : ''}
+          ${esc(result.url.slice(0, 80))}${result.url.length > 80 ? '…' : ''}
         </div>
         <div style="
           display:inline-block;margin-top:12px;
           background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
           border-radius:20px;padding:4px 16px;font-size:13px;font-weight:600;color:#fca5a5
-        ">Оценка риска: ${result.score}/100</div>
+        ">${translate(locale, 'content.riskScore', { score: result.score })}</div>
       </div>
 
       <div style="margin-bottom:24px">
         <div style="font-size:13px;font-weight:600;opacity:0.5;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">
-          Обнаруженные угрозы
+          ${translate(locale, 'content.threats')}
         </div>
         ${signalsHtml}
       </div>
@@ -165,16 +218,23 @@ function showOverlay(result: AnalysisResult, onDismiss: () => void): HTMLElement
         <button id="safenet-leave-btn" style="
           flex:1;background:#dc2626;border:none;color:white;
           padding:14px;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;
-        ">← Уйти со страницы</button>
+        ">← ${translate(locale, 'content.leave')}</button>
         <button id="safenet-stay-btn" style="
           background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
           color:rgba(255,255,255,0.5);padding:14px 20px;border-radius:10px;
           cursor:pointer;font-size:14px;
-        ">Всё равно войти</button>
+        ">${translate(locale, 'content.stay')}</button>
       </div>
 
-      <div style="text-align:center;margin-top:16px;font-size:12px;opacity:0.35">
-        SafeNet Guard • Анализ выполнен локально
+      <div style="text-align:center;margin-top:14px">
+        <button id="safenet-trust-btn" style="
+          background:none;border:none;cursor:pointer;font-size:12px;
+          color:rgba(255,255,255,0.35);text-decoration:underline;padding:4px;
+        ">${translate(locale, 'content.falsePositive')}</button>
+      </div>
+
+      <div style="text-align:center;margin-top:8px;font-size:12px;opacity:0.35">
+        SafeNet Guard • ${translate(locale, 'content.localAnalysis')}
       </div>
     </div>
   `
@@ -185,13 +245,27 @@ function showOverlay(result: AnalysisResult, onDismiss: () => void): HTMLElement
     setTimeout(() => window.close(), 300)
   })
   overlay.querySelector('#safenet-stay-btn')?.addEventListener('click', () => {
+    rememberDismissed()
+    overlay.remove()
+    onDismiss()
+  })
+  overlay.querySelector('#safenet-trust-btn')?.addEventListener('click', () => {
+    requestTrust()
     overlay.remove()
     onDismiss()
   })
   return overlay
 }
 
+// SPAs build phishing forms long after `load` — a single scan misses them.
+// Mutations re-trigger the scan, debounced and capped so a busy page costs a
+// bounded number of sweeps; identical results are not re-sent.
+const DOM_RESCAN_DEBOUNCE_MS = 1500
+const DOM_RESCAN_LIMIT = 8
+
 export function registerContent(): void {
+  let locale = getBrowserLocale()
+  void getSettings().then((settings) => { locale = settings.locale }).catch(() => {})
   let bannerEl: HTMLElement | null = null
   let overlayEl: HTMLElement | null = null
 
@@ -202,14 +276,56 @@ export function registerContent(): void {
     overlayEl = null
   }
 
-  function handleResult(result: AnalysisResult) {
+  let lastDomFingerprint = ''
+  let lastResultUrl = ''
+  let rescanCount = 0
+  let rescanTimer: ReturnType<typeof setTimeout> | undefined
+
+  function sendDomFeatures() {
+    const features = analyzeDom()
+    const fingerprint = JSON.stringify(features)
+    if (fingerprint === lastDomFingerprint) return
+    lastDomFingerprint = fingerprint
+    browser.runtime.sendMessage({
+      type: 'DOM_FEATURES',
+      features,
+    } satisfies ExtensionMessage).catch(() => { /* extension reloaded */ })
+  }
+
+  const domObserver = new MutationObserver(() => {
+    if (rescanCount >= DOM_RESCAN_LIMIT) {
+      domObserver.disconnect()
+      return
+    }
+    clearTimeout(rescanTimer)
+    rescanTimer = setTimeout(() => {
+      rescanCount++
+      sendDomFeatures()
+    }, DOM_RESCAN_DEBOUNCE_MS)
+  })
+
+  async function handleResult(result: AnalysisResult) {
+    locale = (await getSettings().catch(() => null))?.locale ?? locale
+    // SPA route change: the background re-analyzed a new URL, so the previous
+    // DOM verdict no longer applies — rescan and allow a fresh warning budget.
+    if (result.url !== lastResultUrl) {
+      lastResultUrl = result.url
+      lastDomFingerprint = ''
+      rescanCount = 0
+    }
     removeWarnings()
     if (result.level === 'suspicious') {
-      bannerEl = showBanner(result, () => { bannerEl = null })
+      bannerEl = showBanner(result, locale, () => { bannerEl = null })
     } else if (result.level === 'danger') {
-      overlayEl = showOverlay(result, () => {
+      // Once the user has chosen to proceed in this tab session, further
+      // in-site navigations get the red banner instead of the full overlay.
+      if (isDismissed()) {
+        bannerEl = showBanner(result, locale, () => { bannerEl = null })
+        return
+      }
+      overlayEl = showOverlay(result, locale, () => {
         overlayEl = null
-        bannerEl = showBanner({ ...result, level: 'suspicious' }, () => { bannerEl = null })
+        bannerEl = showBanner(result, locale, () => { bannerEl = null })
       })
     }
   }
@@ -217,24 +333,19 @@ export function registerContent(): void {
   browser.runtime.sendMessage({ type: 'GET_CURRENT_RESULT' } satisfies ExtensionMessage)
     .then((response: ExtensionMessage) => {
       if (response?.type === 'CURRENT_RESULT' && response.result) {
-        handleResult(response.result)
+        void handleResult(response.result)
       }
     })
     .catch(() => { /* extension reloaded */ })
 
-  const panel = createPanel()
+  const panel = createPanel(() => locale)
 
   browser.runtime.onMessage.addListener((message: ExtensionMessage) => {
-    if (message.type === 'ANALYSIS_RESULT') handleResult(message.result)
+    if (message.type === 'ANALYSIS_RESULT') void handleResult(message.result)
     if (message.type === 'TOGGLE_PANEL') panel.toggle()
     if (message.type === 'CLOSE_PANEL') panel.hide()
   })
 
-  window.addEventListener('load', () => {
-    const domFeatures = analyzeDom()
-    browser.runtime.sendMessage({
-      type: 'DOM_FEATURES',
-      features: domFeatures,
-    } satisfies ExtensionMessage).catch(() => { /* ignore */ })
-  })
+  window.addEventListener('load', sendDomFeatures)
+  domObserver.observe(document.documentElement, { childList: true, subtree: true })
 }

@@ -1,111 +1,126 @@
 'use client'
+
 import { m } from 'framer-motion'
+import { Smartphone, Sparkles, Target } from '@/components/ui/icons'
 
-import { Smartphone, Sparkles, Target } from 'lucide-react'
-
+import { useI18n } from '@/i18n/LocaleProvider'
 import { features } from '@/lib/data'
+import { MOTION } from '@/config/motion.config'
+
+const featureAccents = [
+	'from-blue-500 to-cyan-500',
+	'from-purple-500 to-indigo-500',
+	'from-emerald-500 to-teal-500',
+	'from-amber-500 to-orange-500',
+	'from-fuchsia-500 to-purple-500',
+	'from-slate-500 to-slate-700',
+] as const
 
 export default function Features() {
+	const { t } = useI18n()
+
 	return (
-		<section id='features' className='py-20'>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-				<div className='text-center mb-16'>
-					<h3 className='text-3xl sm:text-4xl font-bold text-white mb-4'>
-						Why SafeNet?
-					</h3>
-					<p className='text-lg text-slate-400 max-w-2xl mx-auto'>
-						A modern approach to cybersecurity education through game mechanics
-						and real-world scenarios
+		<section id='features' className='py-20 sm:py-24'>
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='mx-auto mb-12 max-w-2xl text-center sm:mb-14'>
+					<h2 className='mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl'>
+						{t.featuresSection.heading}
+					</h2>
+					<p className='text-base leading-7 text-muted-foreground sm:text-lg'>
+						{t.featuresSection.subtitle}
 					</p>
 				</div>
-				<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
+				<div className='grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3'>
 					{features.map((feature, index) => {
 						const Icon = feature.icon
+						const copy = t.featuresSection.items[index]
+						const accent = featureAccents[index]
+
 						return (
-							<m.div
+							<m.article
 								key={index}
-								initial={{ opacity: 0, y: 30, scale: 0.95 }}
-								whileInView={{ opacity: 1, y: 0, scale: 1 }}
+								initial={{ opacity: 0, y: 6 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								whileHover={{ y: -4 }}
 								viewport={{ once: true }}
 								transition={{
-									duration: 0.5,
-									delay: index * 0.1,
-									ease: [0.25, 0.8, 0.25, 1],
+									duration: MOTION.reveal,
+									delay: index * 0.035,
+									ease: MOTION.ease,
 								}}
+								className='group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-sm transition-[border-color,box-shadow] duration-300 ease-out hover:border-brand/30 hover:shadow-lg'
 							>
-								<div className='group relative bg-slate-800 hover:bg-slate-750 rounded-2xl p-6 border border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden flex flex-col'>
-									<div
-										className={`absolute inset-0 bg-linear-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-									></div>
-									<div className='absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-										<span
-											className={`text-xs font-bold px-2 py-1 rounded-full bg-linear-to-r ${feature.color} text-white`}
-										>
-											{feature.highlight}
-										</span>
+								<div
+									className={`pointer-events-none absolute inset-0 bg-linear-to-br ${accent} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.07]`}
+									aria-hidden='true'
+								/>
+								<div className='mb-5 flex items-center justify-between gap-3'>
+								<div
+									data-inverse
+									className={`relative flex size-12 items-center justify-center rounded-xl bg-linear-to-br ${accent} text-white shadow-sm`}
+								>
+										<Icon
+											className='size-6 text-white'
+											strokeWidth={1.8}
+											aria-hidden='true'
+										/>
 									</div>
-									<div className='relative z-10 flex-1 flex flex-col'>
-										<div
-											className={`w-14 h-14 bg-linear-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}
-										>
-											<Icon className='w-7 h-7 text-white' strokeWidth={2} />
-										</div>
-										<h4 className='text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-linear-to-r group-hover:bg-clip-text group-hover:from-white group-hover:to-slate-300 transition-all'>
-											{feature.title}
-										</h4>
-										<p className='text-slate-400 text-sm leading-relaxed mb-4 flex-1'>
-											{feature.description}
-										</p>
-										<div className='flex items-center gap-2 pt-3 border-t border-slate-700 group-hover:border-slate-600 transition-colors mt-auto'>
-											<Sparkles className='w-4 h-4 text-indigo-400' />
-											<span className='text-xs font-medium text-slate-500 group-hover:text-slate-400 transition-colors'>
-												{feature.stats}
-											</span>
-										</div>
-									</div>
+									<span className='relative rounded-full border border-border bg-background/70 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground'>
+										{copy.highlight}
+									</span>
 								</div>
-							</m.div>
+								<h3 className='relative mb-2 text-lg font-semibold tracking-tight'>
+									{copy.title}
+								</h3>
+								<p className='relative mb-5 flex-1 text-sm leading-6 text-muted-foreground'>
+									{copy.description}
+								</p>
+								<div className='relative flex items-center gap-2 border-t border-border pt-4 text-xs font-medium text-muted-foreground'>
+									<Sparkles className='size-3.5 text-brand' aria-hidden='true' />
+									<span>{copy.stats}</span>
+								</div>
+							</m.article>
 						)
 					})}
 				</div>
-				<div className='mt-16 grid md:grid-cols-2 gap-6'>
+				<div className='mt-6 grid gap-4 md:grid-cols-2'>
 					<m.div
-						initial={{ opacity: 0, x: -50, scale: 0.95 }}
-						whileInView={{ opacity: 1, x: 0, scale: 1 }}
-						transition={{
-							duration: 0.7,
-							delay: 0.1,
-							ease: [0.6, 0.05, 0.01, 0.9],
-						}}
+						initial={{ opacity: 0, y: 8 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						transition={{ duration: MOTION.standard, ease: MOTION.ease }}
 						viewport={{ once: true }}
-						className='bg-linear-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-6 text-center'
+						className='flex items-start gap-4 rounded-2xl border border-border bg-secondary/60 p-6'
 					>
-						<div className='w-12 h-12 mx-auto mb-3 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center'>
-							<Target className='w-6 h-6 text-white' />
+						<div className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-background text-brand shadow-sm'>
+							<Target className='size-5' aria-hidden='true' />
 						</div>
-						<h5 className='text-lg font-bold text-white mb-2'>Adaptive</h5>
-						<p className='text-sm text-slate-400'>
-							The system automatically adjusts the difficulty to your level
-						</p>
+						<div>
+							<h3 className='mb-1 font-semibold text-foreground'>
+								{t.featuresSection.adaptive.title}
+							</h3>
+							<p className='text-sm leading-6 text-muted-foreground'>
+								{t.featuresSection.adaptive.body}
+							</p>
+						</div>
 					</m.div>
 					<m.div
-						initial={{ opacity: 0, x: 50, scale: 0.95 }}
-						whileInView={{ opacity: 1, x: 0, scale: 1 }}
-						transition={{
-							duration: 0.7,
-							delay: 0.2,
-							ease: [0.6, 0.05, 0.01, 0.9],
-						}}
+						initial={{ opacity: 0, y: 8 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						transition={{ duration: MOTION.standard, delay: MOTION.stagger, ease: MOTION.ease }}
 						viewport={{ once: true }}
-						className='bg-linear-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-6 text-center'
+						className='flex items-start gap-4 rounded-2xl border border-border bg-secondary/60 p-6'
 					>
-						<div className='w-12 h-12 mx-auto mb-3 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center'>
-							<Smartphone className='w-6 h-6 text-white' />
+						<div className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-background text-brand shadow-sm'>
+							<Smartphone className='size-5' aria-hidden='true' />
 						</div>
-						<h5 className='text-lg font-bold text-white mb-2'>Always With You</h5>
-						<p className='text-sm text-slate-400'>
-							Learn from any device: phone, tablet, or computer
-						</p>
+						<div>
+							<h3 className='mb-1 font-semibold text-foreground'>
+								{t.featuresSection.alwaysWithYou.title}
+							</h3>
+							<p className='text-sm leading-6 text-muted-foreground'>
+								{t.featuresSection.alwaysWithYou.body}
+							</p>
+						</div>
 					</m.div>
 				</div>
 			</div>

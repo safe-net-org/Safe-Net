@@ -2,21 +2,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import {
-	AnimatePresence,
-	m,
-	Transition,
-	useAnimation,
-	usePresence,
-} from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 
-import { ChevronDown, LogOut, Menu, Shield, ShieldCheck, X } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, Shield, ShieldCheck, X } from '@/components/ui/icons'
 
 import { useProfile } from '@/hooks/user/useProfile'
 import { useEffect, useState } from 'react'
 
+import { PreferencesControls } from '@/components/preferences/PreferencesControls'
 import { useLogout } from '@/hooks/user/useLogout'
-import { adminNavItems, navItems } from './navigation.data'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { getAdminNavItems, getNavItems } from './navigation.data'
 
 interface NavItem {
 	label: string
@@ -30,13 +26,14 @@ export default function DashboardSidebar() {
 	const pathname = usePathname()
 	const { user } = useProfile()
 	const { logout } = useLogout()
+	const { t } = useI18n()
+	const navItems = getNavItems(t.dashboardNav)
+	const adminNavItems = getAdminNavItems(t.dashboardNav)
 	const [expandedItems, setExpandedItems] = useState<string[]>([])
 	const [isMobileOpen, setIsMobileOpen] = useState(false)
-	const [hasAnimated, setHasAnimated] = useState(false)
 	const [isInitialLoad, setIsInitialLoad] = useState(true)
 
 	useEffect(() => {
-		setHasAnimated(true)
 		const timer = setTimeout(() => {
 			setIsInitialLoad(false)
 		}, 1000)
@@ -45,9 +42,7 @@ export default function DashboardSidebar() {
 
 	const toggleExpand = (label: string) => {
 		setExpandedItems(prev =>
-			prev.includes(label)
-				? prev.filter(item => item !== label)
-				: [...prev, label]
+			prev.includes(label) ? prev.filter(item => item !== label) : [...prev, label]
 		)
 	}
 
@@ -58,40 +53,7 @@ export default function DashboardSidebar() {
 
 	const handleLogout = () => logout('/')
 
-	const filteredAdminItems = adminNavItems.filter(
-		item => !item.adminOnly || user?.isAdmin
-	)
-
-	const useDropdownAnimation = (isOpen: boolean) => {
-		const controls = useAnimation()
-		const [isPresent, safeToRemove] = usePresence()
-
-		useEffect(() => {
-			if (isOpen) {
-				controls.start({ opacity: 1, height: 'auto' })
-			} else {
-				controls.start({ opacity: 0, height: 0 }).then(() => {
-					if (!isPresent && safeToRemove) {
-						safeToRemove()
-					}
-				})
-			}
-		}, [isOpen, controls, isPresent, safeToRemove])
-
-		// `transition` is typed explicitly because returning it from a function
-		// widens `ease` to number[], which framer-motion's Easing type rejects.
-		const transition: Transition = {
-			duration: 0.25,
-			ease: [0.4, 0, 0.2, 1],
-			height: { duration: 0.25 },
-		}
-
-		return {
-			controls,
-			initial: { opacity: 0, height: 0 },
-			transition,
-		}
-	}
+	const filteredAdminItems = adminNavItems.filter(item => !item.adminOnly || user?.isAdmin)
 
 	const isGroupActive = (item: NavItem) => {
 		if (!item.children) return isActive(item.href)
@@ -100,10 +62,10 @@ export default function DashboardSidebar() {
 
 	const isChildActive = (href: string) => pathname.startsWith(href)
 
-	const renderNavItem = (item: NavItem, index: number, isAdmin = false) => {
+	const renderNavItem = (item: NavItem, index: number, idPrefix: string) => {
 		const isOpen = expandedItems.includes(item.label)
-		const { controls, initial, transition } = useDropdownAnimation(isOpen)
 		const groupIsActive = isGroupActive(item)
+		const regionId = `${idPrefix}-dashboard-nav-${item.href.replaceAll('/', '-') || 'home'}`
 
 		return (
 			<m.div
@@ -113,7 +75,7 @@ export default function DashboardSidebar() {
 				transition={{
 					delay: index * 0.03,
 					duration: 0.4,
-					ease: [0.4, 0, 0.2, 1],
+					ease: [0.4, 0, 0.2, 1]
 				}}
 			>
 				{item.children ? (
@@ -124,14 +86,17 @@ export default function DashboardSidebar() {
 							transition={{
 								type: 'spring',
 								stiffness: 400,
-								damping: 25,
+								damping: 25
 							}}
+							type='button'
 							onClick={() => toggleExpand(item.label)}
 							className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${
 								isOpen
-									? 'bg-gray-100 dark:bg-gray-800/70 text-gray-900 dark:text-white'
-									: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
-							} ${groupIsActive ? 'border border-gray-300/70 dark:border-gray-600/70' : ''}`}
+									? 'bg-sidebar-accent/70 text-sidebar-accent-foreground'
+									: 'text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground'
+							} ${groupIsActive ? 'border border-sidebar-border' : ''}`}
+							aria-expanded={isOpen}
+							aria-controls={regionId}
 						>
 							<div className='flex items-center gap-3'>
 								<div className='opacity-80'>{item.icon}</div>
@@ -143,7 +108,7 @@ export default function DashboardSidebar() {
 									duration: 0.25,
 									type: 'spring',
 									stiffness: 250,
-									damping: 25,
+									damping: 25
 								}}
 							>
 								<ChevronDown className='w-4 h-4 opacity-50' strokeWidth={2.5} />
@@ -154,16 +119,20 @@ export default function DashboardSidebar() {
 							{isOpen && (
 								<m.div
 									key={`dropdown-${item.label}`}
-									initial={initial}
-									animate={controls}
+									id={regionId}
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: 'auto' }}
 									exit={{ opacity: 0, height: 0 }}
-									transition={transition}
+									transition={{
+										duration: 0.25,
+										ease: [0.4, 0, 0.2, 1],
+										height: { duration: 0.25 }
+									}}
 									className='overflow-hidden'
 									layout
-									aria-expanded={isOpen}
 									role='region'
 								>
-									<div className='ml-8 mt-1 space-y-0.5 border-l-2 border-gray-200/70 dark:border-gray-700/70 pl-3.5 py-1.5'>
+									<div className='ml-8 mt-1 space-y-0.5 border-l-2 border-sidebar-border pl-3.5 py-1.5'>
 										{item.children.map((child, childIndex) => {
 											const childIsActive = isChildActive(child.href)
 											return (
@@ -175,7 +144,7 @@ export default function DashboardSidebar() {
 													transition={{
 														duration: 0.2,
 														delay: childIndex * 0.05,
-														ease: [0.4, 0, 0.2, 1],
+														ease: [0.4, 0, 0.2, 1]
 													}}
 													whileHover={{ x: 3, width: 'calc(100% - 3px)' }}
 													whileTap={{ scale: 0.98 }}
@@ -187,8 +156,8 @@ export default function DashboardSidebar() {
 														}}
 														className={`block px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 ${
 															childIsActive
-																? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
-																: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/70 hover:text-gray-900 dark:hover:text-gray-100'
+																? 'bg-navigation-active text-navigation-active-foreground shadow-sm'
+																: 'text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground'
 														}`}
 													>
 														{child.label}
@@ -212,8 +181,8 @@ export default function DashboardSidebar() {
 							onClick={() => setIsMobileOpen(false)}
 							className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-200 ${
 								isActive(item.href)
-									? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm'
-									: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
+									? 'bg-navigation-active text-navigation-active-foreground shadow-sm'
+									: 'text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground'
 							}`}
 						>
 							<div className='opacity-80'>{item.icon}</div>
@@ -225,44 +194,49 @@ export default function DashboardSidebar() {
 		)
 	}
 
-	const SidebarContent = () => (
+	const renderSidebarContent = (idPrefix: string) => (
 		<m.div
 			initial={isInitialLoad ? { opacity: 0, x: -20 } : false}
 			animate={{ opacity: 1, x: 0 }}
 			transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
 			className='flex flex-col h-full'
 		>
-			<m.div
-				initial={isInitialLoad ? { y: -20, opacity: 0 } : false}
-				animate={{ y: 0, opacity: 1 }}
-				transition={{ delay: 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-				className='flex items-center justify-between px-6 py-5'
-			>
-				<Link href='/dashboard' className='flex items-center gap-3'>
-					<m.div
-						whileHover={{ scale: 1.05, rotate: 5 }}
-						whileTap={{ scale: 0.95 }}
-						transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-						className='w-9 h-9 bg-linear-to-br from-blue-500 to-blue-600 rounded-[11px] flex items-center justify-center shadow-md'
-					>
-						<Shield className='w-5 h-5 text-white' strokeWidth={2.5} />
-					</m.div>
-					<span className='text-[18px] font-semibold text-gray-900 dark:text-white tracking-tight'>
-						SafeNet
-					</span>
-				</Link>
-				<m.button
-					whileHover={{ scale: 1.1, rotate: 90 }}
-					whileTap={{ scale: 0.9 }}
-					transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-					onClick={() => setIsMobileOpen(false)}
-					className='lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors'
+			<div className='px-5 pb-3 pt-5'>
+				<m.div
+					initial={isInitialLoad ? { y: -20, opacity: 0 } : false}
+					animate={{ y: 0, opacity: 1 }}
+					transition={{ delay: 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+					className='flex items-center justify-between'
 				>
-					<X className='w-5 h-5 text-gray-500' strokeWidth={2} />
-				</m.button>
-			</m.div>
+					<Link href='/dashboard' className='flex items-center gap-3'>
+						<m.div
+							whileHover={{ scale: 1.05, rotate: 5 }}
+							whileTap={{ scale: 0.95 }}
+							transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+							className='w-9 h-9 bg-linear-to-br from-blue-500 to-blue-600 rounded-[11px] flex items-center justify-center shadow-md'
+						>
+							<Shield className='w-5 h-5 text-white' strokeWidth={2.5} />
+						</m.div>
+						<span className='text-[18px] font-semibold text-sidebar-foreground tracking-tight'>
+							SafeNet
+						</span>
+					</Link>
+					<m.button
+						whileHover={{ scale: 1.1, rotate: 90 }}
+						whileTap={{ scale: 0.9 }}
+						transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+						type='button'
+						onClick={() => setIsMobileOpen(false)}
+						className='lg:hidden p-2 hover:bg-sidebar-accent rounded-xl transition-colors'
+						aria-label={t.nav.closeMenu}
+					>
+						<X className='w-5 h-5 text-muted-foreground' strokeWidth={2} aria-hidden='true' />
+					</m.button>
+				</m.div>
+				<PreferencesControls className='mt-4' />
+			</div>
 
-			{/* Profile Section with Logout */}
+			{/* Profile identity and explicit logout action */}
 			{user && (
 				<m.div
 					initial={isInitialLoad ? { y: -10, opacity: 0 } : false}
@@ -270,41 +244,39 @@ export default function DashboardSidebar() {
 					transition={{ delay: 0.2, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
 					className='px-4 pb-4'
 				>
-					<m.button
-						whileHover={{ scale: 1.01 }}
-						whileTap={{ scale: 0.99 }}
-						transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-						onClick={handleLogout}
-						className='w-full flex items-center gap-3.5 px-3.5 py-3 rounded-[14px] bg-gray-50/80 dark:bg-gray-800/40 transition-all duration-200 border border-gray-200/40 dark:border-gray-700/40 group'
-					>
-						<div className='relative'>
-							<div className='w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-[15px] shadow-md'>
-								{user.name?.charAt(0).toUpperCase() ||
-									user.email?.charAt(0).toUpperCase() ||
-									'?'}
-							</div>
-							{user.isAdmin && (
-								<div className='absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 bg-linear-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center border-[2.5px] border-white dark:border-gray-900 shadow-sm'>
-									<ShieldCheck
-										className='w-2.5 h-2.5 text-white'
-										strokeWidth={3}
-									/>
+					<div className='rounded-[14px] border border-sidebar-border bg-sidebar-accent/40 px-3.5 py-3'>
+						<div className='flex items-center gap-3.5'>
+							<div className='relative'>
+								<div className='w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-[15px] shadow-md'>
+									{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
 								</div>
-							)}
+								{user.isAdmin && (
+									<div className='absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 bg-linear-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center border-[2.5px] border-sidebar shadow-sm'>
+										<ShieldCheck className='w-2.5 h-2.5 text-white' strokeWidth={3} />
+									</div>
+								)}
+							</div>
+							<div className='flex-1 min-w-0 text-left'>
+								<p className='text-[13.5px] font-semibold text-sidebar-foreground truncate leading-tight'>
+									{user.name || t.dashboardNav.student}
+								</p>
+								<p className='text-[11.5px] text-muted-foreground truncate leading-tight mt-1'>
+									{user.email}
+								</p>
+							</div>
 						</div>
-						<div className='flex-1 min-w-0 text-left'>
-							<p className='text-[13.5px] font-semibold text-gray-900 dark:text-white truncate leading-tight transition-colors'>
-								{user.name || 'User'}
-							</p>
-							<p className='text-[11.5px] text-gray-500 dark:text-gray-400 truncate leading-tight mt-1'>
-								{user.email}
-							</p>
-						</div>
-						<LogOut
-							className='w-[18px] h-[18px] text-gray-400 transition-colors hover:text-red-600 cursor-pointer'
-							strokeWidth={2}
-						/>
-					</m.button>
+						<m.button
+							type='button'
+							onClick={handleLogout}
+							whileHover={{ y: -2 }}
+							whileTap={{ scale: 0.985 }}
+							transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+							className='mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/20 px-3 py-2 text-[12.5px] font-medium text-destructive transition-[color,background-color,border-color] duration-300 hover:border-destructive/30 hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40'
+						>
+							<LogOut className='size-4' strokeWidth={2} aria-hidden='true' />
+							{t.nav.logout}
+						</m.button>
+					</div>
 				</m.div>
 			)}
 
@@ -315,16 +287,14 @@ export default function DashboardSidebar() {
 					{filteredAdminItems.length > 0 && (
 						<>
 							<div className='space-y-0.5 mb-3'>
-								{filteredAdminItems.map((item, index) =>
-									renderNavItem(item, index, true)
-								)}
+								{filteredAdminItems.map((item, index) => renderNavItem(item, index, idPrefix))}
 							</div>
-							<div className='h-px bg-linear-to-r from-transparent via-gray-200 dark:via-gray-700/50 to-transparent my-4'></div>
+							<div className='h-px bg-linear-to-r from-transparent via-sidebar-border to-transparent my-4'></div>
 						</>
 					)}
 					{/* User Navigation */}
 					<div className='space-y-0.5'>
-						{navItems.map((item, index) => renderNavItem(item, index))}
+						{navItems.map((item, index) => renderNavItem(item, index, idPrefix))}
 					</div>
 				</div>
 			</nav>
@@ -340,20 +310,26 @@ export default function DashboardSidebar() {
 				whileHover={{ scale: 1.05 }}
 				whileTap={{ scale: 0.95 }}
 				transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+				type='button'
 				onClick={() => setIsMobileOpen(true)}
-				className='lg:hidden fixed top-4 left-4 z-50 p-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl rounded-[14px] shadow-lg border border-gray-200/60 dark:border-gray-800/60'
-				aria-label='Open menu'
+				className='lg:hidden fixed top-4 left-4 z-50 p-3 bg-sidebar/90 backdrop-blur-2xl rounded-[14px] shadow-lg border border-sidebar-border'
+				aria-label={t.nav.openMenu}
+				aria-expanded={isMobileOpen}
+				aria-controls='dashboard-mobile-sidebar'
 			>
-				<Menu
-					className='w-5 h-5 text-gray-700 dark:text-gray-300'
-					strokeWidth={2.5}
-				/>
+				<Menu className='w-5 h-5 text-sidebar-foreground' strokeWidth={2.5} aria-hidden='true' />
 			</m.button>
 
-			{/* Desktop Sidebar */}
-			<aside className='hidden lg:flex w-[280px] h-screen bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border-r border-gray-200/60 dark:border-gray-800/60 flex-col sticky top-0'>
-				<SidebarContent />
-			</aside>
+			{/* The slot preserves the desktop layout while the actual navigation is
+			    viewport-fixed, so rapid document scrolling never exposes its edge. */}
+			<div className='hidden w-[280px] shrink-0 lg:block'>
+				<aside
+					className='fixed inset-y-0 left-0 z-30 flex h-dvh w-[280px] flex-col border-r border-sidebar-border bg-sidebar/90 text-sidebar-foreground backdrop-blur-2xl'
+					aria-label={t.nav.primaryNavigation}
+				>
+					{renderSidebarContent('desktop')}
+				</aside>
+			</div>
 
 			{/* Mobile Sidebar */}
 			<AnimatePresence mode='wait'>
@@ -371,6 +347,7 @@ export default function DashboardSidebar() {
 						/>
 						{/* Sidebar */}
 						<m.aside
+							id='dashboard-mobile-sidebar'
 							initial={{ x: -300, opacity: 0 }}
 							animate={{ x: 0, opacity: 1 }}
 							exit={{ x: -300, opacity: 0 }}
@@ -378,14 +355,14 @@ export default function DashboardSidebar() {
 								type: 'spring',
 								damping: 30,
 								stiffness: 300,
-								mass: 0.5,
+								mass: 0.5
 							}}
-							className='lg:hidden fixed top-0 left-0 z-50 w-[280px] h-screen bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-r border-gray-200/60 dark:border-gray-800/60 flex flex-col shadow-2xl'
+							className='lg:hidden fixed top-0 left-0 z-50 w-[280px] h-screen bg-sidebar/95 text-sidebar-foreground backdrop-blur-2xl border-r border-sidebar-border flex flex-col shadow-2xl'
 							role='dialog'
 							aria-modal='true'
-							aria-label='Mobile menu'
+							aria-label={t.nav.mobileMenu}
 						>
-							<SidebarContent />
+							{renderSidebarContent('mobile')}
 						</m.aside>
 					</>
 				)}

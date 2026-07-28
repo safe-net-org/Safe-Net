@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useCertificateDetail } from '@/hooks/learning/useCertificateDetail'
-import { DifficultyLabel } from '@/services/learning/learning.types'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { getDifficultyLabel } from '@/services/learning/learning.types'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { m } from 'framer-motion'
 import {
@@ -16,10 +17,11 @@ import {
     Hash,
     Shield,
     Sparkles,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 
 export default function CertificatePage() {
+	const { t } = useI18n()
 	const { certificate, isLoading, isError } = useCertificateDetail()
 
 	if (isLoading) return <CertificateSkeleton />
@@ -31,7 +33,7 @@ export default function CertificatePage() {
 				showBackButton
 				items={[
 					{
-						label: 'Certificates',
+						label: t.dashboardCertificateDetail.breadcrumb,
 						href: ROUTES.CERTIFICATES,
 					},
 					{ label: certificate.course.title },
@@ -47,9 +49,9 @@ export default function CertificatePage() {
 				style={{
 					minHeight: '842px',
 					background:
-						'linear-gradient(135deg, #0A0F1D 0%, #1a1f3a 50%, #0A0F1D 100%)',
+						'linear-gradient(135deg, var(--overlay) 0%, var(--secondary) 50%, var(--overlay) 100%)',
 				}}
-				aria-label='Course completion certificate'
+				aria-label={t.dashboardCertificateDetail.ariaLabel}
 			>
 				{/* Animated background gradient */}
 				<div className='absolute inset-0 opacity-20 pointer-events-none'>
@@ -101,7 +103,7 @@ export default function CertificatePage() {
 						<div className='inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg'>
 							<Shield className='w-4 h-4 text-blue-400' />
 							<p className='text-sm sm:text-base text-white/80 font-semibold'>
-								of successful course completion
+								{t.dashboardCertificateDetail.ofCompletion}
 							</p>
 						</div>
 					</m.div>
@@ -114,7 +116,7 @@ export default function CertificatePage() {
 						className='text-center space-y-5'
 					>
 						<p className='text-sm sm:text-base text-white/60 font-light uppercase tracking-wider'>
-							This is to certify that
+							{t.dashboardCertificateDetail.certifyThat}
 						</p>
 
 						<div className='relative inline-block'>
@@ -135,7 +137,7 @@ export default function CertificatePage() {
 						className='text-center space-y-5 px-4'
 					>
 						<p className='text-sm sm:text-base text-white/60 font-light'>
-							has successfully completed the educational course
+							{t.dashboardCertificateDetail.completedCoursePrefix}
 						</p>
 
 						<div className='max-w-4xl mx-auto'>
@@ -145,7 +147,10 @@ export default function CertificatePage() {
 
 							<div className='flex justify-center'>
 								<Badge className='bg-linear-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-300 px-5 py-2 rounded-xl text-sm font-bold uppercase tracking-wide'>
-									{DifficultyLabel[certificate.course.difficulty]}
+									{getDifficultyLabel(
+										certificate.course.difficulty,
+										t.dashboardLessonDetail.difficulty
+									)}
 								</Badge>
 							</div>
 						</div>
@@ -160,18 +165,18 @@ export default function CertificatePage() {
 					>
 						<DetailCard
 							icon={Hash}
-							label='Certificate Number'
+							label={t.dashboardCertificateDetail.details.certificateNumber}
 							value={certificate.certificateNumber}
 						/>
 						<DetailCard
 							icon={Calendar}
-							label='Issue Date'
+							label={t.dashboardCertificateDetail.details.issueDate}
 							value={formatDate(certificate.issuedAt) ?? '—'}
 						/>
 						<DetailCard
 							icon={CheckCircle2}
-							label='Status'
-							value='Verified'
+							label={t.dashboardCertificateDetail.details.status}
+							value={t.dashboardCertificateDetail.details.verified}
 						/>
 					</m.div>
 
@@ -185,15 +190,15 @@ export default function CertificatePage() {
 						<div className='flex items-center justify-center gap-3'>
 							<Sparkles className='w-5 h-5 text-yellow-400' />
 							<p className='text-base sm:text-lg text-white font-bold tracking-wide'>
-								SafeNet Education Platform
+								{t.dashboardCertificateDetail.footer.platform}
 							</p>
 							<Sparkles className='w-5 h-5 text-yellow-400' />
 						</div>
 
 						<p className='text-xs sm:text-sm text-white/40 text-center font-light max-w-2xl mx-auto'>
-							An official document confirming successful completion of the course.
+							{t.dashboardCertificateDetail.footer.disclaimer1}
 							<br />
-							This certificate is valid and can be verified by its number.
+							{t.dashboardCertificateDetail.footer.disclaimer2}
 						</p>
 					</m.div>
 				</div>
@@ -247,6 +252,7 @@ const CertificateSkeleton = () => (
  */
 const CertificateNotFound = () => {
 	const router = useRouter()
+	const { t } = useI18n()
 
 	return (
 		<div className='min-h-screen flex items-center justify-center p-4'>
@@ -263,16 +269,16 @@ const CertificateNotFound = () => {
 						<Award className='w-10 h-10 text-white/20' />
 					</div>
 					<h2 className='text-3xl font-black text-white mb-3'>
-						Certificate Not Found
+						{t.dashboardCertificateDetail.notFound.title}
 					</h2>
 					<p className='text-lg text-white/60 mb-8 leading-relaxed'>
-						Check the link or contact your administrator
+						{t.dashboardCertificateDetail.notFound.subtitle}
 					</p>
 					<button
 						onClick={() => router.push(ROUTES.CERTIFICATES)}
 						className='w-full h-14 rounded-2xl bg-white text-black hover:bg-white/80 shadow-2xl font-bold text-base transition-colors duration-200'
 					>
-						← Back to certificates
+						{t.dashboardCertificateDetail.notFound.back}
 					</button>
 				</Card>
 			</m.div>

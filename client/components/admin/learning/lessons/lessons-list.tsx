@@ -12,20 +12,24 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/config/pages-url.config'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { adminService } from '@/services/admin/admin.service'
+import { ILesson } from '@/services/admin/admin.types'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertTriangle, Clock, Edit, Layers, Loader2, Trash2 } from 'lucide-react'
+import { AlertTriangle, Clock, Edit, Layers, Loader2, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 interface LessonsListProps {
-	lessons: any[]
-	courseId: string
+	lessons: ILesson[]
 	onUpdate: () => void
 }
 
 export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
+	const { locale, t } = useI18n()
+	const c = t.adminLessonComponents.lessonsList
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
 	const [selectedLesson, setSelectedLesson] = useState<{
@@ -45,11 +49,11 @@ export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
 		setIsDeleting(true)
 		try {
 			await adminService.deleteLesson(selectedLesson.id)
-			toast.success('Lesson deleted')
+			toast.success(c.toasts.lessonDeleted)
 			onUpdate()
 			setDeleteDialogOpen(false)
-		} catch (error) {
-			toast.error('Error deleting lesson')
+		} catch {
+			toast.error(c.toasts.lessonDeleteError)
 		} finally {
 			setIsDeleting(false)
 			setSelectedLesson(null)
@@ -80,14 +84,19 @@ export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
 								<div className='flex items-center gap-4 mt-1.5'>
 									<div className='flex items-center gap-1.5 text-[13px] text-gray-500'>
 										<Layers className='w-3.5 h-3.5' />
-										<span>{lesson.blocks?.length || 0} {lesson.blocks?.length === 1
-											? 'block'
-											: 'blocks'}</span>
+										<span>
+											{lesson.blocks?.length || 0}{' '}
+											{selectPlural(locale, lesson.blocks?.length || 0, {
+												one: c.blockWordOne,
+												few: c.blockWordFew,
+												many: c.blockWordMany,
+											})}
+										</span>
 									</div>
 									{lesson.estimatedDuration && (
 										<div className='flex items-center gap-1.5 text-[13px] text-gray-500'>
 											<Clock className='w-3.5 h-3.5' />
-											<span>{lesson.estimatedDuration} min</span>
+											<span>{c.durationTemplate.replace('{minutes}', String(lesson.estimatedDuration))}</span>
 										</div>
 									)}
 								</div>
@@ -130,26 +139,28 @@ export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
 									>
 										<AlertTriangle className='h-5 w-5 text-red-500' />
 									</m.div>
-									Delete lesson?
+									{c.deleteDialog.title}
 								</AlertDialogTitle>
 								<AlertDialogDescription className='space-y-2 text-white/70'>
 									<p>
-										Are you sure you want to delete the lesson{' '}
+										{c.deleteDialog.descriptionPrefix}{' '}
 										<span className='font-semibold text-white'>
-											"{selectedLesson.title}"
+											&ldquo;{selectedLesson.title}&rdquo;
 										</span>
 										?
 									</p>
 									{selectedLesson.blocksCount > 0 && (
 										<p className='text-sm text-red-400'>
-											⚠️ This action will delete{' '}
+											⚠️ {c.deleteDialog.warningPrefix}{' '}
 											<span className='font-semibold'>
 												{selectedLesson.blocksCount}{' '}
-												{selectedLesson.blocksCount === 1
-													? 'block'
-													: 'blocks'}
+												{selectPlural(locale, selectedLesson.blocksCount, {
+													one: c.blockWordOne,
+													few: c.blockWordFew,
+													many: c.blockWordMany,
+												})}
 											</span>
-											{' '}and all tasks. This action cannot be undone.
+											{' '}{c.deleteDialog.warningSuffix}
 										</p>
 									)}
 								</AlertDialogDescription>
@@ -159,7 +170,7 @@ export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
 									disabled={isDeleting}
 									className='border-white/20 bg-slate-800/50 hover:bg-slate-700/50'
 								>
-									Cancel
+									{c.deleteDialog.cancel}
 								</AlertDialogCancel>
 								<AlertDialogAction
 									onClick={handleDeleteConfirm}
@@ -169,10 +180,10 @@ export default function LessonsList({ lessons, onUpdate }: LessonsListProps) {
 									{isDeleting ? (
 										<>
 											<Loader2 className='mr-2 h-4 w-4 animate-spin' />
-											Deleting...
+											{c.deleteDialog.deleting}
 										</>
 									) : (
-										'Delete lesson'
+										c.deleteDialog.confirm
 									)}
 								</AlertDialogAction>
 							</AlertDialogFooter>

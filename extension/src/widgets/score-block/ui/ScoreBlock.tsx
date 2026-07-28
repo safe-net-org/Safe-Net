@@ -1,6 +1,7 @@
 import type { AnalysisResult } from '@/src/entities/analysis'
 import { LEVEL } from '@/src/shared/config/levels'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { Pill } from '@/src/shared/ui/Pill'
 import { ScoreRing } from '@/src/shared/ui/ScoreRing'
 
@@ -32,6 +33,7 @@ function bucketize(signals: AnalysisResult['signals']): SeverityBucket {
 }
 
 export function ScoreBlock({ result, animated }: ScoreBlockProps) {
+  const { t } = useExtensionI18n()
   const cfg = LEVEL[result.level]
   const domain = getDomain(result.url)
   const path = getPath(result.url)
@@ -78,7 +80,7 @@ export function ScoreBlock({ result, animated }: ScoreBlockProps) {
         alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center',
       }}>
         <Pill color={cfg.color} bg={cfg.glow} border={cfg.color}>
-          {cfg.emoji} {cfg.label}
+          {cfg.emoji} {t(`level.${result.level}`)}
         </Pill>
         <Pill
           color={protocol === 'HTTPS' ? T.ok : T.danger}
@@ -90,6 +92,11 @@ export function ScoreBlock({ result, animated }: ScoreBlockProps) {
         {result.mlEnhanced && (
           <Pill color={T.accentSoft} bg="oklch(72% 0.12 205 / 0.12)" border="oklch(72% 0.12 205 / 0.35)">
             ✦ ML
+          </Pill>
+        )}
+        {result.trusted && (
+          <Pill color={T.ok} bg="oklch(72% 0.18 155 / 0.08)" border="oklch(72% 0.18 155 / 0.3)">
+            ✓ {t('score.trusted')}
           </Pill>
         )}
       </div>
@@ -123,9 +130,9 @@ export function ScoreBlock({ result, animated }: ScoreBlockProps) {
             fontSize: 10, color: T.textDim, fontFamily: FONT_MONO,
             letterSpacing: '0.08em',
           }}>
-            <span><span style={{ color: T.danger }}>●</span> high {b.high}</span>
-            <span><span style={{ color: T.warn }}>●</span> med {b.medium}</span>
-            <span><span style={{ color: T.textMuted }}>●</span> low {b.low}</span>
+            <span><span style={{ color: T.danger }}>●</span> {t('score.high')} {b.high}</span>
+            <span><span style={{ color: T.warn }}>●</span> {t('score.medium')} {b.medium}</span>
+            <span><span style={{ color: T.textMuted }}>●</span> {t('score.low')} {b.low}</span>
           </div>
         </div>
       )}

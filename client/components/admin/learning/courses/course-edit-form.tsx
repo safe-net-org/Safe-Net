@@ -10,22 +10,21 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { adminService } from '@/services/admin/admin.service'
 import { Difficulty, ICourse } from '@/services/admin/admin.types'
-import { DifficultyLabel } from '@/services/learning/learning.types'
+import { getDifficultyLabel } from '@/services/learning/learning.types'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { m } from 'framer-motion'
-import { ChevronDown, Edit2, Loader2, Save, X } from 'lucide-react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { ChevronDown, Edit2, Loader2, Save, X } from '@/components/ui/icons'
+import { useMemo, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const courseEditSchema = z.object({
-	title: z.string().min(3, 'Minimum 3 characters').max(255),
-	description: z.string().min(10, 'Minimum 10 characters'),
-	difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']),
-})
-
-type CourseEditData = z.infer<typeof courseEditSchema>
+interface CourseEditData {
+	title: string
+	description: string
+	difficulty: 'EASY' | 'MEDIUM' | 'HARD'
+}
 
 interface CourseEditFormProps {
 	course: ICourse
@@ -33,14 +32,26 @@ interface CourseEditFormProps {
 }
 
 export default function CourseEditForm({ course, onSuccess }: CourseEditFormProps) {
+	const { t } = useI18n()
+	const c = t.adminCourseComponents.courseEditForm
 	const [isEditing, setIsEditing] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	const courseEditSchema = useMemo(
+		() =>
+			z.object({
+				title: z.string().min(3, c.validation.titleMin).max(255),
+				description: z.string().min(10, c.validation.descriptionMin),
+				difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']),
+			}),
+		[c]
+	)
 
 	const {
 		register,
 		handleSubmit,
 		setValue, // Used to update the value from the dropdown
-		watch,    // Track the current difficulty value
+		control,
 		formState: { errors },
 		reset,
 	} = useForm<CourseEditData>({
@@ -52,42 +63,45 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 		},
 	})
 
-	const currentDifficulty = watch('difficulty')
+	const currentDifficulty = useWatch({ control, name: 'difficulty' })
 
 	const onSubmit = async (data: CourseEditData) => {
 		setIsSubmitting(true)
 		try {
 			await adminService.updateCourse(course.id, data)
-			toast.success('Course updated')
+			toast.success(c.toast.updated)
 			setIsEditing(false)
 			onSuccess()
-		} catch (error) {
-			toast.error('Error while updating')
+		} catch {
+			toast.error(c.toast.updateError)
 		} finally {
 			setIsSubmitting(false)
 		}
 	}
 
 	return (
-		<m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
+		<m.div data-admin-form initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
 			{!isEditing ? (
 				<div className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 						<div className="space-y-1">
-							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Title</p>
+							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.viewLabels.title}</p>
 							<p className="text-white font-medium text-lg">{course.title}</p>
 						</div>
 
 						<div className="space-y-1">
-							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</p>
+							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.viewLabels.difficulty}</p>
 							<p className="text-white font-medium">
-								{DifficultyLabel[course.difficulty || Difficulty.EASY]}
+								{getDifficultyLabel(
+									course.difficulty || Difficulty.EASY,
+									c.form.difficultyOptions
+								)}
 							</p>
 						</div>
 					</div>
 
 					<div className="space-y-1">
-						<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Description</p>
+						<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{c.viewLabels.description}</p>
 						<p className="text-gray-400 text-sm leading-relaxed">{course.description}</p>
 					</div>
 
@@ -97,7 +111,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 							className="gap-2 bg-white text-black hover:bg-white/90 font-semibold px-8"
 						>
 							<Edit2 className="w-4 h-4" />
-							Edit information
+							{c.editButton}
 						</Button>
 					</div>
 				</div>
@@ -105,7 +119,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-2">
-							<label className="text-sm font-medium text-gray-400">Course title</label>
+							<label className="text-sm font-medium text-gray-400">{c.form.titleLabel}</label>
 							<input
 								type="text"
 								{...register('title')}
@@ -115,7 +129,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 						</div>
 
 						<div className="space-y-2">
-							<label className="text-sm font-medium text-gray-400">Difficulty</label>
+							<label className="text-sm font-medium text-gray-400">{c.form.difficultyLabel}</label>
 							{/* Dropdown Menu instead of Select */}
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
@@ -123,31 +137,36 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 										type="button"
 										className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition outline-none"
 									>
-										<span>{DifficultyLabel[currentDifficulty]}</span>
+										<span>
+											{getDifficultyLabel(
+												currentDifficulty,
+												c.form.difficultyOptions
+											)}
+										</span>
 										<ChevronDown className="w-4 h-4 text-gray-400" />
 									</button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent
 									align="start"
-									className="w-56 bg-[#0A0F1D] border-white/10 text-white"
+									className="w-56 bg-overlay border-white/10 text-white"
 								>
 									<DropdownMenuItem
 										onClick={() => setValue('difficulty', 'EASY')}
 										className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer"
 									>
-										Easy
+										{c.form.difficultyOptions.easy}
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={() => setValue('difficulty', 'MEDIUM')}
 										className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer"
 									>
-										Medium
+										{c.form.difficultyOptions.medium}
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={() => setValue('difficulty', 'HARD')}
 										className="hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer"
 									>
-										Hard
+										{c.form.difficultyOptions.hard}
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
@@ -155,7 +174,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 					</div>
 
 					<div className="space-y-2">
-						<label className="text-sm font-medium text-gray-400">Description</label>
+						<label className="text-sm font-medium text-gray-400">{c.form.descriptionLabel}</label>
 						<textarea
 							{...register('description')}
 							rows={4}
@@ -171,7 +190,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 							className="gap-2 bg-white text-black hover:bg-white/90 font-semibold px-8"
 						>
 							{isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-							Save changes
+							{c.buttons.save}
 						</Button>
 
 						<Button
@@ -184,7 +203,7 @@ export default function CourseEditForm({ course, onSuccess }: CourseEditFormProp
 							className="gap-2 text-gray-400 hover:text-white hover:bg-white/5"
 						>
 							<X className="w-4 h-4" />
-							Cancel
+							{c.buttons.cancel}
 						</Button>
 					</div>
 				</form>

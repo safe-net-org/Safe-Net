@@ -9,22 +9,25 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertCircle, BookOpen, Clock, Loader2, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { AlertCircle, BookOpen, Clock, Loader2, Sparkles } from '@/components/ui/icons'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const lessonSchema = z.object({
-  order: z.number().int().positive('Order must be greater than 0'),
-  title: z.string().min(3, 'Title must be at least 3 characters').max(255),
-  estimatedDuration: z.number().int().positive().optional(),
-})
+function makeLessonSchema(v: { orderPositive: string; titleMin: string }) {
+  return z.object({
+    order: z.number().int().positive(v.orderPositive),
+    title: z.string().min(3, v.titleMin).max(255),
+    estimatedDuration: z.number().int().positive().optional(),
+  })
+}
 
-type LessonFormData = z.infer<typeof lessonSchema>
+type LessonFormData = z.infer<ReturnType<typeof makeLessonSchema>>
 
 interface CreateLessonDialogProps {
   open: boolean
@@ -41,9 +44,20 @@ export default function CreateLessonDialog({
   onSuccess,
   existingLessonsCount = 0,
 }: CreateLessonDialogProps) {
+  const { t } = useI18n()
+  const c = t.adminLessonComponents.createLessonDialog
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const nextLessonOrder = existingLessonsCount + 1
+
+  const lessonSchema = useMemo(
+    () =>
+      makeLessonSchema({
+        orderPositive: c.validation.orderPositive,
+        titleMin: c.validation.titleMin,
+      }),
+    [c.validation.orderPositive, c.validation.titleMin]
+  )
 
   const {
     register,
@@ -74,13 +88,13 @@ export default function CreateLessonDialog({
         ...data,
         courseId,
       })
-      toast.success('Lesson created successfully')
+      toast.success(c.successToast)
       reset()
       onOpenChange(false)
       onSuccess()
     } catch (error) {
       console.error('Create lesson error:', error)
-      toast.error('Error creating lesson')
+      toast.error(c.errorToast)
     } finally {
       setIsSubmitting(false)
     }
@@ -90,7 +104,7 @@ export default function CreateLessonDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <AnimatePresence mode='wait'>
         {open && (
-          <DialogContent className='sm:max-w-[500px] bg-[#0A0F1D]/95 backdrop-blur-2xl border border-white/10 text-white'>
+          <DialogContent className='sm:max-w-[500px] bg-overlay/95 backdrop-blur-2xl border border-white/10 text-white'>
             <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -100,7 +114,7 @@ export default function CreateLessonDialog({
               <DialogHeader>
                 <DialogTitle className='flex items-center gap-2 text-2xl'>
                   <Sparkles className='w-6 h-6 text-blue-400' />
-                  Create new lesson
+                  {c.title}
                 </DialogTitle>
               </DialogHeader>
 
@@ -111,7 +125,7 @@ export default function CreateLessonDialog({
                 {/* Order */}
                 <div className='space-y-2'>
                   <Label htmlFor='order' className='text-sm font-medium text-gray-300'>
-                    Order number
+                    {c.orderLabel}
                   </Label>
                   <Input
                     id='order'
@@ -131,12 +145,12 @@ export default function CreateLessonDialog({
                 {/* Title */}
                 <div className='space-y-2'>
                   <Label htmlFor='title' className='text-sm font-medium text-gray-300'>
-                    Lesson title
+                    {c.titleLabel}
                   </Label>
                   <Input
                     id='title'
                     type='text'
-                    placeholder='Key security threats'
+                    placeholder={c.titlePlaceholder}
                     {...register('title')}
                     className='bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20'
                   />
@@ -151,14 +165,14 @@ export default function CreateLessonDialog({
                 {/* Duration */}
                 <div className='space-y-2'>
                   <Label htmlFor='duration' className='text-sm font-medium text-gray-300'>
-                    Estimated duration{' '}
-                    <span className='text-gray-500 font-normal'>(minutes, optional)</span>
+                    {c.durationLabel}{' '}
+                    <span className='text-gray-500 font-normal'>{c.durationOptional}</span>
                   </Label>
                   <div className='relative'>
                     <Input
                       id='duration'
                       type='number'
-                      placeholder='Will be calculated automatically'
+                      placeholder={c.durationPlaceholder}
                       {...register('estimatedDuration', { valueAsNumber: true })}
                       className='bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 pl-10'
                     />
@@ -166,7 +180,7 @@ export default function CreateLessonDialog({
                   </div>
                   <p className='text-xs text-gray-500 flex items-center gap-1.5'>
                     <span className='w-1 h-1 rounded-full bg-gray-600' />
-                    Formula: 2 min + blocks × 2 min + tasks × 5 min
+                    {c.durationFormula}
                   </p>
                 </div>
 
@@ -176,10 +190,10 @@ export default function CreateLessonDialog({
                     <BookOpen className='w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5' />
                     <div>
                       <p className='text-sm font-semibold text-blue-300 mb-1'>
-                        Tip
+                        {c.tipLabel}
                       </p>
                       <p className='text-xs text-blue-400/80 leading-relaxed'>
-                        After creating the lesson, add content blocks and tasks for a complete learning experience
+                        {c.tipBody}
                       </p>
                     </div>
                   </div>
@@ -197,7 +211,7 @@ export default function CreateLessonDialog({
                     variant='outline'
                     className='flex-1 bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors'
                   >
-                    Cancel
+                    {c.cancel}
                   </Button>
                   <Button
                     type='submit'
@@ -207,12 +221,12 @@ export default function CreateLessonDialog({
                     {isSubmitting ? (
                       <>
                         <Loader2 className='w-4 h-4 animate-spin' />
-                        Creating...
+                        {c.creating}
                       </>
                     ) : (
                       <>
                         <BookOpen className='w-4 h-4' />
-                        Create lesson
+                        {c.submit}
                       </>
                     )}
                   </Button>

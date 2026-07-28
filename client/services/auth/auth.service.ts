@@ -58,4 +58,6 @@ class AuthService {
 		return response.data
 	}
 }
-export default new AuthService()
+const authService = new AuthService()
+
+export default authService

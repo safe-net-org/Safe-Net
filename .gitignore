@@ -1,34 +1,71 @@
+# Operating-system files
 .DS_Store
 ._*
-.turbo
-.claude/
+Thumbs.db
+Desktop.ini
 
-# dependencies
+# Editors and local tooling
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+.turbo/
+.vercel/
+.wrangler/
+.cache/
+.planning/
+task_plan.md
+findings.md
+progress.md
+
+# Dependencies and package-manager caches
 node_modules/
+.pnp
+.pnp.*
+.pnpm-store/
+.yarn/cache/
 
-# env
+# Environment files and secrets. Templates remain versioned.
 .env
-.env.local
-.env*.local
-
-# builds
-.next/
-dist/
-
-# certificates / keys — never commit, generate locally (mkcert)
+.env.*
+!.env.example
+!**/.env.example
 *.pem
 *.key
+*.p12
+*.pfx
 
-# local-only: retired code and database dumps. Dumps contain real user rows
-# and password hashes, so this must never be tracked.
-_archive/
+# Build output, test reports, and temporary runtime files
+.next/
+dist/
+build/
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-
-# python virtualenv (ml-service)
+# Python local state
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# extension build artifacts (wxt)
+# Local-only archives and database dumps can contain real user data.
+_archive/
+*.sqlite
+*.sqlite3
+*.db
+
+# Extension build artifacts (WXT)
 .output/
 .wxt/

@@ -5,6 +5,7 @@ import {
 	AchievementCode,
 } from '../achievements/achievement-catalog'
 import { AchievementStatsCollector } from '../achievements/achievement-stats.collector'
+import { Locale, pickLocalized } from '../../i18n/locale'
 
 @Injectable()
 export class AchievementsService {
@@ -15,7 +16,7 @@ export class AchievementsService {
 		private readonly statsCollector: AchievementStatsCollector
 	) {}
 
-	async getUserAchievements(userId: string) {
+	async getUserAchievements(userId: string, locale: Locale) {
 		const achievements = await this.prisma.userAchievement.findMany({
 			where: { userId },
 			include: {
@@ -32,8 +33,8 @@ export class AchievementsService {
 			achievement: {
 				id: ua.achievement.id,
 				code: ua.achievement.code,
-				title: ua.achievement.title,
-				description: ua.achievement.description,
+				title: pickLocalized(locale, ua.achievement.title, ua.achievement.titleRu),
+				description: pickLocalized(locale, ua.achievement.description, ua.achievement.descriptionRu),
 				icon: ua.achievement.icon,
 				category: ua.achievement.category,
 				tier: ua.achievement.tier,
@@ -42,13 +43,18 @@ export class AchievementsService {
 		}))
 	}
 
-	async getAllAchievements() {
-		return this.prisma.achievement.findMany({
+	async getAllAchievements(locale: Locale) {
+		const achievements = await this.prisma.achievement.findMany({
 			orderBy: [{ category: 'asc' }, { order: 'asc' }],
 		})
+		return achievements.map(a => ({
+			...a,
+			title: pickLocalized(locale, a.title, a.titleRu),
+			description: pickLocalized(locale, a.description, a.descriptionRu),
+		}))
 	}
 
-	async getAchievementById(id: string) {
+	async getAchievementById(id: string, locale: Locale) {
 		const achievement = await this.prisma.achievement.findUnique({
 			where: { id },
 		})
@@ -57,7 +63,11 @@ export class AchievementsService {
 			throw new NotFoundException('Achievement not found')
 		}
 
-		return achievement
+		return {
+			...achievement,
+			title: pickLocalized(locale, achievement.title, achievement.titleRu),
+			description: pickLocalized(locale, achievement.description, achievement.descriptionRu),
+		}
 	}
 
 	/**

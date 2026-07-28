@@ -39,4 +39,27 @@ export class PublicService {
 			totalLessons,
 		}
 	}
+
+	async getFeaturedFeedback() {
+		const feedback = await this.prisma.feedback.findMany({
+			where: { featured: true, status: 'REVIEWED' },
+			orderBy: { createdAt: 'desc' },
+			take: 6,
+			select: {
+				id: true,
+				rating: true,
+				message: true,
+				createdAt: true,
+				user: { select: { name: true } },
+			},
+		})
+
+		return feedback.map(item => ({
+			id: item.id,
+			rating: item.rating,
+			message: item.message,
+			createdAt: item.createdAt,
+			authorName: item.user.name,
+		}))
+	}
 }

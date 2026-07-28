@@ -1,31 +1,23 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import jwt from 'jsonwebtoken'
-
-
 export async function proxy(request: NextRequest) {
 	if (request.nextUrl.pathname.startsWith('/api')) {
 		return NextResponse.next()
 	}
 	const token = request.cookies.get('accessToken')?.value
 	const protectedPaths = ['/dashboard']
-	const publicPaths = ['/', '/about', '/contact']
 	const pathname = request.nextUrl.pathname
-	const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path))
-	const isPublicPath = publicPaths.some((path) => pathname === path)
+	const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
+
 	if (isProtectedPath && !token) {
 		return NextResponse.redirect(new URL('/', request.url))
 	}
-	if (isProtectedPath && token) {
-		try {
-			jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key')
-		} catch (error) {
-			const response = NextResponse.redirect(new URL('/', request.url))
-			response.cookies.delete('accessToken')
-			return response
-		}
-	}
+
+	// This proxy is only a navigation hint. Signature, expiry, token type, and
+	// user status are authoritatively verified by the API. Shipping the API's
+	// signing secret to the web runtime—or inventing a fallback secret here—
+	// would create a second, divergent security boundary.
 	return NextResponse.next()
 }
 export const config = {

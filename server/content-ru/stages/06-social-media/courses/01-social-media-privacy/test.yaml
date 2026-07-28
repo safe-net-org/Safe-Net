@@ -1,0 +1,103 @@
+title: "Итоговый тест: Приватность в соцсетях"
+description: "Проверка знаний о настройках приватности и деле Cambridge Analytica."
+passingScore: 80
+questions:
+  - text: "Что из этого безопаснее опубликовать в открытом профиле?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Номер вашего паспорта"
+        isCorrect: false
+      - text: "Домашний адрес"
+        isCorrect: false
+      - text: "Фото без прикреплённых геометок"
+        isCorrect: true
+      - text: "Фото авиабилетов с номером бронирования"
+        isCorrect: false
+
+  - text: "Что из перечисленного стоит скрыть или отключить в профиле соцсети?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Автоматические геометки на публикациях"
+        isCorrect: true
+      - text: "Полный список друзей/подписчиков"
+        isCorrect: true
+      - text: "Фото профиля"
+        isCorrect: false
+      - text: "Отображаемое имя"
+        isCorrect: false
+      - text: "Дата создания аккаунта"
+        isCorrect: false
+
+  - text: "Почему осторожные пользователи публикуют фото с отпуска только после возвращения?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Публикации в реальном времени сообщают, что дом сейчас пуст"
+        isCorrect: true
+      - text: "Фото, опубликованные позже, выглядят качественнее"
+        isCorrect: false
+      - text: "Платформы требуют задержку перед публикацией фото из путешествий"
+        isCorrect: false
+      - text: "Отложенные публикации получают больше охвата от алгоритма"
+        isCorrect: false
+
+  - text: "Какие сочетания информации позволяют выдать себя за вас или захватить ваши аккаунты?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Полное имя вместе с датой рождения"
+        isCorrect: true
+      - text: "Номер телефона вместе с почтой для восстановления доступа"
+        isCorrect: true
+      - text: "Ваш любимый фильм"
+        isCorrect: false
+      - text: "Общее число ваших подписчиков"
+        isCorrect: false
+      - text: "Цветовая тема вашего профиля"
+        isCorrect: false
+
+  - text: "Как Cambridge Analytica изначально получила данные примерно 87 миллионов пользователей Facebook?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Через приложение-опросник личности, которое собирало данные у пользователей и их друзей, большинство из которых так и не дали согласия"
+        isCorrect: true
+      - text: "Путём прямого взлома серверов Facebook"
+        isCorrect: false
+      - text: "Купив данные в даркнете"
+        isCorrect: false
+      - text: "Пользователи добровольно сами передали свои данные Cambridge Analytica напрямую"
+        isCorrect: false
+
+  - text: "Примерно сколько пользователей Facebook пострадало от сбора данных Cambridge Analytica?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 87 миллионов"
+        isCorrect: true
+      - text: "Около 87 тысяч"
+        isCorrect: false
+      - text: "Около 8,7 миллиона"
+        isCorrect: false
+      - text: "Около 870 миллионов"
+        isCorrect: false
+
+  - text: "Какое разрешение API Facebook сделало возможным сбор данных Cambridge Analytica?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Приложения могли собирать данные о друзьях установившего их пользователя, а не только о нём самом"
+        isCorrect: true
+      - text: "Приложения могли читать личные сообщения пользователей"
+        isCorrect: false
+      - text: "Приложения могли получать доступ к сохранённым способам оплаты пользователей"
+        isCorrect: false
+      - text: "Приложения могли публиковать посты от имени пользователя без разрешения"
+        isCorrect: false
+
+  - text: "Какое из перечисленного было одним из главных, конкретных последствий скандала с Cambridge Analytica?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Meta согласилась на урегулирование в размере 725 миллионов долларов, а платформы в целом ограничили доступ сторонних приложений к данным о друзьях"
+        isCorrect: true
+      - text: "Facebook был навсегда закрыт как компания"
+        isCorrect: false
+      - text: "Скандал не имел долгосрочных последствий для политики платформ"
+        isCorrect: false
+      - text: "Последствия затронули только пользователей за пределами США"
+        isCorrect: false

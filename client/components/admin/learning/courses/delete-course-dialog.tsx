@@ -1,7 +1,9 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2 } from '@/components/ui/icons'
 import { useState } from 'react'
 
 interface DeleteCourseDialogProps {
@@ -19,6 +21,8 @@ export function DeleteCourseDialog({
 	lessonsCount,
 	onConfirm,
 }: DeleteCourseDialogProps) {
+	const { locale, t } = useI18n()
+	const c = t.adminCourseComponents.deleteCourseDialog
 	const [isDeleting, setIsDeleting] = useState(false)
 
 	const handleConfirm = async () => {
@@ -47,7 +51,7 @@ export function DeleteCourseDialog({
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.95, y: 20 }}
 						transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-						className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-[#0A0F1D] p-6 shadow-2xl'
+						className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-overlay p-6 shadow-2xl'
 					>
 						{/* Icon */}
 						<div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10'>
@@ -57,26 +61,35 @@ export function DeleteCourseDialog({
 						{/* Content */}
 						<div className='text-center'>
 							<h3 className='mb-2 text-2xl font-bold text-white'>
-								Delete course?
+								{c.title}
 							</h3>
 							<p className='mb-2 text-gray-400'>
-								Are you sure you want to delete the course{' '}
+								{c.bodyPrefix}{' '}
 								<span className='font-semibold text-white'>
-									"{courseTitle}"
+									&ldquo;{courseTitle}&rdquo;
 								</span>
 								?
 							</p>
 							{lessonsCount > 0 && (
 								<div className='mx-auto mb-2 max-w-xs rounded-lg bg-yellow-500/10 p-3 text-sm text-yellow-400'>
-									<p className='font-semibold'>⚠️ Attention</p>
+									<p className='font-semibold'>{c.attention}</p>
 									<p className='mt-1 text-xs'>
-										This will delete {lessonsCount} lesson(s)
+										{c.lessonsWarningTemplate.replace(
+											'{count}',
+											String(lessonsCount)
+										).replace(
+											'{lessonWord}',
+											selectPlural(locale, lessonsCount, {
+												one: c.lessonWordOne,
+												few: c.lessonWordFew,
+												many: c.lessonWordMany,
+											})
+										)}
 									</p>
 								</div>
 							)}
 							<p className='text-sm text-red-400'>
-								This action cannot be undone. All course data will be
-								permanently deleted.
+								{c.irreversibleNote}
 							</p>
 						</div>
 
@@ -89,7 +102,7 @@ export function DeleteCourseDialog({
 								disabled={isDeleting}
 								className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-gray-300 transition-all hover:bg-white/10 disabled:opacity-50'
 							>
-								Cancel
+								{c.buttons.cancel}
 							</m.button>
 							<m.button
 								whileHover={{ scale: 1.02 }}
@@ -101,10 +114,10 @@ export function DeleteCourseDialog({
 								{isDeleting ? (
 									<>
 										<Loader2 className='mr-2 inline h-4 w-4 animate-spin' />
-										Deleting...
+										{c.buttons.deleting}
 									</>
 								) : (
-									'Delete course'
+									c.buttons.confirm
 								)}
 							</m.button>
 						</div>

@@ -1,5 +1,6 @@
 import type { GlobalStats } from '@/src/entities/stats'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { fmtDuration, fmtNum } from '@/src/shared/lib/format'
 import { Sparkline } from '@/src/shared/ui/Sparkline'
 import { StatTile } from '@/src/shared/ui/StatTile'
@@ -9,6 +10,7 @@ interface StatsTabProps {
 }
 
 export function StatsTab({ stats }: StatsTabProps) {
+  const { locale, t } = useExtensionI18n()
   const sinceInstall = Date.now() - stats.installedAt
   const last24 = stats.last24h.length
   const blockedRate = stats.totalChecked > 0
@@ -26,10 +28,10 @@ export function StatsTab({ stats }: StatsTabProps) {
             fontSize: 11, color: T.textDim,
             letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: FONT_MONO,
           }}>
-            Активность 24ч
+            {t('stats.activity')}
           </span>
           <span className="tabular" style={{ fontSize: 11, color: T.text, fontWeight: 600 }}>
-            {last24} проверок
+            {t('stats.checks', { count: last24 })}
           </span>
         </div>
         <Sparkline events={stats.last24h} />
@@ -44,14 +46,14 @@ export function StatsTab({ stats }: StatsTabProps) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <StatTile label="Всего проверено" value={fmtNum(stats.totalChecked)} accent={T.accent} />
-        <StatTile label="Заблокировано" value={fmtNum(stats.totalBlocked)} accent={T.danger} />
-        <StatTile label="Подозрительных" value={fmtNum(stats.totalSuspicious)} accent={T.warn} />
-        <StatTile label="Безопасных" value={fmtNum(stats.totalSafe)} accent={T.ok} />
-        <StatTile label="ML-срабатываний" value={fmtNum(stats.mlHits)} accent={T.accentSoft} />
-        <StatTile label="DOM-сигналов" value={fmtNum(stats.domHits)} accent={T.accentViolet} />
-        <StatTile label="% угроз" value={`${blockedRate}%`} sub="от всех проверок" />
-        <StatTile label="Защита" value={fmtDuration(sinceInstall)} sub="с установки" />
+        <StatTile label={t('stats.total')} value={fmtNum(stats.totalChecked, locale)} accent={T.accent} />
+        <StatTile label={t('stats.blocked')} value={fmtNum(stats.totalBlocked, locale)} accent={T.danger} />
+        <StatTile label={t('stats.suspicious')} value={fmtNum(stats.totalSuspicious, locale)} accent={T.warn} />
+        <StatTile label={t('stats.safe')} value={fmtNum(stats.totalSafe, locale)} accent={T.ok} />
+        <StatTile label={t('stats.ml')} value={fmtNum(stats.mlHits, locale)} accent={T.accentSoft} />
+        <StatTile label={t('stats.dom')} value={fmtNum(stats.domHits, locale)} accent={T.accentViolet} />
+        <StatTile label={t('stats.threatRate')} value={`${blockedRate}%`} sub={t('stats.ofChecks')} />
+        <StatTile label={t('stats.protection')} value={fmtDuration(sinceInstall, locale)} sub={t('stats.sinceInstall')} />
       </div>
 
       {stats.topThreats.length > 0 && (
@@ -61,7 +63,7 @@ export function StatsTab({ stats }: StatsTabProps) {
             letterSpacing: '0.12em', textTransform: 'uppercase',
             fontFamily: FONT_MONO, marginBottom: 6,
           }}>
-            Последние угрозы
+            {t('stats.recentThreats')}
           </div>
           {stats.topThreats.slice(0, 4).map((t) => (
             <div key={t.domain} style={{

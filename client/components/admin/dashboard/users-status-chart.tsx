@@ -1,7 +1,8 @@
 'use client'
 
+import { UI_COLORS } from '@/config/colors.config'
 import { m } from 'framer-motion'
-import { Users } from 'lucide-react'
+import { Users } from '@/components/ui/icons'
 import {
 	Cell,
 	Legend,
@@ -20,9 +21,9 @@ interface UsersStatusChartProps {
 }
 
 const COLORS = {
-	active: '#10b981',
-	blocked: '#ef4444',
-	admins: '#8b5cf6',
+	active: UI_COLORS.chart.green,
+	blocked: UI_COLORS.chart.red,
+	admins: UI_COLORS.chart.purple,
 }
 
 export default function UsersStatusChart({ data }: UsersStatusChartProps) {
@@ -68,9 +69,11 @@ export default function UsersStatusChart({ data }: UsersStatusChartProps) {
 							cx='50%'
 							cy='50%'
 							labelLine={false}
-							label={entry => `${((entry.value / total) * 100).toFixed(0)}%`}
+							label={entry =>
+								`${(total > 0 ? (entry.value / total) * 100 : 0).toFixed(0)}%`
+							}
 							outerRadius={100}
-							fill='#8884d8'
+							fill={UI_COLORS.chart.purple}
 							dataKey='value'
 						>
 							{chartData.map((entry, index) => (
@@ -79,22 +82,26 @@ export default function UsersStatusChart({ data }: UsersStatusChartProps) {
 						</Pie>
 						<Tooltip
 							contentStyle={{
-								backgroundColor: 'rgba(17, 24, 39, 0.95)',
+								backgroundColor: UI_COLORS.chart.tooltip,
 								border: 'none',
 								borderRadius: '12px',
-								color: '#fff',
+								color: UI_COLORS.chart.tooltipForeground,
 							}}
 							formatter={(value: number) => `${value}`}
-							labelStyle={{ color: '#fff' }}
+							labelStyle={{ color: UI_COLORS.chart.tooltipForeground }}
 						/>
 						<Legend
 							verticalAlign='bottom'
 							height={36}
-							formatter={(value, entry: any) => (
-								<span className='text-sm text-gray-700 dark:text-gray-300'>
-									{value}: {entry.payload.value}
-								</span>
-							)}
+							formatter={value => {
+								const count =
+									chartData.find(item => item.name === value)?.value ?? 0
+								return (
+									<span className='text-sm text-gray-700 dark:text-gray-300'>
+										{value}: {count}
+									</span>
+								)
+							}}
 						/>
 					</PieChart>
 				</ResponsiveContainer>

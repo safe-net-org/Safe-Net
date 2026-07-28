@@ -1,0 +1,531 @@
+/*
+ * SafeNet color system
+ *
+ * Primitive colors live here; application code should consume the semantic
+ * tokens below (background, foreground, card, muted, border, and so on).
+ * The dark semantic values intentionally match the original theme exactly.
+ */
+
+:root {
+  /* Notion-inspired light primitives */
+  --palette-paper: oklch(1 0 0);
+  --palette-canvas: oklch(0.985 0.003 90);
+  --palette-ink: oklch(0.321 0.012 75);
+  --palette-ink-soft: oklch(0.535 0.009 75);
+  --palette-soft: oklch(0.958 0.004 90);
+  --palette-soft-strong: oklch(0.925 0.005 90);
+  --palette-line: oklch(0.875 0.006 80);
+
+  /* Existing dark primitives */
+  --palette-dark-canvas: oklch(0.129 0.042 264.695);
+  --palette-dark-surface: oklch(0.208 0.042 265.755);
+  --palette-dark-raised: oklch(0.279 0.041 260.031);
+  --palette-dark-text: oklch(0.984 0.003 247.858);
+  --palette-dark-text-muted: oklch(0.704 0.04 256.788);
+  --palette-dark-line: oklch(1 0 0 / 10%);
+  --palette-dark-input: oklch(1 0 0 / 15%);
+  --palette-dark-overlay: #0a0f1d;
+
+  /* Shared brand and status primitives */
+  --palette-brand: oklch(0.585 0.233 277.117);
+  --palette-brand-strong: oklch(0.511 0.262 276.966);
+  --palette-danger: oklch(0.577 0.245 27.325);
+  --palette-danger-dark: oklch(0.704 0.191 22.216);
+  --palette-success: oklch(0.596 0.145 163.225);
+  --palette-warning: oklch(0.769 0.188 70.08);
+  --palette-blue: #3b82f6;
+  --palette-purple: #8b5cf6;
+  --palette-pink: #ec4899;
+  --palette-orange: #f97316;
+  --palette-cyan: #06b6d4;
+  --palette-indigo: #6366f1;
+  --palette-red: #ef4444;
+  --palette-emerald: #10b981;
+  --palette-amber: #f59e0b;
+
+  --radius: 0.625rem;
+  color-scheme: light;
+
+  /* Light semantic tokens */
+  --background: var(--palette-canvas);
+  --foreground: var(--palette-ink);
+  --card: var(--palette-paper);
+  --card-foreground: var(--palette-ink);
+  --popover: var(--palette-paper);
+  --popover-foreground: var(--palette-ink);
+  --primary: var(--palette-ink);
+  --primary-foreground: var(--palette-paper);
+  --secondary: var(--palette-soft);
+  --secondary-foreground: var(--palette-ink);
+  --muted: var(--palette-soft);
+  --muted-foreground: var(--palette-ink-soft);
+  --accent: var(--palette-soft);
+  --accent-foreground: var(--palette-ink);
+  --destructive: var(--palette-danger);
+  --border: var(--palette-line);
+  --input: var(--palette-line);
+  --ring: var(--palette-ink-soft);
+  --brand: var(--palette-brand);
+  --brand-strong: var(--palette-brand-strong);
+  --success: var(--palette-success);
+  --warning: var(--palette-warning);
+  --landing: var(--palette-canvas);
+  --landing-surface: var(--palette-paper);
+  --landing-foreground: var(--palette-ink);
+  --landing-muted: var(--palette-ink-soft);
+  --landing-border: var(--palette-line);
+  --landing-accent: var(--palette-brand-strong);
+  --landing-accent-hover: var(--palette-brand);
+  --navigation-active: var(--palette-ink);
+  --navigation-active-foreground: var(--palette-paper);
+  --overlay: var(--palette-paper);
+  --badge: var(--palette-soft-strong);
+  --badge-foreground: var(--palette-ink);
+  --chart-blue: var(--palette-blue);
+  --chart-green: var(--palette-emerald);
+  --chart-amber: var(--palette-amber);
+  --chart-red: var(--palette-red);
+  --chart-purple: var(--palette-purple);
+  --chart-pink: var(--palette-pink);
+  --chart-orange: var(--palette-orange);
+  --chart-cyan: var(--palette-cyan);
+  --chart-indigo: var(--palette-indigo);
+  --chart-grid: var(--palette-line);
+  --chart-axis: var(--palette-ink-soft);
+  --chart-tooltip: color-mix(in oklab, var(--palette-ink) 95%, transparent);
+  --chart-tooltip-foreground: var(--palette-paper);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: var(--palette-paper);
+  --sidebar-foreground: var(--palette-ink);
+  --sidebar-primary: var(--palette-ink);
+  --sidebar-primary-foreground: var(--palette-paper);
+  --sidebar-accent: var(--palette-soft);
+  --sidebar-accent-foreground: var(--palette-ink);
+  --sidebar-border: var(--palette-line);
+  --sidebar-ring: var(--palette-ink-soft);
+}
+
+:root.light {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --background: var(--palette-dark-surface);
+  --foreground: var(--palette-dark-text);
+  --card: var(--palette-dark-raised);
+  --card-foreground: var(--palette-dark-text);
+  --popover: var(--palette-dark-raised);
+  --popover-foreground: var(--palette-dark-text);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: var(--palette-dark-surface);
+  --secondary: var(--palette-dark-raised);
+  --secondary-foreground: var(--palette-dark-text);
+  --muted: var(--palette-dark-raised);
+  --muted-foreground: var(--palette-dark-text-muted);
+  --accent: var(--palette-dark-raised);
+  --accent-foreground: var(--palette-dark-text);
+  --destructive: var(--palette-danger-dark);
+  --border: var(--palette-dark-line);
+  --input: var(--palette-dark-input);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: var(--palette-dark-surface);
+  --sidebar-foreground: var(--palette-dark-text);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: var(--palette-dark-text);
+  --sidebar-accent: var(--palette-dark-raised);
+  --sidebar-accent-foreground: var(--palette-dark-text);
+  --sidebar-border: var(--palette-dark-line);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --landing: var(--palette-dark-surface);
+  --landing-surface: var(--palette-dark-raised);
+  --landing-foreground: oklch(0.968 0.007 247.896);
+  --landing-muted: oklch(0.869 0.022 252.894);
+  --landing-border: var(--palette-dark-line);
+  --landing-accent: oklch(0.827 0.119 306.383);
+  --landing-accent-hover: oklch(0.902 0.063 306.703);
+  --navigation-active: var(--palette-dark-text);
+  --navigation-active-foreground: var(--palette-dark-surface);
+  --overlay: var(--palette-dark-overlay);
+  --badge: var(--palette-dark-raised);
+  --badge-foreground: var(--palette-dark-text);
+  --chart-grid: var(--palette-dark-line);
+  --chart-axis: var(--palette-dark-text-muted);
+  --chart-tooltip: color-mix(in oklab, var(--palette-dark-overlay) 95%, transparent);
+  --chart-tooltip-foreground: var(--palette-dark-text);
+}
+
+/*
+ * Legacy palette bridge
+ *
+ * Older screens were authored as dark-only surfaces with raw Slate/Gray and
+ * translucent white utilities. These light-only overrides keep those screens
+ * readable while they are migrated to semantic tokens. Dark mode is untouched.
+ */
+:root.light :where(.bg-slate-950, .bg-slate-900, .bg-gray-900) {
+  background-color: var(--background);
+}
+
+:root.light
+  :where(
+    .bg-slate-900\/95,
+    .bg-slate-900\/90,
+    .bg-slate-900\/80,
+    .bg-slate-900\/70,
+    .bg-slate-900\/60,
+    .bg-slate-900\/50,
+    .bg-slate-900\/40,
+    .bg-slate-900\/30
+  ) {
+  background-color: color-mix(in oklab, var(--background) 92%, transparent);
+}
+
+:root.light :where(.bg-slate-800, .bg-slate-700, .bg-gray-800, .bg-gray-700) {
+  background-color: var(--card);
+}
+
+:root.light
+  :where(
+    .bg-slate-800\/90,
+    .bg-slate-800\/80,
+    .bg-slate-800\/70,
+    .bg-slate-800\/60,
+    .bg-slate-800\/50,
+    .bg-slate-800\/40,
+    .bg-slate-800\/30,
+    .bg-slate-800\/20,
+    .bg-slate-700\/70,
+    .bg-slate-700\/60,
+    .bg-slate-700\/50,
+    .bg-slate-700\/40,
+    .bg-gray-800\/70,
+    .bg-gray-800\/50,
+    .bg-gray-800\/40,
+    .bg-gray-700\/70,
+    .bg-gray-700\/50
+  ) {
+  background-color: color-mix(in oklab, var(--card) 88%, var(--foreground) 12%);
+}
+
+:root.light
+  :where(
+    [class*="from-slate-9"],
+    [class*="from-slate-8"],
+    [class*="from-slate-7"],
+    [class*="from-gray-9"],
+    [class*="from-gray-8"],
+    [class*="from-gray-7"]
+  ) {
+  --tw-gradient-from: var(--card);
+}
+
+:root.light
+  :where(
+    [class*="via-slate-9"],
+    [class*="via-slate-8"],
+    [class*="via-slate-7"],
+    [class*="via-gray-9"],
+    [class*="via-gray-8"],
+    [class*="via-gray-7"]
+  ) {
+  --tw-gradient-via: var(--secondary);
+}
+
+:root.light
+  :where(
+    [class*="to-slate-9"],
+    [class*="to-slate-8"],
+    [class*="to-slate-7"],
+    [class*="to-gray-9"],
+    [class*="to-gray-8"],
+    [class*="to-gray-7"]
+  ) {
+  --tw-gradient-to: var(--secondary);
+}
+
+:root.light :where([class*="from-white/"]) {
+  --tw-gradient-from: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+
+:root.light :where([class*="via-white/"]) {
+  --tw-gradient-via: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+:root.light :where([class*="to-white/"]) {
+  --tw-gradient-to: color-mix(in oklab, var(--foreground) 3%, transparent);
+}
+
+:root.light
+  :where(
+    .bg-white\/2,
+    .bg-white\/3,
+    .bg-white\/4,
+    .bg-white\/5,
+    .bg-white\/6,
+    .bg-white\/8,
+    .bg-white\/10,
+    .bg-white\/15
+  ) {
+  background-color: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+
+:root.light
+  :where(
+    .text-slate-50,
+    .text-slate-100,
+    .text-slate-200,
+    .text-gray-50,
+    .text-gray-100,
+    .text-gray-200
+  ) {
+  color: var(--foreground) !important;
+}
+
+:root.light
+  :where(
+    .text-slate-300,
+    .text-slate-400,
+    .text-slate-500,
+    .text-gray-300,
+    .text-gray-400,
+    .text-gray-500
+  ) {
+  color: var(--muted-foreground) !important;
+}
+
+:root.light
+  :where(
+    .text-white,
+    .text-white\/95,
+    .text-white\/90,
+    .text-white\/80,
+    .text-white\/70,
+    .text-white\/60,
+    .text-white\/50,
+    .text-white\/40,
+    .text-white\/30,
+    .text-white\/20
+  ) {
+  color: var(--foreground) !important;
+}
+
+/*
+ * Inverse text must be explicit. The former ancestor selector treated any
+ * page containing e.g. `selection:bg-blue-*` as a dark branded surface and
+ * forced every descendant back to white in light mode.
+ */
+:root.light [data-inverse]
+  :where(.text-white, .text-white\/95, .text-white\/90, .text-white\/80),
+:root.light
+  :is(
+    [class*="bg-indigo-"],
+    [class*="bg-blue-"],
+    [class*="bg-purple-"],
+    [class*="bg-red-"],
+    [class*="bg-emerald-"],
+    [class*="bg-green-"],
+    [class*="bg-amber-"],
+    [class*="bg-cyan-"],
+    [class*="bg-orange-"],
+    [class*="bg-pink-"],
+    [class*="bg-rose-"],
+    [class*="bg-teal-"],
+    [class*="bg-yellow-"],
+    [class*="bg-brand"],
+    [class*="bg-destructive"],
+    [class*="bg-navigation-active"],
+    [class*="bg-primary"],
+    [class*="from-indigo-"],
+    [class*="from-blue-"],
+    [class*="from-purple-"],
+    [class*="from-red-"],
+    [class*="from-emerald-"],
+    [class*="from-green-"],
+    [class*="from-amber-"],
+    [class*="from-cyan-"],
+    [class*="from-orange-"],
+    [class*="from-pink-"],
+    [class*="from-rose-"],
+    [class*="from-teal-"],
+    [class*="from-yellow-"]
+  )
+  > :where(.text-white, .text-white\/95, .text-white\/90, .text-white\/80),
+:root.light
+  :where(.text-white, .text-white\/90, .text-white\/80):is(
+    [class*="bg-indigo-"],
+    [class*="bg-blue-"],
+    [class*="bg-purple-"],
+    [class*="bg-red-"],
+    [class*="bg-emerald-"],
+    [class*="bg-green-"],
+    [class*="bg-amber-"],
+    [class*="bg-cyan-"],
+    [class*="bg-orange-"],
+    [class*="bg-pink-"],
+    [class*="bg-rose-"],
+    [class*="bg-teal-"],
+    [class*="bg-yellow-"],
+    [class*="bg-black"],
+    [class*="bg-brand"],
+    [class*="bg-destructive"],
+    [class*="bg-navigation-active"],
+    [class*="bg-primary"],
+    [class*="bg-["],
+    [class*="from-indigo-"],
+    [class*="from-blue-"],
+    [class*="from-purple-"],
+    [class*="from-red-"],
+    [class*="from-emerald-"],
+    [class*="from-green-"],
+    [class*="from-amber-"],
+    [class*="from-cyan-"],
+    [class*="from-orange-"],
+    [class*="from-pink-"],
+    [class*="from-rose-"],
+    [class*="from-teal-"],
+    [class*="from-yellow-"],
+    [class*="from-["]
+  ) {
+  color: white !important;
+}
+
+:root.light
+  :where(
+    [class*="placeholder:text-white"],
+    [class*="placeholder:text-gray-"],
+    [class*="placeholder:text-slate-"]
+  )::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 1;
+}
+
+/* Light buttons need separation from the paper canvas. */
+:root.light :where([data-slot="button"], button[class~="bg-white"], a[class~="bg-white"]) {
+  box-shadow:
+    0 1px 2px color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 6px 18px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+/*
+ * Status badges need a solid-enough tint on paper. Most legacy screens use
+ * translucent dark-theme utilities, so normalize them at the shared badge
+ * boundary instead of fixing every page independently.
+ */
+:root.light
+  [data-slot="badge"]:is(
+    [class*="bg-emerald-"],
+    [class*="bg-green-"]
+  ) {
+  background-color: color-mix(in oklab, var(--palette-success) 18%, white) !important;
+  border-color: color-mix(in oklab, var(--palette-success) 38%, var(--border)) !important;
+  color: color-mix(in oklab, var(--palette-success) 68%, black) !important;
+}
+
+:root.light
+  [data-slot="badge"]:is(
+    [class*="bg-amber-"],
+    [class*="bg-yellow-"]
+  ) {
+  background-color: color-mix(in oklab, var(--palette-warning) 24%, white) !important;
+  border-color: color-mix(in oklab, var(--palette-warning) 45%, var(--border)) !important;
+  color: color-mix(in oklab, var(--palette-warning) 58%, black) !important;
+}
+
+:root.light [data-slot="badge"][class*="bg-red-"] {
+  background-color: color-mix(in oklab, var(--palette-danger) 14%, white) !important;
+  border-color: color-mix(in oklab, var(--palette-danger) 34%, var(--border)) !important;
+  color: color-mix(in oklab, var(--palette-danger) 70%, black) !important;
+}
+
+:root.light
+  [data-slot="badge"]:is(
+    [class*="bg-blue-"],
+    [class*="bg-cyan-"]
+  ) {
+  background-color: color-mix(in oklab, var(--palette-blue) 16%, white) !important;
+  border-color: color-mix(in oklab, var(--palette-blue) 34%, var(--border)) !important;
+  color: color-mix(in oklab, var(--palette-blue) 68%, black) !important;
+}
+
+:root.light
+  [data-slot="badge"]:is(
+    [class*="bg-purple-"],
+    [class*="bg-indigo-"]
+  ) {
+  background-color: color-mix(in oklab, var(--palette-purple) 16%, white) !important;
+  border-color: color-mix(in oklab, var(--palette-purple) 34%, var(--border)) !important;
+  color: color-mix(in oklab, var(--palette-purple) 66%, black) !important;
+}
+
+/* Legacy glass badges use white text on a surface that becomes paper in the
+   light theme. Keep branded solid badges inverse, but make paper badges use
+   the semantic ink color. */
+:root.light
+  [data-slot="badge"]:is(
+    [class*="bg-white"],
+    [class*="bg-card"],
+    [class*="bg-background"],
+    [class*="bg-muted"],
+    [class*="bg-badge"]
+  ) {
+  color: var(--badge-foreground) !important;
+}
+
+:root.light
+  :where(
+    .border-slate-800,
+    .border-slate-700,
+    .border-slate-600,
+    .border-gray-800,
+    .border-gray-700,
+    .border-white,
+    .border-white\/30,
+    .border-white\/20,
+    .border-white\/15,
+    .border-white\/10,
+    .border-white\/8,
+    .border-white\/5,
+    .border-white\/4
+  ) {
+  border-color: var(--border);
+}
+
+:root.light .bg-clip-text.from-white {
+  --tw-gradient-from: var(--foreground);
+  --tw-gradient-stops: var(
+    --tw-gradient-via-stops,
+    var(--tw-gradient-position),
+    var(--tw-gradient-from) var(--tw-gradient-from-position),
+    var(--tw-gradient-to) var(--tw-gradient-to-position)
+  );
+}
+
+:root.light .bg-grid-white\/5 {
+  opacity: 0.45;
+  filter: invert(1);
+}
+
+/* Lift legacy low-opacity copy to the readable semantic muted role. */
+:root.dark
+  :where(
+    .text-slate-400,
+    .text-slate-500,
+    .text-gray-400,
+    .text-gray-500,
+    .text-white\/60,
+    .text-white\/50,
+    .text-white\/40,
+    .text-white\/30,
+    .text-white\/20
+  ) {
+  color: var(--muted-foreground) !important;
+}

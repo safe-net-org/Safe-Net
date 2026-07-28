@@ -1,12 +1,19 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
-import { IBlock, ILesson } from '@/services/admin/admin.types'
+import {
+	CreateBlockDto,
+	CreateLessonDto,
+	BlockType,
+	IBlock,
+	ILesson,
+} from '@/services/admin/admin.types'
 import { m } from 'framer-motion'
-import { AlertTriangle, Edit2, Loader2, Plus, Save, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Edit2, Loader2, Plus, Save, Trash2, X } from '@/components/ui/icons'
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import ReactMarkdown from 'react-markdown'
 import { toast } from 'sonner'
 
@@ -15,7 +22,12 @@ interface LessonEditorProps {
 	onSuccess: () => void
 }
 
+type LessonTitleFormData = Pick<CreateLessonDto, 'title' | 'estimatedDuration'>
+type BlockFormData = Omit<CreateBlockDto, 'lessonId' | 'type'>
+
 export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
+	const { t } = useI18n()
+	const c = t.adminLessonComponents.lessonEditor
 	const [isEditingTitle, setIsEditingTitle] = useState(false)
 	const [blocks, setBlocks] = useState(lesson.blocks || [])
 	const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
@@ -30,45 +42,45 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 	const {
 		register,
 		handleSubmit: handleTitleSubmit,
-		formState: { errors: titleErrors },
 		reset: resetTitle,
-	} = useForm({
+	} = useForm<LessonTitleFormData>({
 		defaultValues: {
 			title: lesson.title,
 			estimatedDuration: lesson.estimatedDuration,
 		},
 	})
 
-	const onTitleSubmit = async (data: any) => {
+	const onTitleSubmit = async (data: LessonTitleFormData) => {
 		setIsSaving(true)
 		try {
 			await adminService.updateLesson(lesson.id, data)
-			toast.success('Lesson updated')
+			toast.success(c.toasts.lessonUpdated)
 			setIsEditingTitle(false)
 			onSuccess()
-		} catch (error) {
-			toast.error('Error updating lesson')
+		} catch {
+			toast.error(c.toasts.lessonUpdateError)
 		} finally {
 			setIsSaving(false)
 		}
 	}
 
-	const handleAddBlock = async (blockData: any) => {
+	const handleAddBlock = async (blockData: BlockFormData) => {
 		try {
 			const newBlock = await adminService.createBlock({
 				lessonId: lesson.id,
+				type: BlockType.THEORY,
 				...blockData,
 			})
 			setBlocks([...blocks, newBlock])
-			toast.success('Block added')
+			toast.success(c.toasts.blockAdded)
 			setShowAddBlock(false)
 			onSuccess()
-		} catch (error) {
-			toast.error('Error adding block')
+		} catch {
+			toast.error(c.toasts.blockAddError)
 		}
 	}
 
-	const handleUpdateBlock = async (blockData: any) => {
+	const handleUpdateBlock = async (blockData: BlockFormData) => {
 		if (!editingBlockId) return
 		try {
 			await adminService.updateBlock(editingBlockId, blockData)
@@ -77,11 +89,11 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 					b.id === editingBlockId ? { ...b, ...blockData } : b
 				)
 			)
-			toast.success('Block updated')
+			toast.success(c.toasts.blockUpdated)
 			setEditingBlockId(null)
 			onSuccess()
-		} catch (error) {
-			toast.error('Error updating block')
+		} catch {
+			toast.error(c.toasts.blockUpdateError)
 		}
 	}
 
@@ -92,11 +104,11 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 		try {
 			await adminService.deleteBlock(deleteDialog.block.id)
 			setBlocks(blocks.filter((b) => b.id !== deleteDialog.block?.id))
-			toast.success('Block deleted')
+			toast.success(c.toasts.blockDeleted)
 			setDeleteDialog({ open: false, block: null })
 			onSuccess()
-		} catch (error) {
-			toast.error('Error deleting block')
+		} catch {
+			toast.error(c.toasts.blockDeleteError)
 		} finally {
 			setIsDeleting(false)
 		}
@@ -117,14 +129,14 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 					>
 						<h3 className='text-xl font-bold text-white'>{lesson.title}</h3>
 						<p className='mt-1 text-sm text-gray-500'>
-							{lesson.estimatedDuration} minutes
+							{c.durationTemplate.replace('{minutes}', String(lesson.estimatedDuration))}
 						</p>
 						<button
 							onClick={() => setIsEditingTitle(true)}
 							className='mt-4 flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90'
 						>
 							<Edit2 className='h-4 w-4' />
-							Edit
+							{c.editTitleButton}
 						</button>
 					</m.div>
 				) : (
@@ -137,7 +149,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 					>
 						<div>
 							<label className='mb-2 block text-sm font-medium text-gray-400'>
-								Title
+								{c.titleFieldLabel}
 							</label>
 							<input
 								{...register('title')}
@@ -146,7 +158,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 						</div>
 						<div>
 							<label className='mb-2 block text-sm font-medium text-gray-400'>
-								Duration (min)
+								{c.durationFieldLabel}
 							</label>
 							<input
 								{...register('estimatedDuration')}
@@ -163,7 +175,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 								}}
 								className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10'
 							>
-								Cancel
+								{c.cancel}
 							</button>
 							<button
 								type='submit'
@@ -171,7 +183,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 								className='flex-1 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-50'
 							>
 								<Save className='mr-2 inline h-4 w-4' />
-								Save
+								{c.save}
 							</button>
 						</div>
 					</m.form>
@@ -181,21 +193,21 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 				<div className='space-y-4'>
 					<div className='flex items-center justify-between'>
 						<h4 className='text-lg font-semibold text-white'>
-							Theory blocks
+							{c.theoryBlocksHeading}
 						</h4>
 						<button
 							onClick={() => setShowAddBlock(true)}
 							className='flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90'
 						>
 							<Plus className='h-4 w-4' />
-							Add block
+							{c.addBlock}
 						</button>
 					</div>
 
 					{blocks.length === 0 ? (
 						<div className='rounded-xl border border-dashed border-white/20 bg-white/5 p-8 text-center'>
 							<p className='text-sm text-gray-500'>
-								No blocks yet. Add the first one!
+								{c.emptyBlocks}
 							</p>
 						</div>
 					) : (
@@ -212,7 +224,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 													{block.order}
 												</span>
 												<h5 className='font-semibold text-white'>
-													{block.title || 'Untitled'}
+													{block.title || c.untitled}
 												</h5>
 											</div>
 											<p className='text-sm text-gray-400 line-clamp-2'>
@@ -223,14 +235,14 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 											<button
 												onClick={() => setEditingBlockId(block.id)}
 												className='rounded-lg bg-blue-500/10 p-2 text-blue-400 transition-colors hover:bg-blue-500/20'
-												title='Edit'
+												title={c.editTooltip}
 											>
 												<Edit2 className='h-4 w-4' />
 											</button>
 											<button
 												onClick={() => setDeleteDialog({ open: true, block })}
 												className='rounded-lg bg-red-500/10 p-2 text-red-400 transition-colors hover:bg-red-500/20'
-												title='Delete'
+												title={c.deleteTooltip}
 											>
 												<Trash2 className='h-4 w-4' />
 											</button>
@@ -259,7 +271,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 							animate={{ opacity: 1, scale: 1 }}
 							exit={{ opacity: 0, scale: 0.98 }}
 							onClick={(e) => e.stopPropagation()}
-							className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-[#0A0F1D] p-6 shadow-2xl'
+							className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-overlay p-6 shadow-2xl'
 						>
 							<div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10'>
 								<AlertTriangle className='h-8 w-8 text-red-400' />
@@ -267,17 +279,17 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 
 							<div className='text-center'>
 								<h3 className='mb-2 text-2xl font-bold text-white'>
-									Delete theory block?
+									{c.deleteBlockDialog.title}
 								</h3>
 								<p className='mb-2 text-gray-400'>
-									Are you sure you want to delete the block{' '}
+									{c.deleteBlockDialog.descriptionPrefix}{' '}
 									<span className='font-semibold text-white'>
-										"{deleteDialog.block.title || 'Untitled'}"
+										&ldquo;{deleteDialog.block.title || c.untitled}&rdquo;
 									</span>
 									?
 								</p>
 								<p className='text-sm text-red-400'>
-									This action cannot be undone
+									{c.deleteBlockDialog.cannotUndo}
 								</p>
 							</div>
 
@@ -287,7 +299,7 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 									disabled={isDeleting}
 									className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-gray-300 transition-colors hover:bg-white/10 disabled:opacity-50'
 								>
-									Cancel
+									{c.deleteBlockDialog.cancel}
 								</button>
 								<button
 									onClick={handleDeleteBlock}
@@ -297,10 +309,10 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 									{isDeleting ? (
 										<>
 											<Loader2 className='mr-2 inline h-4 w-4 animate-spin' />
-											Deleting...
+											{c.deleteBlockDialog.deleting}
 										</>
 									) : (
-										'Delete'
+										c.deleteBlockDialog.confirm
 									)}
 								</button>
 							</div>
@@ -313,7 +325,6 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 			{showAddBlock &&
 				createPortal(
 					<BlockFormModal
-						lessonId={lesson.id}
 						onClose={() => setShowAddBlock(false)}
 						onSubmit={handleAddBlock}
 					/>,
@@ -325,7 +336,6 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 				editingBlock &&
 				createPortal(
 					<BlockFormModal
-						lessonId={lesson.id}
 						block={editingBlock}
 						onClose={() => setEditingBlockId(null)}
 						onSubmit={handleUpdateBlock}
@@ -338,29 +348,29 @@ export default function LessonEditor({ lesson, onSuccess }: LessonEditorProps) {
 }
 
 interface BlockFormModalProps {
-	lessonId: string
 	block?: IBlock
 	onClose: () => void
-	onSubmit: (data: any) => void
+	onSubmit: (data: BlockFormData) => Promise<void>
 	isEditing?: boolean
 }
 
 function BlockFormModal({
-	lessonId,
 	block,
 	onClose,
 	onSubmit,
 	isEditing,
 }: BlockFormModalProps) {
+	const { t } = useI18n()
+	const m2 = t.adminLessonComponents.lessonEditor.blockModal
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
 	const {
 		register,
 		handleSubmit,
-		watch,
+		control,
 		setValue,
 		formState: { errors },
-	} = useForm({
+	} = useForm<BlockFormData>({
 		defaultValues: {
 			order: block?.order || 1,
 			title: block?.title || '',
@@ -368,7 +378,7 @@ function BlockFormModal({
 		},
 	})
 
-	const content = watch('content') as string
+	const content = useWatch({ control, name: 'content' }) ?? ''
 
 	// Inserts markdown syntax at the cursor position
 	const insertMarkdown = (before: string, after: string = '', placeholder: string = 'text') => {
@@ -395,63 +405,65 @@ function BlockFormModal({
 	const toolbarButtons = [
 		{
 			icon: <span className="font-bold text-lg">H1</span>,
-			label: 'Heading 1',
-			action: () => insertMarkdown('# ', '', 'Heading'),
+			label: m2.toolbar.heading1,
+			before: '# ',
+			after: '',
+			placeholder: 'Heading',
 		},
 		{
 			icon: <span className="font-bold">H2</span>,
-			label: 'Heading 2',
-			action: () => insertMarkdown('## ', '', 'Heading'),
+			label: m2.toolbar.heading2,
+			before: '## ', after: '', placeholder: 'Heading',
 		},
 		{
 			icon: <span className="font-bold text-sm">H3</span>,
-			label: 'Heading 3',
-			action: () => insertMarkdown('### ', '', 'Heading'),
+			label: m2.toolbar.heading3,
+			before: '### ', after: '', placeholder: 'Heading',
 		},
 		{
 			icon: <span className="font-bold">B</span>,
-			label: 'Bold',
-			action: () => insertMarkdown('**', '**', 'bold text'),
+			label: m2.toolbar.bold,
+			before: '**', after: '**', placeholder: 'bold text',
 		},
 		{
 			icon: <span className="italic">I</span>,
-			label: 'Italic',
-			action: () => insertMarkdown('*', '*', 'italic'),
+			label: m2.toolbar.italic,
+			before: '*', after: '*', placeholder: 'italic',
 		},
 		{
 			icon: <span className="line-through">S</span>,
-			label: 'Strikethrough',
-			action: () => insertMarkdown('~~', '~~', 'strikethrough'),
+			label: m2.toolbar.strikethrough,
+			before: '~~', after: '~~', placeholder: 'strikethrough',
 		},
 		{
 			icon: <span className="font-mono text-sm">&lt;/&gt;</span>,
-			label: 'Code',
-			action: () => insertMarkdown('`', '`', 'code'),
+			label: m2.toolbar.code,
+			before: '`', after: '`', placeholder: 'code',
 		},
 		{
 			icon: <span className="font-mono text-xs">```</span>,
-			label: 'Code block',
-			action: () => insertMarkdown('```\n', '\n```', 'code'),
+			label: m2.toolbar.codeBlock,
+			before: '```\n', after: '\n```', placeholder: 'code',
 		},
 		{
 			icon: <span>•</span>,
-			label: 'List',
-			action: () => insertMarkdown('- ', '', 'list item'),
+			label: m2.toolbar.list,
+			before: '- ', after: '', placeholder: 'list item',
 		},
 		{
 			icon: <span>1.</span>,
-			label: 'Numbered list',
-			action: () => insertMarkdown('1. ', '', 'list item'),
+			label: m2.toolbar.numberedList,
+			before: '1. ', after: '', placeholder: 'list item',
 		},
 		{
-			icon: <span>"</span>,
-			label: 'Quote',
-			action: () => insertMarkdown('> ', '', 'quote'),
+			icon: <span>&ldquo;</span>,
+			label: m2.toolbar.quote,
+			before: '> ', after: '', placeholder: 'quote',
 		},
 		{
 			icon: <span>🔗</span>,
-			label: 'Link',
-			action: () => insertMarkdown('[', '](url)', 'link text'),
+			label: m2.toolbar.link,
+			before: '[', after: '](url)', placeholder: 'link text',
 		},
 	]
 
@@ -460,19 +472,19 @@ function BlockFormModal({
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
-			className='fixed inset-0 z- bg-[#0A0F1D] overflow-y-auto'
+			className='fixed inset-0 z- bg-overlay overflow-y-auto'
 		>
 			{/* Header */}
-			<div className='sticky top-0 border-b border-white/10 bg-[#0A0F1D]/95 backdrop-blur-xl z-10'>
+			<div className='sticky top-0 border-b border-white/10 bg-overlay/95 backdrop-blur-xl z-10'>
 				<div className='mx-auto flex max-w-7xl items-center justify-between px-6 py-4'>
 					<div>
 						<h3 className='text-2xl font-bold text-white'>
-							{isEditing ? 'Edit theory block' : 'Add theory block'}
+							{isEditing ? m2.editTitle : m2.addTitle}
 						</h3>
 						<p className='mt-1 text-sm text-gray-500'>
 							{isEditing
-								? 'Update the block settings'
-								: 'Create theoretical content for the lesson'}
+								? m2.editSubtitle
+								: m2.addSubtitle}
 						</p>
 					</div>
 					<button
@@ -490,7 +502,7 @@ function BlockFormModal({
 					<div className='grid gap-6 md:grid-cols-2'>
 						<div>
 							<label className='mb-2 block text-sm font-semibold text-white'>
-								Order number
+								{m2.orderLabel}
 							</label>
 							<input
 								{...register('order', { valueAsNumber: true })}
@@ -502,19 +514,19 @@ function BlockFormModal({
 
 						<div>
 							<label className='mb-2 block text-sm font-semibold text-white'>
-								Block title
+								{m2.titleLabel}
 							</label>
 							<input
 								{...register('title')}
 								className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-purple-500/50 focus:bg-white/10'
-								placeholder='Introduction to cybersecurity'
+								placeholder={m2.titlePlaceholder}
 							/>
 						</div>
 					</div>
 
 					<div className='space-y-3'>
 						<label className='mb-2 block text-sm font-semibold text-white'>
-							Content (Markdown)
+							{m2.contentLabel}
 						</label>
 
 						<div className='grid gap-4 md:grid-cols-2'>
@@ -526,7 +538,13 @@ function BlockFormModal({
 										<button
 											key={index}
 											type='button'
-											onClick={button.action}
+											onClick={() =>
+												insertMarkdown(
+													button.before,
+													button.after,
+													button.placeholder
+												)
+											}
 											className='flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-white transition-colors hover:bg-white/10 active:scale-95'
 											title={button.label}
 										>
@@ -537,33 +555,32 @@ function BlockFormModal({
 
 								{/* Editor header */}
 								<div className='flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs text-gray-400'>
-									<span>Editor</span>
+									<span>{m2.editorLabel}</span>
 									<span className='text-[10px] text-gray-500'>
-										Markdown
+										{m2.markdownLabel}
 									</span>
 								</div>
 
 								<textarea
 									{...register('content', {
-										required: 'Content is required',
+										required: m2.contentRequired,
 									})}
-									ref={(e) => {
-										register('content').ref(e)
-										// @ts-ignore
-										textareaRef.current = e
+										ref={(e) => {
+											register('content').ref(e)
+											textareaRef.current = e
 									}}
 									rows={24}
 									className='min-h-[500px] w-full resize-none rounded-b-2xl bg-transparent px-4 py-3 font-mono text-sm text-white outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20'
-									placeholder={'# Heading\n\nMain text with **important** points.\n\n## Subheading\n\n- Item 1\n- Item 2\n\n```js\nconst code = "example";\n```'}
+									placeholder={m2.contentPlaceholder}
 								/>
 							</div>
 
 							{/* Preview */}
 							<div className='flex flex-col rounded-2xl border border-white/10 bg-white/5 overflow-hidden'>
 								<div className='flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs text-gray-400'>
-									<span>Preview</span>
+									<span>{m2.previewLabel}</span>
 									<span className='text-[10px] text-gray-500'>
-										Render
+										{m2.renderLabel}
 									</span>
 								</div>
 								<div className='min-h-[500px] overflow-y-auto px-4 py-3 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20'>
@@ -609,16 +626,13 @@ function BlockFormModal({
 													li: ({ children }) => (
 														<li className='leading-relaxed'>{children}</li>
 													),
-													code: ({ inline, children, ...props }: any) =>
-														inline ? (
+														code: ({ children, className }) =>
+															!className ? (
 															<code className='rounded bg-purple-500/20 px-1.5 py-0.5 font-mono text-sm text-purple-300'>
 																{children}
 															</code>
 														) : (
-															<code
-																className='block font-mono text-sm text-gray-300'
-																{...props}
-															>
+																<code className='block font-mono text-sm text-gray-300'>
 																{children}
 															</code>
 														),
@@ -687,7 +701,7 @@ function BlockFormModal({
 										</div>
 									) : (
 										<p className='text-xs text-gray-500'>
-											Start typing on the left or use the formatting buttons
+											{m2.previewEmptyHint}
 										</p>
 									)}
 								</div>
@@ -708,7 +722,7 @@ function BlockFormModal({
 							onClick={onClose}
 							className='flex-1 rounded-xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-gray-300 transition-colors hover:bg-white/10'
 						>
-							Cancel
+							{m2.cancel}
 						</button>
 						<button
 							type='submit'
@@ -717,12 +731,12 @@ function BlockFormModal({
 							{isEditing ? (
 								<>
 									<Save className='mr-2 inline h-5 w-5' />
-									Save changes
+									{m2.saveSubmit}
 								</>
 							) : (
 								<>
 									<Plus className='mr-2 inline h-5 w-5' />
-									Add block
+									{m2.addSubmit}
 								</>
 							)}
 						</button>

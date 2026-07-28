@@ -19,6 +19,7 @@ import {
 	TEXT_TASK_TYPES,
 } from '../answers/task-answer.evaluator'
 import { AchievementsService } from './achievements.service'
+import { Locale, pickLocalized } from '../../i18n/locale'
 
 @Injectable()
 export class ProgressService {
@@ -29,7 +30,8 @@ export class ProgressService {
 
 	async getLessonWithTasks(
 		lessonId: string,
-		userId: string
+		userId: string,
+		locale: Locale
 	): Promise<LessonDetailsDto> {
 		const lesson = await this.prisma.lesson.findUnique({
 			where: { id: lessonId },
@@ -61,27 +63,27 @@ export class ProgressService {
 			courseTitle: course.title,
 			courseSlug: course.slug,
 			order: lesson.order,
-			title: lesson.title,
+			title: pickLocalized(locale, lesson.title, lesson.titleRu),
 			estimatedDuration: lesson.estimatedDuration,
 			blocks: lesson.blocks.map(block => ({
 				id: block.id,
 				order: block.order,
 				type: block.type,
-				title: block.title,
-				content: block.content,
+				title: pickLocalized(locale, block.title, block.titleRu),
+				content: pickLocalized(locale, block.content, block.contentRu),
 			})),
 			tasks: lesson.tasks.map(task => ({
 				id: task.id,
 				order: task.order,
 				type: task.type,
-				title: task.title,
-				question: task.question ?? undefined,
+				title: pickLocalized(locale, task.title, task.titleRu),
+				question: pickLocalized(locale, task.question, task.questionRu) ?? undefined,
 				points: task.points,
 				difficulty: task.difficulty,
-				...buildSimulatorContent(task.meta),
+				...buildSimulatorContent(pickLocalized(locale, task.meta, task.metaRu)),
 				options: task.options.map(o => ({
 					id: o.id,
-					text: o.text,
+					text: pickLocalized(locale, o.text, o.textRu),
 				})),
 			})),
 		}
@@ -90,7 +92,8 @@ export class ProgressService {
 	async answerTask(
 		taskId: string,
 		userId: string,
-		dto: AnswerTaskDto
+		dto: AnswerTaskDto,
+		locale: Locale
 ): Promise<AnswerResultDto> {
 		const task = await this.prisma.task.findUnique({
 			where: { id: taskId },
@@ -137,12 +140,15 @@ export class ProgressService {
 			)
 		} else if (SIMULATOR_TASK_TYPES.includes(task.type)) {
 			phishingEvaluation = evaluatePhishingAnswer(
-				task.meta as PhishingTaskMeta | null,
+				pickLocalized(locale, task.meta, task.metaRu) as PhishingTaskMeta | null,
 				dto.selectedSpans ?? []
 			)
 			isCorrect = phishingEvaluation.isCorrect
 		} else if (TEXT_TASK_TYPES.includes(task.type)) {
-			isCorrect = evaluateTextAnswer(task.correctAnswer, dto.textAnswer)
+			isCorrect = evaluateTextAnswer(
+				pickLocalized(locale, task.correctAnswer, task.correctAnswerRu),
+				dto.textAnswer
+			)
 		}
 
 		// XP is awarded only for the first correct answer

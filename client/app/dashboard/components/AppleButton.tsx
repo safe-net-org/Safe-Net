@@ -1,10 +1,15 @@
 import Link from 'next/link'
 
 import { cn } from '@/lib/utils'
-import { memo } from 'react'
+import { memo, type ReactNode } from 'react'
 
+interface AppleButtonProps {
+	href: string
+	variant?: 'primary' | 'secondary'
+	children: ReactNode
+}
 
-export const AppleButton = memo(({ href, variant = 'primary', children }: any) => {
+export const AppleButton = memo(({ href, variant = 'primary', children }: AppleButtonProps) => {
 	return (
 		<Link
 			href={href}

@@ -1,10 +1,16 @@
-import { Lock, ShieldAlert, ShieldCheck } from 'lucide-react'
+'use client'
+
+import { useI18n } from '@/i18n/LocaleProvider'
+import { Lock, ShieldAlert, ShieldCheck } from '@/components/ui/icons'
 
 /**
  * The hero visual: the two addresses side by side. Pixel-identical, one letter
  * Cyrillic. This is the whole pitch in one glance, so it earns the space.
  */
 export function HomographReveal() {
+	const { t } = useI18n()
+	const h = t.guardComponents.homographReveal
+
 	return (
 		<div className='space-y-3 rounded-2xl border border-slate-700 bg-slate-800 p-5 sm:p-6'>
 			{/* Real */}
@@ -17,15 +23,13 @@ export function HomographReveal() {
 				</div>
 				<div className='mt-2.5 flex items-center gap-1.5 text-xs'>
 					<ShieldCheck className='h-3.5 w-3.5 text-emerald-400' />
-					<span className='font-medium text-emerald-400'>
-						Safe · the real bank
-					</span>
+					<span className='font-medium text-emerald-400'>{h.realLabel}</span>
 				</div>
 			</div>
 
 			<div className='flex items-center justify-center'>
 				<span className='rounded-full bg-slate-700 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-slate-400'>
-					vs
+					{h.vs}
 				</span>
 			</div>
 
@@ -44,9 +48,7 @@ export function HomographReveal() {
 				<div className='mt-2.5 flex items-center justify-between'>
 					<div className='flex items-center gap-1.5 text-xs'>
 						<ShieldAlert className='h-3.5 w-3.5 text-red-400' />
-						<span className='font-medium text-red-400'>
-							Dangerous · Cyrillic “а”
-						</span>
+						<span className='font-medium text-red-400'>{h.fakeLabel}</span>
 					</div>
 					<span className='rounded-md bg-red-500/15 px-2 py-0.5 font-mono text-xs font-bold text-red-300 ring-1 ring-red-500/30'>
 						100 / 100
@@ -55,8 +57,7 @@ export function HomographReveal() {
 			</div>
 
 			<p className='pt-1 text-center text-xs leading-relaxed text-slate-500'>
-				Same pixels. One letter is Cyrillic — and Guard catches it in under
-				5&nbsp;ms, before the page loads, sending nothing anywhere.
+				{h.footnote}
 			</p>
 		</div>
 	)

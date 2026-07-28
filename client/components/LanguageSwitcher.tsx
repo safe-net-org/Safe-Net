@@ -6,16 +6,20 @@ import { cn } from '@/lib/utils'
 
 /** Compact EN / RU toggle. Persists the choice via the locale provider. */
 export function LanguageSwitcher({ className }: { className?: string }) {
-	const { locale, setLocale } = useI18n()
+	const { locale, setLocale, t } = useI18n()
+	const labels = {
+		en: t.preferences.english,
+		ru: t.preferences.russian
+	}
 
 	return (
 		<div
 			className={cn(
-				'inline-flex items-center rounded-full border border-slate-700 bg-slate-800 p-0.5 text-xs',
+				'inline-flex items-center rounded-full border border-border bg-secondary/80 p-0.5 text-xs',
 				className
 			)}
 			role='group'
-			aria-label='Language'
+			aria-label={t.preferences.language}
 		>
 			{LOCALES.map(code => (
 				<button
@@ -23,11 +27,13 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 					type='button'
 					onClick={() => setLocale(code)}
 					aria-pressed={locale === code}
+					aria-label={labels[code]}
+					title={labels[code]}
 					className={cn(
-						'rounded-full px-2.5 py-1 font-medium transition-colors',
+						'rounded-full px-2.5 py-1 font-medium transition-[color,background-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60',
 						locale === code
-							? 'bg-indigo-600 text-white'
-							: 'text-slate-400 hover:text-white'
+							? 'bg-background text-foreground shadow-sm'
+							: 'text-muted-foreground hover:text-foreground'
 					)}
 				>
 					{LOCALE_LABELS[code]}

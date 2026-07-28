@@ -15,10 +15,12 @@ import {
 	X,
 	XCircle,
 	Zap,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useI18n } from '@/i18n/LocaleProvider'
+import { MOTION } from '@/config/motion.config'
 
 export default function DemoCard() {
 	const { t } = useI18n()
@@ -30,10 +32,10 @@ export default function DemoCard() {
 	const closeModal = () => setShowModal(false)
 	return (
 		<m.div
-			initial={{ opacity: 0, x: 100 }}
+			initial={{ opacity: 0, x: 12 }}
 			whileInView={{ opacity: 1, x: 0 }}
 			viewport={{ once: true, amount: 0.3 }}
-			transition={{ duration: 0.8, ease: [0.25, 0.8, 0.25, 1] }}
+			transition={{ duration: MOTION.reveal, ease: MOTION.ease }}
 			className='relative'
 		>
 			{}
@@ -64,20 +66,24 @@ export default function DemoCard() {
 					<m.div
 						initial={{ opacity: 0, y: 10 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.4 }}
+						transition={{ duration: MOTION.standard, ease: MOTION.ease }}
 						className={`mb-4 p-3 rounded-xl flex items-center gap-2 ${
 							isCorrect
-								? 'bg-emerald-900/30 border border-emerald-700'
-								: 'bg-rose-900/30 border border-rose-700'
+								? 'border border-emerald-300 bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30'
+								: 'border border-rose-300 bg-rose-100 dark:border-rose-700 dark:bg-rose-900/30'
 						}`}
 					>
 						{isCorrect ? (
-							<CheckCircle className='w-5 h-5 text-emerald-400' />
+							<CheckCircle className='w-5 h-5 text-emerald-700 dark:text-emerald-400' />
 						) : (
-							<XCircle className='w-5 h-5 text-rose-400' />
+							<XCircle className='w-5 h-5 text-rose-700 dark:text-rose-400' />
 						)}
 						<span
-							className={`text-sm ${isCorrect ? 'text-emerald-200' : 'text-rose-200'}`}
+							className={`text-sm ${
+								isCorrect
+									? 'text-emerald-800 dark:text-emerald-200'
+									: 'text-rose-800 dark:text-rose-200'
+							}`}
 						>
 							{isCorrect ? t.demo.correct : t.demo.incorrect}
 						</span>
@@ -87,11 +93,12 @@ export default function DemoCard() {
 					<button
 						className={`${
 							isCorrect === false
-								? 'bg-rose-900/50 border-rose-500 text-rose-200'
-								: 'bg-emerald-900/30 hover:bg-emerald-900/50 border-emerald-700 text-emerald-200'
-						} px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2`}
+								? 'border-rose-400 bg-rose-100 text-rose-800 dark:border-rose-500 dark:bg-rose-900/50 dark:text-rose-200'
+								: 'border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 dark:hover:bg-emerald-900/50'
+						} flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-300 ease-out`}
 						onClick={handleSafeClick}
 						disabled={isCorrect !== null}
+						aria-pressed={isCorrect === false}
 					>
 						<CheckCircle className='w-4 h-4' />
 						{t.demo.safe}
@@ -99,11 +106,12 @@ export default function DemoCard() {
 					<button
 						className={`${
 							isCorrect === true
-								? 'bg-emerald-900/50 border-emerald-500 text-emerald-200'
-								: 'bg-rose-900/30 hover:bg-rose-900/50 border-rose-700 text-rose-200'
-						} px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2`}
+								? 'border-emerald-400 bg-emerald-100 text-emerald-800 dark:border-emerald-500 dark:bg-emerald-900/50 dark:text-emerald-200'
+								: 'border-rose-300 bg-rose-100 text-rose-800 hover:bg-rose-200 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/50'
+						} flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-300 ease-out`}
 						onClick={handleDangerClick}
 						disabled={isCorrect !== null}
+						aria-pressed={isCorrect === true}
 					>
 						<XCircle className='w-4 h-4' />
 						{t.demo.dangerous}
@@ -113,7 +121,11 @@ export default function DemoCard() {
 					<m.div
 						initial={{ opacity: 0, y: 10 }}
 						whileInView={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.3 }}
+						transition={{
+							duration: MOTION.standard,
+							delay: MOTION.stagger,
+							ease: MOTION.ease,
+						}}
 						className='mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-900/30 rounded-lg p-3'
 					>
 						<Zap className='w-4 h-4 text-yellow-500 shrink-0 mt-0.5' />
@@ -128,7 +140,7 @@ export default function DemoCard() {
 							className='w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-lg hover:scale-[1.01] transition-transform'
 						>
 							<BookOpen className='w-4 h-4' />
-							Try another — password security overview
+							{t.demo.tryAnother}
 						</button>
 						<a
 							href='/guard'
@@ -140,7 +152,8 @@ export default function DemoCard() {
 					</div>
 				)}
 				{}
-				{showModal && <PasswordModal onClose={closeModal} />}
+				{showModal &&
+					createPortal(<PasswordModal onClose={closeModal} />, document.body)}
 			</div>
 		</m.div>
 	)
@@ -273,18 +286,8 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
 	const toggleTab = (newTab: 'theory' | 'practice' | 'quiz') => {
 		setTab(newTab)
 	}
-	const downloadCheatsheet = () => {
-		const text = `Password security cheatsheet:\n- Use Argon2/bcrypt\n- Add salt + pepper (if needed)\n- Minimum 12 characters\n- Password manager + MFA\n- Don't reuse passwords\n- Change them regularly\n`
-		const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
-		const url = URL.createObjectURL(blob)
-		const a = document.createElement('a')
-		a.href = url
-		a.download = 'password_cheatsheet.txt'
-		a.click()
-		URL.revokeObjectURL(url)
-	}
 	return (
-		<div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+		<div className='fixed inset-0 z-[110] flex items-center justify-center p-4'>
 			{}
 			<div
 				className='absolute inset-0 bg-black/50 backdrop-blur-sm'
@@ -296,19 +299,21 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
 				initial={{ opacity: 0, scale: 0.95 }}
 				animate={{ opacity: 1, scale: 1 }}
 				transition={{ duration: 0.25 }}
-				className='relative z-60 w-[min(1200px,96%)] max-w-[1200px] rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden'
+				className='relative z-[111] w-[min(1200px,96%)] max-w-[1200px] rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden'
 				role='dialog'
 				aria-modal='true'
 			>
 				{}
-				<div className='flex items-center justify-between p-5 bg-linear-to-r from-indigo-600 to-purple-600'>
+				<div className='flex items-center justify-between border-b border-border bg-white p-5 dark:bg-card'>
 					<div className='flex items-center gap-3'>
-						<ShieldCheck className='w-6 h-6 text-white' />
+						<div className='flex size-10 items-center justify-center rounded-xl bg-brand/10 text-brand'>
+							<ShieldCheck className='w-5 h-5' />
+						</div>
 						<div>
-							<h4 className='text-white font-semibold'>
+							<h4 className='font-semibold text-foreground'>
 								Overview: Password Security
 							</h4>
-							<p className='text-xs text-indigo-100/80'>
+							<p className='text-xs text-muted-foreground'>
 								Brief theory → practice → knowledge check
 							</p>
 						</div>
@@ -316,7 +321,7 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
 					<div className='flex items-center gap-3'>
 						<button
 							onClick={onClose}
-							className='p-2 rounded-lg bg-white/6 hover:bg-white/10 text-white'
+							className='rounded-lg bg-secondary p-2 text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-foreground'
 							aria-label='Close modal window'
 						>
 							<X className='w-4 h-4' />

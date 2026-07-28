@@ -1,7 +1,8 @@
 'use client'
 
+import { UI_COLORS } from '@/config/colors.config'
 import { m } from 'framer-motion'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from '@/components/ui/icons'
 import {
 	Area,
 	AreaChart,
@@ -72,37 +73,37 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
 					<AreaChart data={data}>
 						<defs>
 							<linearGradient id='colorTotal' x1='0' y1='0' x2='0' y2='1'>
-								<stop offset='5%' stopColor='#3b82f6' stopOpacity={0.3} />
-								<stop offset='95%' stopColor='#3b82f6' stopOpacity={0} />
+								<stop offset='5%' stopColor={UI_COLORS.chart.blue} stopOpacity={0.3} />
+								<stop offset='95%' stopColor={UI_COLORS.chart.blue} stopOpacity={0} />
 							</linearGradient>
 							<linearGradient id='colorActive' x1='0' y1='0' x2='0' y2='1'>
-								<stop offset='5%' stopColor='#10b981' stopOpacity={0.3} />
-								<stop offset='95%' stopColor='#10b981' stopOpacity={0} />
+								<stop offset='5%' stopColor={UI_COLORS.chart.green} stopOpacity={0.3} />
+								<stop offset='95%' stopColor={UI_COLORS.chart.green} stopOpacity={0} />
 							</linearGradient>
 						</defs>
 						<CartesianGrid
 							strokeDasharray='3 3'
-							stroke='#e5e7eb'
+							stroke={UI_COLORS.chart.grid}
 							className='dark:stroke-gray-800'
 							vertical={false}
 						/>
 						<XAxis
 							dataKey='period'
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							style={{ fontFamily: 'inherit' }}
 						/>
 						<YAxis
-							stroke='#9ca3af'
+							stroke={UI_COLORS.chart.axis}
 							fontSize={12}
 							style={{ fontFamily: 'inherit' }}
 						/>
 						<Tooltip
 							contentStyle={{
-								backgroundColor: 'rgba(17, 24, 39, 0.95)',
+								backgroundColor: UI_COLORS.chart.tooltip,
 								border: 'none',
 								borderRadius: '12px',
-								color: '#fff',
+								color: UI_COLORS.chart.tooltipForeground,
 							}}
 							formatter={(value: number, name: string) => {
 								if (name === 'total') return [`${value}`, 'Total']
@@ -110,13 +111,13 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
 								if (name === 'new') return [`${value}`, 'New']
 								return [value, name]
 							}}
-							labelStyle={{ color: '#fff' }}
+							labelStyle={{ color: UI_COLORS.chart.tooltipForeground }}
 						/>
 						<Legend wrapperStyle={{ paddingTop: '20px' }} iconType='line' />
 						<Area
 							type='monotone'
 							dataKey='total'
-							stroke='#3b82f6'
+							stroke={UI_COLORS.chart.blue}
 							fill='url(#colorTotal)'
 							name='Total'
 							strokeWidth={2}
@@ -125,7 +126,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
 						<Area
 							type='monotone'
 							dataKey='active'
-							stroke='#10b981'
+							stroke={UI_COLORS.chart.green}
 							fill='url(#colorActive)'
 							name='Active'
 							strokeWidth={2}

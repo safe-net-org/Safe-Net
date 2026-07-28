@@ -1,0 +1,101 @@
+title: "Итоговый тест: Двухфакторная аутентификация"
+description: "Проверка знаний о методах 2FA и мошенничестве с подменой SIM-карты."
+passingScore: 80
+questions:
+  - text: "Какой метод 2FA самый надёжный?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Аппаратный ключ (YubiKey)"
+        isCorrect: true
+      - text: "Код по SMS"
+        isCorrect: false
+      - text: "Код по почте"
+        isCorrect: false
+      - text: "Секретный вопрос"
+        isCorrect: false
+
+  - text: "Концептуально, каковы два фактора в 2FA?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Два разных пароля"
+        isCorrect: false
+      - text: "То, что вы знаете, и то, что у вас есть"
+        isCorrect: true
+      - text: "Два отдельных email-адреса"
+        isCorrect: false
+      - text: "Один и тот же пароль, введённый дважды"
+        isCorrect: false
+
+  - text: "Какие из этих утверждений о методах 2FA верны?"
+    type: MULTI_CHOICE
+    options:
+      - text: "SMS-коды уязвимы к атакам с подменой SIM-карты"
+        isCorrect: true
+      - text: "Аппаратные ключи защищают от фишинга, проверяя реальный домен"
+        isCorrect: true
+      - text: "SMS-2FA абсолютно неуязвима"
+        isCorrect: false
+      - text: "Приложениям-аутентификаторам нужно интернет-соединение для генерации кодов"
+        isCorrect: false
+      - text: "Push-уведомления никогда нельзя подтвердить по ошибке"
+        isCorrect: false
+
+  - text: "По данным Microsoft, включение MFA блокирует примерно какой процент автоматизированных атак на аккаунты?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 50%"
+        isCorrect: false
+      - text: "Около 99,9%"
+        isCorrect: true
+      - text: "Около 75%"
+        isCorrect: false
+      - text: "Около 10%"
+        isCorrect: false
+
+  - text: "Как атака с подменой SIM-карты на самом деле обходит SMS-2FA?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Вредоносное ПО, установленное на телефон жертвы"
+        isCorrect: false
+      - text: "Обман оператора связи, чтобы он перенёс номер жертвы на SIM-карту, контролируемую злоумышленником"
+        isCorrect: true
+      - text: "Перебор шестизначного кода"
+        isCorrect: false
+      - text: "Физическая кража телефона жертвы"
+        isCorrect: false
+
+  - text: "Число сообщений о мошенничестве с подменой SIM-карты в Великобритании выросло примерно на 1055% за год. На что это указывает?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "SMS-2FA теперь вообще не даёт защиты"
+        isCorrect: false
+      - text: "SMS -- заметно более слабый и всё чаще используемый как мишень метод 2FA"
+        isCorrect: true
+      - text: "Этот тренд не связан с 2FA"
+        isCorrect: false
+      - text: "Операторы сделали подмену SIM-карт невозможной"
+        isCorrect: false
+
+  - text: "Почему приложения-аутентификаторы считаются более безопасными, чем SMS-коды?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Они генерируют коды локально, независимо от вашего номера телефона"
+        isCorrect: true
+      - text: "Они бесплатны, а SMS стоит денег"
+        isCorrect: false
+      - text: "Для них нужна платная подписка"
+        isCorrect: false
+      - text: "Они отправляют коды по почте вместо SMS"
+        isCorrect: false
+
+  - text: "Какая разумная стратегия 2FA по умолчанию, учитывая компромиссы между методами?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Использовать SMS везде, поскольку его проще всего настроить"
+        isCorrect: false
+      - text: "Использовать аппаратный ключ или приложение-аутентификатор для самых важных аккаунтов, SMS -- только как запасной вариант"
+        isCorrect: true
+      - text: "Вообще избегать 2FA, поскольку у каждого метода есть слабое место"
+        isCorrect: false
+      - text: "Использовать секретный вопрос как основной второй фактор"
+        isCorrect: false

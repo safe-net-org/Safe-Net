@@ -8,6 +8,7 @@ import { UserModule } from 'src/user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtStrategy } from './jwt.strategy'
+import { PasswordResetMailer } from './password-reset-mailer.service'
 import { PasswordResetService } from './password-reset.service'
 
 @Module({
@@ -22,7 +23,13 @@ import { PasswordResetService } from './password-reset.service'
 		}),
 	],
 	controllers: [AuthController],
-	providers: [AuthService, PasswordResetService, JwtStrategy, PrismaService],
+	providers: [
+		AuthService,
+		PasswordResetMailer,
+		PasswordResetService,
+		JwtStrategy,
+		PrismaService,
+	],
 	exports: [AuthService],
 })
 export class AuthModule {}

@@ -20,7 +20,7 @@ export function useProfile() {
 	useEffect(() => {
 		if (!isSuccess) return
 		if (dataTokens.data.accessToken) saveTokenStorage(dataTokens.data.accessToken)
-	}, [isSuccess])
+	}, [dataTokens, isSuccess])
 	const profile = data?.data
 	const userState = profile ? transformUserToState(profile) : null
 	return {

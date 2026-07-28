@@ -6,8 +6,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
-import { ILesson, ITask, TaskType } from '@/services/admin/admin.types'
+import {
+	CreateTaskDto,
+	ILesson,
+	ITask,
+	TaskType,
+} from '@/services/admin/admin.types'
 import { m } from 'framer-motion'
 import {
     AlertTriangle,
@@ -22,10 +28,11 @@ import {
     Target,
     Trash2,
     X,
-} from 'lucide-react'
+	type AppIcon,
+} from '@/components/ui/icons'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Controller, useFieldArray, useForm } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
 interface TasksListProps {
@@ -33,7 +40,9 @@ interface TasksListProps {
 	onRefetch: () => void
 }
 
-const TaskTypeIcons: Record<TaskType, any> = {
+type EditTaskFormData = Omit<CreateTaskDto, 'lessonId'>
+
+const TaskTypeIcons: Record<TaskType, AppIcon> = {
 	[TaskType.SINGLE_CHOICE]: CheckCircle2,
 	[TaskType.MULTI_CHOICE]: ListChecks,
 	[TaskType.SHORT_ANSWER]: FileQuestion,
@@ -42,22 +51,25 @@ const TaskTypeIcons: Record<TaskType, any> = {
 	[TaskType.TEXT_INPUT]: FileQuestion,
 }
 
-const TaskTypeLabels: Record<TaskType, string> = {
-	[TaskType.SINGLE_CHOICE]: 'Single choice',
-	[TaskType.MULTI_CHOICE]: 'Multiple choice',
-	[TaskType.SHORT_ANSWER]: 'Short answer',
-	[TaskType.PHISHING_EMAIL]: 'Phishing: Email',
-	[TaskType.PHISHING_SITE]: 'Phishing: Website',
-	[TaskType.TEXT_INPUT]: 'Text input',
-}
-
-const DifficultyLabels = {
-	EASY: 'Easy',
-	MEDIUM: 'Medium',
-	HARD: 'Hard',
-}
-
 export default function TasksList({ lesson, onRefetch }: TasksListProps) {
+	const { t } = useI18n()
+	const c = t.adminLessonComponents.tasksList
+
+	const TaskTypeLabels: Record<TaskType, string> = {
+		[TaskType.SINGLE_CHOICE]: c.taskTypeLabels.singleChoice,
+		[TaskType.MULTI_CHOICE]: c.taskTypeLabels.multiChoice,
+		[TaskType.SHORT_ANSWER]: c.taskTypeLabels.shortAnswer,
+		[TaskType.PHISHING_EMAIL]: c.taskTypeLabels.phishingEmail,
+		[TaskType.PHISHING_SITE]: c.taskTypeLabels.phishingSite,
+		[TaskType.TEXT_INPUT]: c.taskTypeLabels.textInput,
+	}
+
+	const DifficultyLabels: Record<string, string> = {
+		EASY: c.difficultyLabels.easy,
+		MEDIUM: c.difficultyLabels.medium,
+		HARD: c.difficultyLabels.hard,
+	}
+
 	const [deleteDialog, setDeleteDialog] = useState<{
 		open: boolean
 		task: ITask | null
@@ -76,26 +88,26 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 		setIsDeleting(true)
 		try {
 			await adminService.deleteTask(deleteDialog.task.id)
-			toast.success('Task deleted')
+			toast.success(c.toasts.taskDeleted)
 			setDeleteDialog({ open: false, task: null })
 			onRefetch()
-		} catch (error) {
-			toast.error('Error deleting task')
+		} catch {
+			toast.error(c.toasts.taskDeleteError)
 		} finally {
 			setIsDeleting(false)
 		}
 	}
 
-	const handleUpdate = async (data: any) => {
+	const handleUpdate = async (data: EditTaskFormData) => {
 		if (!editDialog.task) return
 
 		try {
 			await adminService.updateTask(editDialog.task.id, data)
-			toast.success('Task updated')
+			toast.success(c.toasts.taskUpdated)
 			setEditDialog({ open: false, task: null })
 			onRefetch()
-		} catch (error) {
-			toast.error('Error updating task')
+		} catch {
+			toast.error(c.toasts.taskUpdateError)
 		}
 	}
 
@@ -106,7 +118,7 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 					<FileQuestion className='h-8 w-8 text-gray-500' />
 				</div>
 				<p className='text-sm text-gray-500'>
-					No tasks yet. Add the first one!
+					{c.emptyTitle}
 				</p>
 			</div>
 		)
@@ -116,7 +128,7 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 		<>
 			<div className='p-6'>
 				<div className='space-y-3'>
-					{tasks.map((task, index) => {
+					{tasks.map(task => {
 						const Icon = TaskTypeIcons[task.type] || FileQuestion
 						return (
 							<div
@@ -148,7 +160,7 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 												</span>
 												{task.points && (
 													<span className='rounded-full bg-yellow-500/10 px-2 py-1 text-yellow-400'>
-														{task.points} XP
+														{task.points} {c.xpUnit}
 													</span>
 												)}
 												{task.difficulty && (
@@ -163,14 +175,14 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 										<button
 											onClick={() => setEditDialog({ open: true, task })}
 											className='rounded-lg bg-blue-500/10 p-2 text-blue-400 transition-colors hover:bg-blue-500/20'
-											title='Edit'
+											title={c.editTooltip}
 										>
 											<Edit2 className='h-4 w-4' />
 										</button>
 										<button
 											onClick={() => setDeleteDialog({ open: true, task })}
 											className='rounded-lg bg-red-500/10 p-2 text-red-400 transition-colors hover:bg-red-500/20'
-											title='Delete'
+											title={c.deleteTooltip}
 										>
 											<Trash2 className='h-4 w-4' />
 										</button>
@@ -198,7 +210,7 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 							animate={{ opacity: 1, scale: 1 }}
 							exit={{ opacity: 0, scale: 0.98 }}
 							onClick={(e) => e.stopPropagation()}
-							className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-[#0A0F1D] p-6 shadow-2xl'
+							className='relative w-full max-w-md rounded-2xl border border-red-500/20 bg-overlay p-6 shadow-2xl'
 						>
 							<div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10'>
 								<AlertTriangle className='h-8 w-8 text-red-400' />
@@ -206,17 +218,17 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 
 							<div className='text-center'>
 								<h3 className='mb-2 text-2xl font-bold text-white'>
-									Delete task?
+									{c.deleteDialog.title}
 								</h3>
 								<p className='mb-2 text-gray-400'>
-									Are you sure you want to delete the task{' '}
+									{c.deleteDialog.descriptionPrefix}{' '}
 									<span className='font-semibold text-white'>
-										"{deleteDialog.task.title}"
+										&ldquo;{deleteDialog.task.title}&rdquo;
 									</span>
 									?
 								</p>
 								<p className='text-sm text-red-400'>
-									This action cannot be undone
+									{c.deleteDialog.cannotUndo}
 								</p>
 							</div>
 
@@ -226,7 +238,7 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 									disabled={isDeleting}
 									className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-gray-300 transition-colors hover:bg-white/10 disabled:opacity-50'
 								>
-									Cancel
+									{c.deleteDialog.cancel}
 								</button>
 								<button
 									onClick={handleDelete}
@@ -236,10 +248,10 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 									{isDeleting ? (
 										<>
 											<Loader2 className='mr-2 inline h-4 w-4 animate-spin' />
-											Deleting...
+											{c.deleteDialog.deleting}
 										</>
 									) : (
-										'Delete'
+										c.deleteDialog.confirm
 									)}
 								</button>
 							</div>
@@ -266,19 +278,37 @@ export default function TasksList({ lesson, onRefetch }: TasksListProps) {
 interface EditTaskModalProps {
 	task: ITask
 	onClose: () => void
-	onSubmit: (data: any) => void
+	onSubmit: (data: EditTaskFormData) => Promise<void>
 }
 
 function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
+	const { t } = useI18n()
+	const c = t.adminLessonComponents.tasksList
+	const em = c.editModal
+
+	const TaskTypeLabels: Record<TaskType, string> = {
+		[TaskType.SINGLE_CHOICE]: c.taskTypeLabels.singleChoice,
+		[TaskType.MULTI_CHOICE]: c.taskTypeLabels.multiChoice,
+		[TaskType.SHORT_ANSWER]: c.taskTypeLabels.shortAnswer,
+		[TaskType.PHISHING_EMAIL]: c.taskTypeLabels.phishingEmail,
+		[TaskType.PHISHING_SITE]: c.taskTypeLabels.phishingSite,
+		[TaskType.TEXT_INPUT]: c.taskTypeLabels.textInput,
+	}
+
+	const DifficultyLabels: Record<string, string> = {
+		EASY: c.difficultyLabels.easy,
+		MEDIUM: c.difficultyLabels.medium,
+		HARD: c.difficultyLabels.hard,
+	}
+
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const {
 		register,
 		handleSubmit,
-		watch,
-		control,
+			control,
 		formState: { errors },
-	} = useForm({
+		} = useForm<EditTaskFormData>({
 		defaultValues: {
 			order: task.order,
 			title: task.title,
@@ -296,11 +326,11 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 		name: 'options',
 	})
 
-	const taskType = watch('type')
+		const taskType = useWatch({ control, name: 'type' })
 	const hasOptions =
 		taskType === TaskType.SINGLE_CHOICE || taskType === TaskType.MULTI_CHOICE
 
-	const onSubmitForm = async (data: any) => {
+		const onSubmitForm = async (data: EditTaskFormData) => {
 		setIsSubmitting(true)
 		try {
 			await onSubmit(data)
@@ -314,17 +344,17 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
-			className='fixed inset-0 z-[9999] bg-[#0A0F1D] overflow-y-auto'
+			className='fixed inset-0 z-[9999] bg-overlay overflow-y-auto'
 		>
 			{/* Header */}
-			<div className='sticky top-0 border-b border-white/10 bg-[#0A0F1D]/95 backdrop-blur-xl z-10'>
+			<div className='sticky top-0 border-b border-white/10 bg-overlay/95 backdrop-blur-xl z-10'>
 				<div className='mx-auto flex max-w-5xl items-center justify-between px-6 py-4'>
 					<div>
 						<h3 className='text-2xl font-bold text-white'>
-							Edit task
+							{em.title}
 						</h3>
 						<p className='mt-1 text-sm text-gray-500'>
-							Update the settings of this practical task
+							{em.subtitle}
 						</p>
 					</div>
 					<button
@@ -343,14 +373,14 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 					<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 						<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 							<Sparkles className='h-5 w-5 text-blue-400' />
-							Basic information
+							{em.basicInfoHeading}
 						</h4>
 
 						<div className='space-y-6'>
 							<div className='grid gap-6 md:grid-cols-2'>
 								<div>
 									<label className='mb-2 block text-sm font-semibold text-white'>
-										Order number
+										{em.orderLabel}
 									</label>
 									<input
 										{...register('order', { valueAsNumber: true })}
@@ -361,7 +391,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 
 								<div>
 									<label className='mb-2 block text-sm font-semibold text-white'>
-										Task type
+										{em.taskTypeLabel}
 									</label>
 									<Controller
 										name='type'
@@ -379,7 +409,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 												</DropdownMenuTrigger>
 												<DropdownMenuContent
 													align='start'
-													className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-[#0A0F1D] border-white/10'
+													className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-overlay border-white/10'
 												>
 													{Object.entries(TaskTypeLabels).map(([key, label]) => (
 														<DropdownMenuItem
@@ -399,12 +429,12 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Task title
+									{em.titleLabel}
 								</label>
 								<input
-									{...register('title', { required: 'Title is required' })}
+									{...register('title', { required: em.titleRequired })}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10'
-									placeholder='SQL Injection'
+									placeholder={em.titlePlaceholder}
 								/>
 								{errors.title && (
 									<p className='mt-2 text-sm text-red-400'>
@@ -415,25 +445,25 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Question
+									{em.questionLabel}
 								</label>
 								<textarea
 									{...register('question')}
 									rows={3}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10 resize-none'
-									placeholder='What method is used for SQL injection?'
+									placeholder={em.questionPlaceholder}
 								/>
 							</div>
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Explanation (optional)
+									{em.explanationLabel}
 								</label>
 								<textarea
 									{...register('explanation')}
 									rows={3}
 									className='w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-blue-500/50 focus:bg-white/10 resize-none'
-									placeholder='SQL injection allows...'
+									placeholder={em.explanationPlaceholder}
 								/>
 							</div>
 						</div>
@@ -443,13 +473,13 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 					<div className='rounded-2xl border border-white/10 bg-white/5 p-6'>
 						<h4 className='mb-4 flex items-center gap-2 text-lg font-semibold text-white'>
 							<Target className='h-5 w-5 text-purple-400' />
-							Settings
+							{em.settingsHeading}
 						</h4>
 
 						<div className='grid gap-6 md:grid-cols-2'>
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Points (XP)
+									{em.pointsLabel}
 								</label>
 								<input
 									{...register('points', { valueAsNumber: true })}
@@ -462,7 +492,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 
 							<div>
 								<label className='mb-2 block text-sm font-semibold text-white'>
-									Difficulty
+									{em.difficultyLabel}
 								</label>
 								<Controller
 									name='difficulty'
@@ -474,13 +504,15 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 													type='button'
 													className='flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white transition-colors hover:bg-white/10'
 												>
-													<span>{DifficultyLabels[field.value]}</span>
+														<span>
+															{DifficultyLabels[field.value ?? 'MEDIUM']}
+														</span>
 													<ChevronDown className='h-4 w-4 text-gray-400' />
 												</button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent
 												align='start'
-												className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-[#0A0F1D] border-white/10'
+												className='z-[10000] w-[var(--radix-dropdown-menu-trigger-width)] bg-overlay border-white/10'
 											>
 												{Object.entries(DifficultyLabels).map(([key, label]) => (
 													<DropdownMenuItem
@@ -505,7 +537,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 												<div className='mb-4 flex items-center justify-between'>
 													<h4 className='flex items-center gap-2 text-lg font-semibold text-white'>
 														<CheckCircle2 className='h-5 w-5 text-green-400' />
-														Answer options
+														{em.optionsHeading}
 													</h4>
 													<button
 														type='button'
@@ -513,7 +545,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 														className='flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-white/90'
 													>
 														<Plus className='h-4 w-4' />
-														Add option
+														{em.addOption}
 													</button>
 												</div>
 
@@ -550,7 +582,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 															<input
 																{...register(`options.${index}.text`)}
 																className='flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition-colors focus:border-green-500/50 focus:bg-white/10'
-																placeholder={`Option ${index + 1}`}
+																placeholder={em.optionPlaceholderTemplate.replace('{index}', String(index + 1))}
 															/>
 															{fields.length > 2 && (
 																<button
@@ -566,8 +598,8 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 												</div>
 												<p className='mt-3 text-xs text-gray-500'>
 													{taskType === TaskType.SINGLE_CHOICE
-														? 'Select one correct answer (radio)'
-														: 'Check all correct answers (checkbox)'}
+														? em.singleChoiceHint
+														: em.multiChoiceHint}
 												</p>
 											</div>
 					)}
@@ -581,7 +613,7 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 							disabled={isSubmitting}
 							className='flex-1 rounded-xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-gray-300 transition-colors hover:bg-white/10 disabled:opacity-50'
 						>
-							Cancel
+							{em.cancel}
 						</button>
 						<button
 							type='submit'
@@ -591,10 +623,10 @@ function EditTaskModal({ task, onClose, onSubmit }: EditTaskModalProps) {
 							{isSubmitting ? (
 								<>
 									<Loader2 className='mr-2 inline h-5 w-5 animate-spin' />
-									Saving...
+									{em.saving}
 								</>
 							) : (
-								'Save changes'
+								em.submit
 							)}
 						</button>
 					</div>

@@ -1,0 +1,101 @@
+title: "Итоговый тест: Защита устройств"
+description: "Проверка знаний о блокировке экрана и биометрической безопасности."
+passingScore: 75
+questions:
+  - text: "Какой способ блокировки самый надёжный?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Графический ключ"
+        isCorrect: false
+      - text: "Простой PIN-код вроде 1234"
+        isCorrect: false
+      - text: "Только отпечаток пальца"
+        isCorrect: false
+      - text: "Биометрия плюс надёжный PIN-код"
+        isCorrect: true
+
+  - text: "Почему нельзя «сбросить» скомпрометированный отпечаток пальца так же, как вы сбрасываете пароль?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Отпечатки пальцев истекают через несколько лет"
+        isCorrect: false
+      - text: "Это неизменный физический признак, а не секрет, который можно поменять"
+        isCorrect: true
+      - text: "Для этого требуется визит в магазин"
+        isCorrect: false
+      - text: "Политика Apple это запрещает"
+        isCorrect: false
+
+  - text: "Что из перечисленного является реальным, задокументированным ограничением биометрии по отпечатку пальца?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Кто-то может приложить ваш палец к сканеру, пока вы спите"
+        isCorrect: true
+      - text: "Снятый отпечаток иногда можно воспроизвести"
+        isCorrect: true
+      - text: "Они делают подбор PIN-кода невозможным"
+        isCorrect: false
+      - text: "Они автоматически шифруют ваши файлы"
+        isCorrect: false
+      - text: "Face ID и Touch ID используют идентичное аппаратное обеспечение сканера"
+        isCorrect: false
+
+  - text: "Какая группа взломала Touch ID в течение 48 часов после запуска iPhone 5S в 2013 году?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Chaos Computer Club"
+        isCorrect: true
+      - text: "Anonymous"
+        isCorrect: false
+      - text: "Lazarus Group"
+        isCorrect: false
+      - text: "APT28"
+        isCorrect: false
+
+  - text: "Что именно использовали в CCC, чтобы обмануть сканер Touch ID?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Украденную базу данных отпечатков"
+        isCorrect: false
+      - text: "Сфотографированный отпечаток, распечатанный и отлитый в виде фальшивого пальца"
+        isCorrect: true
+      - text: "Программный эксплойт в iOS"
+        isCorrect: false
+      - text: "Атаку перебором PIN-кода"
+        isCorrect: false
+
+  - text: "Что демонстрирует взлом Touch ID о сканерах отпечатков пальцев, используемых отдельно?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Они практически неуязвимы"
+        isCorrect: false
+      - text: "Убедительная физическая копия отпечатка может заменить настоящий палец"
+        isCorrect: true
+      - text: "Только государственные лаборатории способны воспроизвести отпечаток"
+        isCorrect: false
+      - text: "Это сработало только на iPhone 2013 года"
+        isCorrect: false
+
+  - text: "Какая самая надёжная реалистичная настройка блокировки для телефона с банковскими приложениями?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Только отпечаток пальца, ради скорости"
+        isCorrect: false
+      - text: "Только простой 4-значный PIN-код"
+        isCorrect: false
+      - text: "Биометрия для повседневной разблокировки, с надёжным PIN-кодом в качестве запасного варианта"
+        isCorrect: true
+      - text: "Без блокировки вообще, так как вы редко выходите из дома"
+        isCorrect: false
+
+  - text: "Какой из этих способов блокировки устройства наиболее уязвим для того, чтобы кто-то просто подсмотрел через плечо?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Графический ключ, оставляющий видимый след на экране"
+        isCorrect: true
+      - text: "Face ID"
+        isCorrect: false
+      - text: "Сканер отпечатка пальца"
+        isCorrect: false
+      - text: "Аппаратный ключ безопасности"
+        isCorrect: false

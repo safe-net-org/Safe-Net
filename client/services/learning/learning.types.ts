@@ -4,10 +4,19 @@ export enum Difficulty {
 	HARD = 'HARD',
 }
 
-export const DifficultyLabel: Record<Difficulty, string> = {
-	[Difficulty.EASY]: 'Easy',
-	[Difficulty.MEDIUM]: 'Medium',
-	[Difficulty.HARD]: 'Hard',
+export function getDifficultyLabel(
+	difficulty: Difficulty | 'EASY' | 'MEDIUM' | 'HARD' | undefined,
+	labels: { easy: string; medium: string; hard: string }
+): string {
+	switch (difficulty) {
+		case Difficulty.EASY:
+			return labels.easy
+		case Difficulty.HARD:
+			return labels.hard
+		case Difficulty.MEDIUM:
+		default:
+			return labels.medium
+	}
 }
 
 export interface IStage {
@@ -48,10 +57,12 @@ export interface ICourseDetail {
 		completed: boolean
 	}>
 	tests: Array<{
-		score: any
+		score: number | null
 		id: string
 		title: string
 		passingScore: number
+		time: number | null
+		lastAttemptDate: string | null
 	}>
 }
 
@@ -107,6 +118,7 @@ export interface ITask {
 	explanation?: string
 	options: Array<ITaskOption>
 	completed?: boolean
+	started?: boolean
 	/** Present only on PHISHING_EMAIL tasks. */
 	email?: ISimulatedEmail
 	/** Present only on PHISHING_SITE tasks. */

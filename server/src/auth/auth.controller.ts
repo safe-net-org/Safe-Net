@@ -73,7 +73,13 @@ export class AuthController {
 
 	@HttpCode(200)
 	@Post('logout')
-	async logout(@Res({ passthrough: true }) res: Response) {
+	async logout(
+		@Req() req: Request,
+		@Res({ passthrough: true }) res: Response
+	) {
+		await this.authService.revokeRefreshToken(
+			req.cookies[this.authService.REFRESH_TOKEN_NAME]
+		)
 		this.authService.removeRefreshTokenFromResponse(res)
 		return { message: 'Logout success' }
 	}

@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { BarChart3, BookOpen, Users } from 'lucide-react'
+import { BarChart3, BookOpen, Users } from '@/components/ui/icons'
 import Link from 'next/link'
 
 const quickLinks = [

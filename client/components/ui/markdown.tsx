@@ -75,8 +75,8 @@ export function Markdown({ children, className }: MarkdownProps) {
 						</ol>
 					),
 					li: ({ children }) => <li className='text-white/80'>{children}</li>,
-					code: ({ inline, children, ...props }: any) =>
-						inline ? (
+						code: ({ children, className: codeClassName }) =>
+							!codeClassName ? (
 							<code className='text-emerald-400 bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono'>
 								{children}
 							</code>

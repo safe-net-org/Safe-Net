@@ -1,10 +1,14 @@
 """
-Phishing detection via pretrained HuggingFace model.
-Primary:  pirocheto/phishing-url-detection  (DistilBERT fine-tuned on phishing URLs)
-Fallback: rule-based scorer when model is unavailable or download fails.
+Phishing detection via ealvaradob/bert-finetuned-phishing.
+
+The checkpoint is a BERT-large sequence classifier fine-tuned for benign vs
+phishing URLs. Its probability is blended with deterministic rules; the rules
+remain the fallback when the checkpoint is unavailable.
 """
 
 import logging
+import os
+import re
 from typing import Optional
 
 from .features import UrlFeatures, extract_features, features_to_dict
@@ -13,6 +17,16 @@ from .schemas import PredictResponse, ShapSignal
 logger = logging.getLogger(__name__)
 
 HF_MODEL_ID = "ealvaradob/bert-finetuned-phishing"
+# Full immutable commit SHA from the upstream model repository. Operators may
+# roll forward deliberately, but mutable branch names such as `main` are
+# rejected so two deployments cannot silently run different weights.
+DEFAULT_HF_MODEL_REVISION = "fa8fb73a007174c410ab7160d4e4c6e6b8d998d4"
+HF_MODEL_REVISION = os.getenv(
+    "HF_MODEL_REVISION", DEFAULT_HF_MODEL_REVISION
+).strip().lower()
+if not re.fullmatch(r"[0-9a-f]{40}", HF_MODEL_REVISION):
+    raise RuntimeError("HF_MODEL_REVISION must be a full 40-character commit SHA")
+MODEL_ARCHITECTURE = "BERT-large sequence classifier"
 
 FEATURE_LABELS: dict[str, str] = {
     "idn_homograph": "IDN-гомограф (кириллица+латиница)",
@@ -222,18 +236,29 @@ class PhishingModel:
     def _try_load_hf(self) -> None:
         try:
             from transformers import pipeline as hf_pipeline  # type: ignore[import]
-            logger.info("Downloading / loading HuggingFace model: %s", HF_MODEL_ID)
+            logger.info(
+                "Downloading / loading HuggingFace model: %s revision=%s",
+                HF_MODEL_ID,
+                HF_MODEL_REVISION,
+            )
             self._pipeline = hf_pipeline(
                 "text-classification",
                 model=HF_MODEL_ID,
+                revision=HF_MODEL_REVISION,
+                trust_remote_code=False,
                 truncation=True,
                 max_length=128,
             )
             self._loaded = True
-            logger.info("HuggingFace model ready: %s", HF_MODEL_ID)
+            logger.info(
+                "HuggingFace model ready: %s revision=%s",
+                HF_MODEL_ID,
+                HF_MODEL_REVISION,
+            )
         except Exception as exc:
             logger.warning(
-                "HuggingFace model unavailable (%s) — rule-based fallback active", exc
+                "HuggingFace model unavailable error_type=%s — rule-based fallback active",
+                type(exc).__name__,
             )
             self._pipeline = None
 
@@ -282,7 +307,12 @@ class PhishingModel:
                 method=method,
             )
         except Exception as exc:
-            logger.error("HF prediction error (%s) — falling back to rules", exc)
+            # Some inference exceptions include the input. Never put exception
+            # text (and therefore potentially a URL secret) in service logs.
+            logger.error(
+                "BERT inference failed error_type=%s — falling back to rules",
+                type(exc).__name__,
+            )
             return self._predict_rules(raw_url, features, feat_dict)
 
     def _predict_rules(

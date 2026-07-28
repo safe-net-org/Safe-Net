@@ -7,8 +7,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
-import { useCourseDetail } from '@/hooks/learning/useCourseDetail'
 import { useLessonDetail } from '@/hooks/learning/useLessonDetail'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { cn } from '@/lib/utils'
 import { m } from 'framer-motion'
 import {
@@ -18,54 +19,55 @@ import {
 	Clock,
 	Sparkles,
 	Target,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
-import { Suspense, useMemo } from 'react'
+import { Suspense } from 'react'
 import { AppleLessonDetail } from './AppleLessonDetail'
 
 export default function LessonDetailPage() {
 	const router = useRouter()
-	const { course } = useCourseDetail()
+	const { locale, t } = useI18n()
 	const { lesson, isLoading, answerTask, isAnswering } = useLessonDetail()
 
-	const stats = useMemo(() => {
-		if (!lesson?.tasks)
-			return {
-				completedTasks: 0,
-				startedTasks: 0,
-				totalTasks: 0,
-				progress: 0,
-			}
+	const lessonTasks = lesson?.tasks ?? []
+	const completedTasks = lessonTasks.filter(task => task.completed).length
+	const startedTasks = lessonTasks.filter(
+		task => task.started && !task.completed
+	).length
+	const totalTasks = lessonTasks.length
 
-		const completedTasks = lesson.tasks.filter((t: any) => t.completed).length
-		const startedTasks = lesson.tasks.filter(
-			(t: any) => t.started && !t.completed
-		).length
-		const totalTasks = lesson.tasks.length
-
-		// Progress: completed tasks + 50% for started ones
-		const weightedProgress =
-			totalTasks > 0
-				? ((completedTasks + startedTasks * 0.5) / totalTasks) * 100
-				: 0
-
-		return {
-			completedTasks,
-			startedTasks,
-			totalTasks,
-			progress: Math.round(weightedProgress),
-		}
-	}, [lesson?.tasks])
+	// Progress: completed tasks + 50% for started ones.
+	const weightedProgress =
+		totalTasks > 0
+			? ((completedTasks + startedTasks * 0.5) / totalTasks) * 100
+			: 0
+	const stats = {
+		completedTasks,
+		startedTasks,
+		totalTasks,
+		progress: Math.round(weightedProgress),
+	}
 
 	// Format lesson duration
 	const formatDuration = (minutes?: number) => {
-		if (!minutes) return '15–20 min'
+		if (!minutes) return t.dashboardLesson.durationFallback
 
-		if (minutes < 60) return `${minutes} min`
+		if (minutes < 60)
+			return t.dashboardLesson.durationMinTemplate.replace(
+				'{minutes}',
+				String(minutes)
+			)
 
 		const hours = Math.floor(minutes / 60)
 		const mins = minutes % 60
-		return `${hours} h${mins > 0 ? ` ${mins} min` : ''}`
+		return t.dashboardLesson.durationHourTemplate
+			.replace('{hours}', String(hours))
+			.replace(
+				'{minutesSuffix}',
+				mins > 0
+					? ` ${t.dashboardLesson.durationMinTemplate.replace('{minutes}', String(mins))}`
+					: ''
+			)
 	}
 
 	if (isLoading) {
@@ -116,17 +118,17 @@ export default function LessonDetailPage() {
 								<BookOpen className='w-8 h-8 sm:w-10 sm:h-10 text-white/20' />
 							</div>
 							<h2 className='text-2xl sm:text-3xl font-black text-white mb-2 sm:mb-3'>
-								Lesson not found
+								{t.dashboardLesson.notFound.title}
 							</h2>
 							<p className='text-base sm:text-lg text-white/60 mb-6 sm:mb-8 leading-relaxed'>
-								Check the link or contact the administrator.
+								{t.dashboardLesson.notFound.subtitle}
 							</p>
 							<Button
 								onClick={() => router.back()}
 								className='w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-black hover:bg-white/80 shadow-2xl font-bold text-sm sm:text-base'
 							>
 								<ArrowLeft className='mr-2 h-4 w-4' />
-								Go back
+								{t.dashboardLesson.notFound.goBack}
 							</Button>
 						</Card>
 					</m.div>
@@ -149,7 +151,11 @@ export default function LessonDetailPage() {
 				<Breadcrumb
 					showBackButton
 					items={[
-						{ label: 'Courses', href: ROUTES.COURSES, icon: BookOpen },
+						{
+							label: t.dashboardLesson.breadcrumbCourses,
+							href: ROUTES.COURSES,
+							icon: BookOpen,
+						},
 						{
 							label: lesson.courseTitle,
 							href: `${ROUTES.COURSES}/${lesson.courseSlug}`,
@@ -171,20 +177,23 @@ export default function LessonDetailPage() {
 								<div className='flex flex-wrap items-center gap-2'>
 									<Badge className='bg-white/10 backdrop-blur-sm border-white/20 text-white/80 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl text-xs sm:text-sm'>
 										<Target className='h-3 w-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 opacity-80' />
-										Lesson {lesson.order}
+										{t.dashboardLesson.badges.lessonNumTemplate.replace(
+											'{order}',
+											String(lesson.order)
+										)}
 									</Badge>
 
 									{stats.progress === 100 && (
 										<Badge className='bg-emerald-500/10 border-emerald-500/20 text-emerald-400 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl text-xs sm:text-sm backdrop-blur-sm'>
 											<CheckCircle2 className='h-3 w-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2' />
-											Completed
+											{t.dashboardLesson.badges.completed}
 										</Badge>
 									)}
 
 									{stats.startedTasks > 0 && stats.progress < 100 && (
 										<Badge className='bg-yellow-500/10 border-yellow-500/20 text-yellow-400 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl text-xs sm:text-sm backdrop-blur-sm'>
 											<Clock className='h-3 w-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2' />
-											In progress
+											{t.dashboardLesson.badges.inProgress}
 										</Badge>
 									)}
 								</div>
@@ -203,10 +212,16 @@ export default function LessonDetailPage() {
 									<div className='flex items-center gap-1.5 sm:gap-2'>
 										<BookOpen className='h-4 w-4 opacity-70' />
 										<span>
-											{lesson.blocks?.length || 0} theory blocks •{' '}
+											{t.dashboardLesson.meta.theoryBlocksTemplate.replace(
+												'{count}',
+												String(lesson.blocks?.length || 0)
+											)}{' '}
+											•{' '}
 											{stats.totalTasks > 0
-												? `${stats.completedTasks}/${stats.totalTasks} tasks`
-												: 'No tasks yet'}
+												? t.dashboardLesson.meta.tasksTemplate
+														.replace('{completed}', String(stats.completedTasks))
+														.replace('{total}', String(stats.totalTasks))
+												: t.dashboardLesson.meta.noTasksYet}
 										</span>
 									</div>
 								</div>
@@ -217,10 +232,13 @@ export default function LessonDetailPage() {
 							<div className='space-y-2.5 sm:space-y-3 pt-4'>
 								<div className='flex items-center justify-between text-xs sm:text-sm'>
 									<span className='text-white/60 font-medium'>
-										Overall progress
+										{t.dashboardLesson.progress.overall}
 										{stats.startedTasks > 0 && (
 											<span className='ml-2 text-xs text-yellow-400'>
-												({stats.startedTasks} in progress)
+												{t.dashboardLesson.progress.inProgressCountTemplate.replace(
+													'{count}',
+													String(stats.startedTasks)
+												)}
 											</span>
 										)}
 									</span>
@@ -260,10 +278,10 @@ export default function LessonDetailPage() {
 											</m.div>
 											<div className='space-y-2'>
 												<p className='text-base sm:text-lg font-black text-white'>
-													Preparing lesson materials
+													{t.dashboardLesson.loading.title}
 												</p>
 												<p className='text-xs sm:text-sm text-white/60 leading-relaxed'>
-													This will only take a few seconds...
+													{t.dashboardLesson.loading.subtitle}
 												</p>
 											</div>
 										</div>
@@ -289,7 +307,7 @@ export default function LessonDetailPage() {
 									</div>
 									<div className='flex-1 min-w-0'>
 										<p className='text-xs font-bold text-white/50 uppercase tracking-wider mb-1'>
-											Course
+											{t.dashboardLesson.sidebar.course}
 										</p>
 										<p className='text-sm sm:text-base font-black text-white truncate'>
 											{lesson.courseTitle}
@@ -299,13 +317,16 @@ export default function LessonDetailPage() {
 
 								<div className='space-y-3 pt-3 border-t border-white/10 text-sm'>
 									<div className='flex items-center justify-between'>
-										<span className='text-white/60'>Theory</span>
+										<span className='text-white/60'>{t.dashboardLesson.sidebar.theory}</span>
 										<span className='font-bold text-white'>
-											{lesson.blocks?.length || 0} blocks
+											{t.dashboardLesson.sidebar.blocksTemplate.replace(
+												'{count}',
+												String(lesson.blocks?.length || 0)
+											)}
 										</span>
 									</div>
 									<div className='flex items-center justify-between'>
-										<span className='text-white/60'>Tasks</span>
+										<span className='text-white/60'>{t.dashboardLesson.sidebar.tasks}</span>
 										<span className='font-bold text-white'>
 											{stats.totalTasks > 0
 												? `${stats.completedTasks}/${stats.totalTasks}`
@@ -314,15 +335,25 @@ export default function LessonDetailPage() {
 									</div>
 									{stats.startedTasks > 0 && (
 										<div className='flex items-center justify-between text-xs pt-2 border-t border-white/5'>
-											<span className='text-yellow-400/60'>In progress</span>
+											<span className='text-yellow-400/60'>
+												{t.dashboardLesson.sidebar.inProgress}
+											</span>
 											<span className='font-bold text-yellow-400'>
-												{stats.startedTasks}{' '}
-												{stats.startedTasks === 1 ? 'task' : 'tasks'}
+												{t.dashboardLesson.sidebar.inProgressCountTemplate
+													.replace('{count}', String(stats.startedTasks))
+													.replace(
+														'{taskWord}',
+														selectPlural(locale, stats.startedTasks, {
+															one: t.dashboardLesson.sidebar.taskWordOne,
+															few: t.dashboardLesson.sidebar.taskWordFew,
+															many: t.dashboardLesson.sidebar.taskWordMany,
+														})
+													)}
 											</span>
 										</div>
 									)}
 									<div className='flex items-center justify-between'>
-										<span className='text-white/60'>Lesson status</span>
+										<span className='text-white/60'>{t.dashboardLesson.sidebar.status}</span>
 										<span
 											className={cn(
 												'font-bold',
@@ -334,16 +365,16 @@ export default function LessonDetailPage() {
 											)}
 										>
 											{stats.progress === 100
-												? 'Completed'
+												? t.dashboardLesson.sidebar.completed
 												: stats.totalTasks === 0
-													? 'No tasks'
+													? t.dashboardLesson.sidebar.noTasks
 													: stats.progress > 0
-														? 'In progress'
-														: 'Not started'}
+														? t.dashboardLesson.sidebar.inProgressStatus
+														: t.dashboardLesson.sidebar.notStarted}
 										</span>
 									</div>
 									<div className='flex items-center justify-between'>
-										<span className='text-white/60'>Time</span>
+										<span className='text-white/60'>{t.dashboardLesson.sidebar.time}</span>
 										<span className='font-bold text-white'>
 											{formatDuration(lesson.estimatedDuration)}
 										</span>
@@ -369,13 +400,17 @@ export default function LessonDetailPage() {
 										</m.div>
 										<div>
 											<p className='text-base sm:text-lg font-black text-white mb-1.5 sm:mb-2 leading-tight'>
-												Keep up the great work!
+												{t.dashboardLesson.encouragement.title}
 											</p>
 											<p className='text-xs sm:text-sm text-white/60 leading-relaxed'>
-												You've completed {stats.completedTasks} of{' '}
-												{stats.totalTasks} tasks
+												{t.dashboardLesson.encouragement.subtitleTemplate
+													.replace('{completed}', String(stats.completedTasks))
+													.replace('{total}', String(stats.totalTasks))}
 												{stats.startedTasks > 0 &&
-													` (${stats.startedTasks} in progress)`}
+													t.dashboardLesson.encouragement.inProgressSuffixTemplate.replace(
+														'{count}',
+														String(stats.startedTasks)
+													)}
 											</p>
 										</div>
 									</CardContent>

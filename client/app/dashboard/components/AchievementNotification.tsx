@@ -1,13 +1,20 @@
-import { ChevronRight, Star } from 'lucide-react'
+import { ChevronRight, Star } from '@/components/ui/icons'
 
 import { memo } from 'react'
 
+interface AchievementNotificationProps {
+	show: boolean
+	onClose: () => void
+	title: string
+	description: string
+}
+
 export const AchievementNotification = memo(
-	({ show, onClose, title, description }: any) => {
+	({ show, onClose, title, description }: AchievementNotificationProps) => {
 		if (!show) return null
 		return (
 			<div className='fixed top-6 right-6 z-50 animate-in slide-in-from-top-10 fade-in duration-1000 ease-out'>
-				<div className='bg-linear-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-indigo-400/20 rounded-[20px] p-5 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.4)] max-w-sm'>
+				<div className='bg-linear-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-indigo-400/20 rounded-[20px] p-5 shadow-brand-notification max-w-sm'>
 					<div className='flex items-start gap-4'>
 						<div className='p-3 rounded-[14px] bg-linear-to-br from-indigo-500/15 to-purple-500/15 border border-indigo-400/25 backdrop-blur-sm shadow-lg'>
 							<Star

@@ -1,0 +1,105 @@
+title: "Итоговый тест: Инструменты проверки ссылок"
+description: "Проверка знаний о сервисах проверки безопасности ссылок и QR-фишинге."
+passingScore: 75
+questions:
+  - text: "Какой сервис НЕ предназначен для проверки безопасности ссылок?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "VirusTotal"
+        isCorrect: false
+      - text: "URLScan.io"
+        isCorrect: false
+      - text: "PhishTank"
+        isCorrect: false
+      - text: "Instagram"
+        isCorrect: true
+
+  - text: "Что стоит помнить перед тем, как вставлять ссылку в публичный сервис вроде VirusTotal?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Все проверки полностью приватны"
+        isCorrect: false
+      - text: "Ссылка может стать видна другим после отправки"
+        isCorrect: true
+      - text: "Сервис автоматически удаляет ссылку после проверки"
+        isCorrect: false
+      - text: "Пользоваться сервисом могут только платные аккаунты"
+        isCorrect: false
+
+  - text: "Какие из этого являются настоящими признаками того, что домен может быть подозрительным?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Зарегистрирован менее месяца назад"
+        isCorrect: true
+      - text: "Владелец скрыт, хотя домен выдаёт себя за известный бренд"
+        isCorrect: true
+      - text: "На него уже подано несколько жалоб о фишинге"
+        isCorrect: true
+      - text: "Использует https"
+        isCorrect: false
+      - text: "Имеет профессионально выглядящий логотип"
+        isCorrect: false
+      - text: "Быстро загружается"
+        isCorrect: false
+
+  - text: "Какой бесплатный сервис от Google проверяет URL сразу по 90+ антивирусным движкам?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "VirusTotal"
+        isCorrect: true
+      - text: "Google Docs"
+        isCorrect: false
+      - text: "Gmail"
+        isCorrect: false
+      - text: "Chrome Sync"
+        isCorrect: false
+
+  - text: "Поддельная страница входа PayPal использует домен paypal-account-secure-verify.com. Почему этот домен подозрителен?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Он слишком длинный, чтобы быть настоящим доменом"
+        isCorrect: false
+      - text: "Это не paypal.com — лишние слова лишь создают видимость официальности"
+        isCorrect: true
+      - text: "Он использует дефис, который никогда не разрешён в настоящих доменах"
+        isCorrect: false
+      - text: "Он загружается медленнее настоящего сайта"
+        isCorrect: false
+
+  - text: "Почему QR-фишинг («квишинг») так резко вырос в течение 2025 года?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Сканировать QR-коды незаконно в большинстве стран"
+        isCorrect: false
+      - text: "Сканирование кода ведёт на адрес, который вы никогда не видите заранее"
+        isCorrect: true
+      - text: "QR-коды всегда содержат вредоносное ПО напрямую"
+        isCorrect: false
+      - text: "Почтовые провайдеры полностью перестали фильтровать фишинг"
+        isCorrect: false
+
+  - text: "Как правильно реагировать, обнаружив поддельную страницу входа?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Закрыть вкладку, ничего не вводя"
+        isCorrect: true
+      - text: "Сообщить об URL в сервис безопасного просмотра или в службу борьбы со злоупотреблениями настоящего бренда"
+        isCorrect: true
+      - text: "Ввести фальшивый пароль, чтобы посмотреть, что будет"
+        isCorrect: false
+      - text: "Добавить в закладки, чтобы вернуться позже"
+        isCorrect: false
+      - text: "Переслать другу, чтобы узнать его мнение"
+        isCorrect: false
+
+  - text: "Какой инструмент нужен именно для того, чтобы узнать, кто и когда зарегистрировал домен?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "WHOIS"
+        isCorrect: true
+      - text: "Google Safe Browsing"
+        isCorrect: false
+      - text: "VirusTotal"
+        isCorrect: false
+      - text: "PhishTank"
+        isCorrect: false

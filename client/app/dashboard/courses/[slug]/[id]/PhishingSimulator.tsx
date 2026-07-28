@@ -1,9 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import { m } from 'framer-motion'
-import { AlertTriangle, Check, Flag, Globe, Mail, X } from 'lucide-react'
+import { AlertTriangle, Check, Flag, Globe, Mail, X } from '@/components/ui/icons'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -65,6 +66,7 @@ export function PhishingSimulator({
 	feedback,
 	falsePositives,
 }: PhishingSimulatorProps) {
+	const { t } = useI18n()
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [pendingSelection, setPendingSelection] = useState<SelectedSpan | null>(
 		null
@@ -85,7 +87,7 @@ export function PhishingSimulator({
 		}
 
 		if (text.length > MAX_SELECTION_LENGTH) {
-			toast.error('That selection is too long — highlight the specific part.')
+			toast.error(t.dashboardSimulator.tooLong)
 			setPendingSelection(null)
 			return
 		}
@@ -105,7 +107,7 @@ export function PhishingSimulator({
 		}
 
 		setPendingSelection({ location, text })
-	}, [hasSubmitted])
+	}, [hasSubmitted, t.dashboardSimulator.tooLong])
 
 	useEffect(() => {
 		document.addEventListener('selectionchange', captureSelection)
@@ -121,7 +123,7 @@ export function PhishingSimulator({
 				span.text.toLowerCase() === pendingSelection.text.toLowerCase()
 		)
 		if (isDuplicate) {
-			toast.info('You already flagged that.')
+			toast.info(t.dashboardSimulator.alreadyFlagged)
 		} else {
 			onChange([...selectedSpans, pendingSelection])
 		}
@@ -139,8 +141,7 @@ export function PhishingSimulator({
 			<div className='flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3'>
 				<AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-amber-400' />
 				<p className='text-xs text-white/70 sm:text-sm'>
-					Highlight anything that looks suspicious, then flag it. Flag only what
-					is actually wrong — marking innocent text counts against you.
+					{t.dashboardSimulator.warning}
 				</p>
 			</div>
 
@@ -157,8 +158,11 @@ export function PhishingSimulator({
 					>
 						<Flag className='h-3.5 w-3.5' />
 						{pendingSelection
-							? `Flag "${truncate(pendingSelection.text)}"`
-							: 'Highlight text to flag it'}
+							? t.dashboardSimulator.flagSelectedTemplate.replace(
+									'{text}',
+									truncate(pendingSelection.text)
+								)
+							: t.dashboardSimulator.flagCta}
 					</Button>
 				</div>
 			)}
@@ -177,11 +181,14 @@ export function PhishingSimulator({
 }
 
 function EmailView({ email }: { email: SimulatedEmail }) {
+	const { t } = useI18n()
 	return (
 		<div className='overflow-hidden rounded-xl border border-white/15 bg-slate-900/60'>
 			<div className='flex items-center gap-2 border-b border-white/10 bg-white/5 px-3 py-2'>
 				<Mail className='h-4 w-4 text-white/50' />
-				<span className='text-xs font-medium text-white/50'>Inbox</span>
+				<span className='text-xs font-medium text-white/50'>
+					{t.dashboardSimulator.inbox}
+				</span>
 			</div>
 
 			<div className='space-y-2 p-3 sm:p-4'>
@@ -193,15 +200,15 @@ function EmailView({ email }: { email: SimulatedEmail }) {
 				{email.displayName && (
 					<div className='flex flex-wrap items-baseline gap-2 text-sm'>
 						<span className='shrink-0 text-xs font-medium uppercase tracking-wide text-white/40'>
-							Name
+							{t.dashboardSimulator.nameLabel}
 						</span>
 						<span className='text-white/60'>{email.displayName}</span>
 					</div>
 				)}
-				<Field label='From' location='from'>
+				<Field label={t.dashboardSimulator.fromLabel} location='from'>
 					{email.from}
 				</Field>
-				<Field label='Subject' location='subject'>
+				<Field label={t.dashboardSimulator.subjectLabel} location='subject'>
 					{email.subject}
 				</Field>
 				<div
@@ -276,9 +283,12 @@ function FlaggedList({
 	hasSubmitted: boolean
 	onRemove: (index: number) => void
 }) {
+	const { t } = useI18n()
 	if (spans.length === 0) {
 		return (
-			<p className='text-xs text-white/40'>Nothing flagged yet.</p>
+			<p className='text-xs text-white/40'>
+				{t.dashboardSimulator.nothingFlagged}
+			</p>
 		)
 	}
 
@@ -299,7 +309,10 @@ function FlaggedList({
 						<button
 							type='button'
 							onClick={() => onRemove(index)}
-							aria-label={`Remove flag on ${span.text}`}
+							aria-label={t.dashboardSimulator.removeFlagAriaTemplate.replace(
+								'{text}',
+								span.text
+							)}
 							className='rounded-full p-0.5 hover:bg-amber-500/20'
 						>
 							<X className='h-3 w-3' />
@@ -323,10 +336,11 @@ function FeedbackPanel({
 	feedback: RedFlagFeedback[]
 	falsePositives?: { location: string; text: string }[]
 }) {
+	const { t } = useI18n()
 	return (
 		<div className='space-y-3 rounded-xl border border-white/15 bg-slate-900/60 p-3 sm:p-4'>
 			<p className='text-xs font-semibold uppercase tracking-wide text-white/50'>
-				What was wrong with this message
+				{t.dashboardSimulator.feedbackTitle}
 			</p>
 
 			<ul className='space-y-2.5'>
@@ -361,12 +375,10 @@ function FeedbackPanel({
 			{falsePositives && falsePositives.length > 0 && (
 				<div className='border-t border-white/10 pt-2.5'>
 					<p className='text-xs text-white/50'>
-						You flagged{' '}
-						<span className='text-amber-300'>
-							{falsePositives.map(fp => `"${truncate(fp.text)}"`).join(', ')}
-						</span>
-						, but there is nothing wrong with it. Recognising what is{' '}
-						<em>normal</em> matters as much as spotting what is not.
+						{t.dashboardSimulator.falsePositivesTemplate.replace(
+							'{items}',
+							falsePositives.map(fp => `"${truncate(fp.text)}"`).join(', ')
+						)}
 					</p>
 				</div>
 			)}

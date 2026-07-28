@@ -3,10 +3,12 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, m } from 'framer-motion'
-import { CheckCircle2, ChevronRight, RotateCcw, X, XCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CheckCircle2, ChevronRight, RotateCcw, X, XCircle } from '@/components/ui/icons'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import {
 	PhishingSimulator,
@@ -56,12 +58,6 @@ interface TaskModalProps {
 	tasks: Task[]
 	currentTaskIndex: number
 	onTaskChange: (index: number) => void
-	lessonId: string
-	courseSlug: string
-	hasNextLesson?: boolean
-	hasPrevLesson?: boolean
-	onNextLesson?: () => void
-	onPrevLesson?: () => void
 	answerTask: (
 		taskId: string,
 		payload: AnswerPayload
@@ -75,21 +71,20 @@ interface TaskModalProps {
 	isAnswering: boolean
 }
 
+const subscribeToPortalReady = () => () => undefined
+const getPortalClientSnapshot = () => true
+const getPortalServerSnapshot = () => false
+
 export function TaskModal({
 	isOpen,
 	onClose,
 	tasks,
 	currentTaskIndex,
 	onTaskChange,
-	lessonId,
-	courseSlug,
-	hasNextLesson,
-	hasPrevLesson,
-	onNextLesson,
-	onPrevLesson,
 	answerTask,
 	isAnswering,
 }: TaskModalProps) {
+	const { t } = useI18n()
 	const [selectedOptions, setSelectedOptions] = useState<string[]>([])
 	const [textAnswer, setTextAnswer] = useState('')
 	const [selectedSpans, setSelectedSpans] = useState<SelectedSpan[]>([])
@@ -101,6 +96,11 @@ export function TaskModal({
 		redFlagFeedback?: RedFlagFeedback[]
 		falsePositives?: { location: string; text: string }[]
 	} | null>(null)
+	const isPortalReady = useSyncExternalStore(
+		subscribeToPortalReady,
+		getPortalClientSnapshot,
+		getPortalServerSnapshot
+	)
 
 	const currentTask = tasks[currentTaskIndex]
 	const isMultiChoice = currentTask?.type === 'MULTI_CHOICE'
@@ -119,49 +119,6 @@ export function TaskModal({
 			? textAnswer.trim().length > 0
 			: selectedOptions.length > 0
 
-	// ✅ Reset state when the task changes
-	useEffect(() => {
-		setSelectedOptions([])
-		setTextAnswer('')
-		setSelectedSpans([])
-		setHasSubmitted(false)
-		setAnswerResult(null)
-	}, [currentTaskIndex])
-
-	// Keyboard shortcuts
-	useEffect(() => {
-		if (!isOpen) return
-
-		const handleKeyDown = (e: KeyboardEvent) => {
-			// Enter would otherwise submit mid-sentence while typing a text answer.
-			if (e.key === 'Enter' && !hasSubmitted && hasAnswer && !isAnswering) {
-				if (isTextTask) return
-				handleSubmit()
-			}
-
-			if (e.key === 'Escape') {
-				onClose()
-			}
-
-			if (e.key === 'ArrowRight' && hasSubmitted && !isLastTask) {
-				handleNext()
-			}
-
-			if (e.key === 'ArrowLeft' && !isFirstTask) {
-				handlePrev()
-			}
-
-			// Was `answerResult === false`, comparing an object to a boolean, so
-			// the retry shortcut never fired.
-			if (e.key === 'r' && hasSubmitted && answerResult?.isCorrect === false) {
-				handleRetry()
-			}
-		}
-
-		window.addEventListener('keydown', handleKeyDown)
-		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [isOpen, hasSubmitted, selectedOptions, isAnswering, currentTaskIndex, answerResult])
-
 	const handleOptionToggle = (optionId: string) => {
 		if (hasSubmitted) return
 
@@ -176,14 +133,14 @@ export function TaskModal({
 		}
 	}
 
-	const handleSubmit = async () => {
+	const handleSubmit = useCallback(async () => {
 		if (!hasAnswer) {
 			toast.error(
 				isSimulator
-					? 'Flag at least one thing that looks suspicious'
+					? t.dashboardTaskModal.errors.flagAtLeastOne
 					: isTextTask
-						? 'Type your answer first'
-						: 'Select at least one option'
+						? t.dashboardTaskModal.errors.typeAnswer
+						: t.dashboardTaskModal.errors.selectOption
 			)
 			return
 		}
@@ -197,39 +154,109 @@ export function TaskModal({
 
 			setAnswerResult(result)
 			setHasSubmitted(true)
-		} catch (error) {
-			toast.error('Error submitting answer')
+		} catch {
+			toast.error(t.dashboardTaskModal.errors.submitError)
 		}
-	}
+	}, [
+		answerTask,
+		currentTask,
+		hasAnswer,
+		isChoiceTask,
+		isSimulator,
+		isTextTask,
+		selectedOptions,
+		selectedSpans,
+		t,
+		textAnswer,
+	])
 
-	const handleNext = () => {
+	const handleNext = useCallback(() => {
 		if (currentTaskIndex < tasks.length - 1) {
 			onTaskChange(currentTaskIndex + 1)
 		}
-	}
+	}, [currentTaskIndex, onTaskChange, tasks.length])
 
-	const handlePrev = () => {
+	const handlePrev = useCallback(() => {
 		if (currentTaskIndex > 0) {
 			onTaskChange(currentTaskIndex - 1)
 		}
-	}
+	}, [currentTaskIndex, onTaskChange])
 
-	const handleRetry = () => {
+	const handleRetry = useCallback(() => {
 		setSelectedOptions([])
 		setTextAnswer('')
 		setSelectedSpans([])
 		setHasSubmitted(false)
 		setAnswerResult(null)
-	}
+	}, [])
+
+	// The parent keys this modal by task id, so answer state resets through a
+	// clean remount when the user moves between tasks. This effect only owns
+	// the window-level keyboard subscription.
+	useEffect(() => {
+		if (!isOpen) return
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (
+				event.key === 'Enter' &&
+				!hasSubmitted &&
+				hasAnswer &&
+				!isAnswering &&
+				!isTextTask
+			) {
+				void handleSubmit()
+			}
+			if (event.key === 'Escape') onClose()
+			if (event.key === 'ArrowRight' && hasSubmitted && !isLastTask) {
+				handleNext()
+			}
+			if (event.key === 'ArrowLeft' && !isFirstTask) handlePrev()
+			if (
+				event.key.toLowerCase() === 'r' &&
+				hasSubmitted &&
+				answerResult?.isCorrect === false
+			) {
+				handleRetry()
+			}
+		}
+
+		window.addEventListener('keydown', handleKeyDown)
+		return () => window.removeEventListener('keydown', handleKeyDown)
+	}, [
+		answerResult,
+		handleNext,
+		handlePrev,
+		handleRetry,
+		handleSubmit,
+		hasAnswer,
+		hasSubmitted,
+		isAnswering,
+		isFirstTask,
+		isLastTask,
+		isOpen,
+		isTextTask,
+		onClose,
+	])
+
+	useEffect(() => {
+		if (!isOpen) return
+
+		const previousOverflow = document.body.style.overflow
+		document.body.style.overflow = 'hidden'
+
+		return () => {
+			document.body.style.overflow = previousOverflow
+		}
+	}, [isOpen])
 
 	const progress = ((currentTaskIndex + 1) / tasks.length) * 100
 
-	if (!currentTask) return null
+	if (!currentTask || !isPortalReady) return null
 
 	const isCorrect = answerResult?.isCorrect === true
 
 
-	return (
+	return createPortal(
 		<AnimatePresence>
 			{isOpen && (
 				<>
@@ -247,13 +274,16 @@ export function TaskModal({
 						initial={{ opacity: 0, scale: 0.95, y: 20 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.95, y: 20 }}
-						className='fixed left-1/2 top-1/2 z-[101] w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/10 bg-[#0A0F1D] p-8 shadow-2xl'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='task-modal-title'
+						className='fixed inset-3 z-[101] m-auto max-h-[calc(100dvh-1.5rem)] w-auto max-w-3xl overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-overlay p-5 shadow-2xl sm:inset-6 sm:max-h-[calc(100dvh-3rem)] sm:rounded-3xl sm:p-8'
 						onClick={e => e.stopPropagation()}
 					>
 						{/* Close Button */}
 						<button
 							onClick={onClose}
-							className='absolute right-6 top-6 rounded-xl bg-white/5 p-3 text-gray-400 transition-colors hover:bg-white/10 hover:text-white'
+							className='absolute right-4 top-4 rounded-xl bg-white/5 p-3 text-gray-400 transition-colors hover:bg-white/10 hover:text-foreground sm:right-6 sm:top-6'
 						>
 							<X className='h-5 w-5' />
 						</button>
@@ -261,11 +291,16 @@ export function TaskModal({
 						{/* Header */}
 						<div className='mb-6 flex items-center justify-between'>
 							<div>
-								<h3 className='text-2xl font-bold text-white'>
-									Task {currentTaskIndex + 1}/{tasks.length}
+								<h3 id='task-modal-title' className='pr-12 text-2xl font-bold text-white'>
+									{t.dashboardTaskModal.taskTemplate
+										.replace('{current}', String(currentTaskIndex + 1))
+										.replace('{total}', String(tasks.length))}
 								</h3>
 								<Badge className='mt-2 bg-blue-500/20 text-blue-400'>
-									{currentTask.points} XP
+									{t.dashboardTaskModal.xpTemplate.replace(
+										'{points}',
+										String(currentTask.points)
+									)}
 								</Badge>
 							</div>
 						</div>
@@ -294,13 +329,16 @@ export function TaskModal({
 											currentTask.difficulty === 'HARD' && 'border-red-500/40 text-red-400'
 										)}
 									>
-										{currentTask.difficulty === 'EASY' && 'Easy'}
-										{currentTask.difficulty === 'MEDIUM' && 'Medium'}
-										{currentTask.difficulty === 'HARD' && 'Hard'}
+										{currentTask.difficulty === 'EASY' &&
+											t.dashboardTaskModal.difficulty.easy}
+										{currentTask.difficulty === 'MEDIUM' &&
+											t.dashboardTaskModal.difficulty.medium}
+										{currentTask.difficulty === 'HARD' &&
+											t.dashboardTaskModal.difficulty.hard}
 									</Badge>
 									{isMultiChoice && (
 										<Badge variant='outline' className='border-purple-500/40 text-purple-400'>
-											Select multiple
+											{t.dashboardTaskModal.selectMultiple}
 										</Badge>
 									)}
 								</div>
@@ -329,7 +367,7 @@ export function TaskModal({
 									onChange={e => setTextAnswer(e.target.value)}
 									disabled={hasSubmitted}
 									rows={3}
-									placeholder='Type your answer...'
+									placeholder={t.dashboardTaskModal.textPlaceholder}
 									className='resize-none border-white/10 bg-white/5 text-white placeholder:text-white/30'
 								/>
 							)}
@@ -384,10 +422,16 @@ export function TaskModal({
 										)}
 										<div>
 											<p className='font-semibold text-white'>
-												{isCorrect ? 'Correct!' : 'Incorrect'}
+												{isCorrect
+													? t.dashboardTaskModal.result.correct
+													: t.dashboardTaskModal.result.incorrect}
 											</p>
 											<p className='text-sm text-gray-400'>
-												{isCorrect && `You earned ${answerResult.awardedXp} XP. `}
+												{isCorrect &&
+													t.dashboardTaskModal.result.earnedXpTemplate.replace(
+														'{xp}',
+														String(answerResult.awardedXp)
+													)}
 												{answerResult.explanation}
 											</p>
 										</div>
@@ -404,7 +448,9 @@ export function TaskModal({
 									disabled={!hasAnswer || isAnswering}
 									className='w-full rounded-xl bg-white py-6 text-base font-semibold text-black transition-colors hover:bg-white/90 disabled:opacity-50'
 								>
-									{isAnswering ? 'Submitting...' : 'Check answer'}
+									{isAnswering
+										? t.dashboardTaskModal.buttons.submitting
+										: t.dashboardTaskModal.buttons.checkAnswer}
 								</Button>
 							) : (
 								<>
@@ -415,7 +461,7 @@ export function TaskModal({
 											className='flex-1 rounded-xl border-white/10 py-6 text-base font-semibold'
 										>
 											<RotateCcw className='mr-2 h-5 w-5' />
-											Retry
+											{t.dashboardTaskModal.buttons.retry}
 										</Button>
 									)}
 									{!isLastTask && (
@@ -423,7 +469,7 @@ export function TaskModal({
 											onClick={handleNext}
 											className='flex-1 rounded-xl bg-white py-6 text-base font-semibold text-black hover:bg-white/90'
 										>
-											Next
+											{t.dashboardTaskModal.buttons.next}
 											<ChevronRight className='ml-2 h-5 w-5' />
 										</Button>
 									)}
@@ -434,5 +480,7 @@ export function TaskModal({
 				</>
 			)}
 		</AnimatePresence>
+		,
+		document.body
 	)
 }

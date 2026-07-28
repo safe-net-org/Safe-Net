@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { hash } from 'argon2'
 import { createHash, randomBytes } from 'crypto'
+import { normalizeEmail } from 'src/common/email'
 import { PrismaService } from 'src/prisma.service'
+import { PasswordResetMailer } from './password-reset-mailer.service'
 
 const TOKEN_BYTES = 32
 const EXPIRY_MINUTES = 30
@@ -15,22 +17,28 @@ const MS_PER_MINUTE = 60_000
  * hash, so a leaked row cannot reset anyone's password. Tokens are single-use
  * and expire after 30 minutes.
  *
- * Delivery: with SMTP configured this would email the link; without it (dev),
- * the link is logged. `requestReset` never reveals whether an email exists, so
- * it cannot be used to enumerate accounts.
+ * Delivery uses the configured SMTP transport. An explicit development-only
+ * flag can log it for local testing when SMTP is absent. `requestReset` never
+ * reveals whether an email exists, so it cannot enumerate accounts.
  */
 @Injectable()
 export class PasswordResetService {
 	private readonly logger = new Logger(PasswordResetService.name)
 
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly mailer: PasswordResetMailer
+	) {}
 
 	private hashToken(token: string): string {
 		return createHash('sha256').update(token).digest('hex')
 	}
 
 	async requestReset(email: string): Promise<{ message: string }> {
-		const user = await this.prisma.user.findUnique({ where: { email } })
+		const normalizedEmail = normalizeEmail(email)
+		const user = await this.prisma.user.findUnique({
+			where: { email: normalizedEmail },
+		})
 
 		// Always return the same response whether or not the account exists —
 		// otherwise this endpoint becomes an account-enumeration oracle.
@@ -48,10 +56,31 @@ export class PasswordResetService {
 
 			const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000'
 			const link = `${frontendUrl}/reset-password?token=${token}`
+			let delivered = false
+			try {
+				delivered = await this.mailer.sendResetLink(
+					normalizedEmail,
+					link,
+					user.legalLocale === 'ru' ? 'ru' : 'en'
+				)
+			} catch {
+				// Keep the public response indistinguishable from the
+				// nonexistent-account case. The raw token, link and recipient are
+				// intentionally excluded from operational logs.
+				this.logger.error('Password reset email delivery failed')
+			}
 
-			// TODO: send `link` by email once SMTP is configured (nodemailer is
-			// already a dependency). Until then it is logged for local testing.
-			this.logger.log(`Password reset link for ${email}: ${link}`)
+			// Raw reset details are opt-in for local development only. They must
+			// never reach production logs.
+			const shouldLogDevelopmentLink =
+				!delivered &&
+				process.env.NODE_ENV !== 'production' &&
+				process.env.PASSWORD_RESET_DEBUG_LOG === 'true'
+			if (shouldLogDevelopmentLink) {
+				this.logger.warn(
+					`Development-only password reset link for ${normalizedEmail}: ${link}`
+				)
+			}
 		}
 
 		return {
@@ -87,6 +116,12 @@ export class PasswordResetService {
 			this.prisma.passwordResetToken.updateMany({
 				where: { userId: record.userId, usedAt: null },
 				data: { usedAt: new Date() },
+			}),
+			// Password changes are a security boundary: every signed-in device
+			// must authenticate again with the new password.
+			this.prisma.refreshSession.updateMany({
+				where: { userId: record.userId, revokedAt: null },
+				data: { revokedAt: new Date() },
 			}),
 		])
 

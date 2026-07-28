@@ -1,0 +1,101 @@
+title: "Итоговый тест: Продвинутые угрозы"
+description: "Проверка знаний об APT-группировках и случае Salt Typhoon."
+passingScore: 80
+questions:
+  - text: "Что характерно для APT-атак?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Массовая рассылка спама"
+        isCorrect: false
+      - text: "Быстрый взлом, длящийся несколько часов"
+        isCorrect: false
+      - text: "Долгосрочное, скрытое проникновение в сеть"
+        isCorrect: true
+      - text: "Показ рекламы"
+        isCorrect: false
+
+  - text: "Почему рядовому человеку обычно не стоит беспокоиться о том, что его лично атакует APT-группировка?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "APT направляют ресурсы на правительства, корпорации и инфраструктуру, а не на отдельных людей"
+        isCorrect: true
+      - text: "APT-группировок на самом деле не существует"
+        isCorrect: false
+      - text: "Антивирус делает APT-атаки невозможными"
+        isCorrect: false
+      - text: "APT-группировки действуют только в пределах одной страны"
+        isCorrect: false
+
+  - text: "Какие из этого — реальные, названные APT-группировки, которые отслеживают исследователи безопасности?"
+    type: MULTI_CHOICE
+    options:
+      - text: "APT28 (Fancy Bear)"
+        isCorrect: true
+      - text: "Lazarus Group"
+        isCorrect: true
+      - text: "Norton Shield"
+        isCorrect: false
+      - text: "CleanBot"
+        isCorrect: false
+      - text: "SafeGuard Collective"
+        isCorrect: false
+
+  - text: "Что общего было у инцидентов Stuxnet и SolarWinds?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Обе были сложными атаками, приписываемыми государственным структурам, нацеленными на инфраструктуру или доверенную цепочку поставок ПО"
+        isCorrect: true
+      - text: "Обе были простыми фишинговыми письмами, разосланными случайным получателям"
+        isCorrect: false
+      - text: "Обе были нацелены исключительно на личные аккаунты в соцсетях"
+        isCorrect: false
+      - text: "Ни один из инцидентов не причинил реального, долгосрочного ущерба"
+        isCorrect: false
+
+  - text: "Вторжения Salt Typhoon, раскрытые в конце 2024 года, включали взлом китайскими хакерами, связанными с государством, каких организаций?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Крупных телекоммуникационных компаний США, включая AT&T, Verizon и T-Mobile"
+        isCorrect: true
+      - text: "Только небольших региональных розничных предприятий"
+        isCorrect: false
+      - text: "Исключительно компаний видеоигр"
+        isCorrect: false
+      - text: "Только компаний за пределами США"
+        isCorrect: false
+
+  - text: "Примерно когда, по данным следователей, началась кампания вторжений Salt Typhoon?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Ещё в 2022 году, хотя раскрыта была только в конце 2024"
+        isCorrect: true
+      - text: "Началась и была раскрыта в один и тот же день в 2024 году"
+        isCorrect: false
+      - text: "В 1990-х годах"
+        isCorrect: false
+      - text: "Дату вообще никогда не устанавливали"
+        isCorrect: false
+
+  - text: "Что сделало вторжения Salt Typhoon особенно значимыми, помимо самого факта взлома телеком-компаний?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Злоумышленники получили доступ к системам, построенным для законной прослушки правоохранительными органами, потенциально узнав, за кем следят власти США"
+        isCorrect: true
+      - text: "Они получили доступ только к публично доступным маркетинговым данным"
+        isCorrect: false
+      - text: "Никакие данные вообще не были затронуты"
+        isCorrect: false
+      - text: "Они атаковали только биллинговые системы телекома, не связанные со связью"
+        isCorrect: false
+
+  - text: "К августу 2025 года, насколько широко исследователи обнаружили распространение активности Salt Typhoon?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Более 200 компаний примерно в 80 странах"
+        isCorrect: true
+      - text: "Ровно девять первоначальных телеком-компаний США, без дальнейшего распространения"
+        isCorrect: false
+      - text: "Одна компания в одной стране"
+        isCorrect: false
+      - text: "Полностью локализовано к началу 2025 года"
+        isCorrect: false

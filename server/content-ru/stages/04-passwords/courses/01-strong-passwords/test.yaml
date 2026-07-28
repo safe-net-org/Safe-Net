@@ -1,0 +1,103 @@
+title: "Итоговый тест: Создание надёжных паролей"
+description: "Проверка знаний о надёжности паролей, рекомендациях NIST 2025 года и утечке RockYou2024."
+passingScore: 75
+questions:
+  - text: "Какой пароль самый надёжный?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Password123"
+        isCorrect: false
+      - text: "myname1990"
+        isCorrect: false
+      - text: "qwerty12345"
+        isCorrect: false
+      - text: "xK8#mP2$vL9@rT4!"
+        isCorrect: true
+
+  - text: "Согласно рекомендациям NIST 2025 года, какой фактор важнее всего для надёжности пароля?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Смешение заглавных, строчных букв, цифр и символов"
+        isCorrect: false
+      - text: "Длина"
+        isCorrect: true
+      - text: "Смена пароля каждые 90 дней"
+        isCorrect: false
+      - text: "Написание слова задом наперёд"
+        isCorrect: false
+
+  - text: "Какие из перечисленных пунктов действительно являются изменениями в рекомендациях NIST 2025 года?"
+    type: MULTI_CHOICE
+    options:
+      - text: "Минимальная рекомендуемая длина повышена до 15 символов"
+        isCorrect: true
+      - text: "Обязательная ротация отменена, если не подозревается компрометация"
+        isCorrect: true
+      - text: "Пароли проверяются по спискам известных утечек и распространённых паролей"
+        isCorrect: true
+      - text: "Специальные символы теперь обязательны"
+        isCorrect: false
+      - text: "Секретные вопросы теперь обязательны как третий фактор"
+        isCorrect: false
+      - text: "Пароли нужно менять каждые 30 дней"
+        isCorrect: false
+
+  - text: "Сколько примерно уникальных паролей содержала утечка RockYou2024?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 10 тысяч"
+        isCorrect: false
+      - text: "Около 10 миллионов"
+        isCorrect: false
+      - text: "Около 10 миллиардов"
+        isCorrect: true
+      - text: "Около 10 триллионов"
+        isCorrect: false
+
+  - text: "Что RockYou2024 в первую очередь демонстрирует об опасности повторного использования паролей?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Что большинство современных паролей невозможно взломать"
+        isCorrect: false
+      - text: "Что пароль, утёкший в любой из тысяч прошлых утечек, оказывается в одном списке, который злоумышленники проверяют повсюду"
+        isCorrect: true
+      - text: "Что утекают только очевидно слабые пароли"
+        isCorrect: false
+      - text: "Что это затрагивает только один конкретный сайт"
+        isCorrect: false
+
+  - text: "Почему NIST теперь не рекомендует принудительную периодическую смену паролей?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Это технически невозможно обеспечить"
+        isCorrect: false
+      - text: "Это обычно приводит к небольшим предсказуемым вариациям одного и того же пароля"
+        isCorrect: true
+      - text: "Это напрямую облегчает подбор пароля"
+        isCorrect: false
+      - text: "Это никогда не было настоящей рекомендацией"
+        isCorrect: false
+
+  - text: "Какой из этих паролей быстрее всего взломает атака по словарю?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "johnsmith1990"
+        isCorrect: true
+      - text: "xK8#mP2$vL9@rT4!"
+        isCorrect: false
+      - text: "Случайная строка из 20 символов"
+        isCorrect: false
+      - text: "Пароль, сгенерированный менеджером паролей"
+        isCorrect: false
+
+  - text: "Какой подход к уникальности паролей на разных сайтах самый безопасный?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Использовать один надёжный пароль везде"
+        isCorrect: false
+      - text: "Использовать свой уникальный пароль для каждого сайта"
+        isCorrect: true
+      - text: "Повторно использовать пароль только на похожих типах сайтов"
+        isCorrect: false
+      - text: "Менять один пароль по ротации на всех сайтах"
+        isCorrect: false

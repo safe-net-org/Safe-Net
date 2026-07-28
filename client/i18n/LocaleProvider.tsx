@@ -7,10 +7,12 @@ import {
 	useState,
 	type PropsWithChildren,
 } from 'react'
-import { LOCALES, messages, type Locale, type Messages } from './messages'
+import { useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import { LOCALE_COOKIE, messages, type Locale, type Messages } from './messages'
 
 const STORAGE_KEY = 'safenet-locale'
-const DEFAULT_LOCALE: Locale = 'en'
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
 
 interface LocaleContextValue {
 	locale: Locale
@@ -20,34 +22,41 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null)
 
-function readInitialLocale(): Locale {
-	if (typeof window === 'undefined') return DEFAULT_LOCALE
-	const stored = window.localStorage.getItem(STORAGE_KEY)
-	if (stored && (LOCALES as string[]).includes(stored)) return stored as Locale
-	// Fall back to the browser language, else English.
-	const browser = window.navigator.language.slice(0, 2)
-	return browser === 'ru' ? 'ru' : DEFAULT_LOCALE
+function writeCookie(locale: Locale) {
+	document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`
 }
 
-export function LocaleProvider({ children }: PropsWithChildren) {
-	// Start from the default on both server and first client render to avoid a
-	// hydration mismatch; adopt the stored/browser locale after mount.
-	const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
+interface LocaleProviderProps extends PropsWithChildren {
+	/** Locale the server already decided (from the cookie or Accept-Language) — used as-is, no client override needed. */
+	initialLocale: Locale
+}
+
+export function LocaleProvider({ children, initialLocale }: LocaleProviderProps) {
+	// The server already resolved the correct locale (cookie or Accept-Language),
+	// so the client can render it directly on first paint — no flash, no swap.
+	const [locale, setLocaleState] = useState<Locale>(initialLocale)
+	const queryClient = useQueryClient()
+	const router = useRouter()
 
 	useEffect(() => {
-		setLocaleState(readInitialLocale())
-	}, [])
-
-	useEffect(() => {
-		if (typeof document !== 'undefined') {
-			document.documentElement.lang = locale
-		}
+		document.documentElement.lang = locale
 	}, [locale])
 
 	const setLocale = (next: Locale) => {
+		const changed = next !== locale
 		setLocaleState(next)
-		if (typeof window !== 'undefined') {
-			window.localStorage.setItem(STORAGE_KEY, next)
+		window.localStorage.setItem(STORAGE_KEY, next)
+		writeCookie(next)
+		if (changed) {
+			// Server-rendered content (course/lesson/test text) is fetched in
+			// whatever language the request's Accept-Language header said at the
+			// time — refetch everything so switching languages updates it
+			// immediately instead of only on the next full page load.
+			queryClient.invalidateQueries()
+			// Legal pages and other server components read the locale cookie on
+			// the server. Refresh after the synchronous cookie write so they
+			// change language in the same interaction as client components.
+			router.refresh()
 		}
 	}
 

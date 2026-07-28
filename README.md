@@ -6,15 +6,16 @@ you browse — all three running the same detection engine.**
 
 It has three parts:
 
-- **An LMS** — 8 stages, 21 courses, 145 tasks on phishing, dangerous links,
+- **An LMS** — 8 stages, 21 courses, 27 lessons, 163 tasks on phishing, dangerous links,
   passwords, malware, privacy and more. Every lesson cites a real-world case
   (WannaCry, the Google/Facebook invoice fraud, the Twitter 2020 takeover) with
   a source.
 - **A phishing simulator** — realistic emails and sites where you highlight what
   looks wrong. The answer key never leaves the server, and flagging everything
   fails: recognising what is *normal* matters as much as spotting what is not.
-- **SafeNet Guard** — a Chrome extension that scores every URL before the page
-  loads, blending a fine-tuned BERT classifier with a deterministic rule engine.
+- **SafeNet Guard** — a local-first Chrome extension that scores URLs with a
+  deterministic rule engine and can add domain intelligence or a fine-tuned
+  BERT opinion only after the user enables those network layers.
 
 The detection logic is a single package, [`@safe-net/guard-core`](packages/guard-core),
 imported by the extension, by the web app's live scanner at `/guard`, and mirrored
@@ -44,8 +45,12 @@ extension and scanner fall back to local rules, which need no server at all.
 **Demo accounts** (password `password123`): `demo@safe.net` (learner),
 `admin@safe.net` (admin).
 
-The browser extension: `bun run build:ext`, then load
-`extension/.output/chrome-mv3` as an unpacked extension in `chrome://extensions`.
+The browser extension ships pre-built: grab the zip from the `/guard` page
+(or [`client/public/downloads/safenet-guard-chrome.zip`](client/public/downloads/safenet-guard-chrome.zip)),
+unzip it, and load the folder as an unpacked extension in `chrome://extensions` —
+no toolchain needed. To build from source instead: `bun run build:ext`, then load
+`extension/.output/chrome-mv3`. After changing extension code, `bun run package:ext`
+refreshes the downloadable zip.
 
 ## Repository layout
 
@@ -68,7 +73,7 @@ gracefully if the next is unavailable.
 
 | Layer | What it does | Cost |
 | :---- | :----------- | :--- |
-| **1 · Local rules** | IDN homographs, typosquatting, leet-squatting, brand impersonation, URL structure | < 5 ms, offline, zero data sent |
+| **1 · Local rules** | IDN homographs, typosquatting, leet-squatting, brand impersonation, URL structure | offline, zero data sent |
 | **2 · Threat intel** | RDAP/WHOIS age, DNS blocklists, URLhaus, Certificate Transparency | network, opt-in |
 | **3 · Neural network** | fine-tuned BERT, blended with layer 1 | optional |
 | **4 · Page analysis** | login forms on HTTP, credential harvesting, wallet drainers | extension only |
@@ -87,14 +92,16 @@ mirrored in [Python](ml-service/app/model.py) and covered by tests on both sides
 bun run dev            # web + API + ML + database
 bun run dev:no-ml      # skip the ML layer
 bun run test           # server, guard engine, and ML scoring tests
-bun run typecheck      # web + API
+bun run typecheck      # web + API + extension
+bun run check:i18n     # English/Russian catalog parity
+bun run check:colors   # no color literals outside the theme config
 bun run validate:content   # fail on unsourced claims or malformed tasks
 bun run build          # production build of web, API, extension
 bun run db:reset       # wipe and re-seed the database
 ```
 
-CI runs typecheck, tests, `prisma validate`, content validation, the guard-engine
-tests, and an extension build on every push.
+CI runs client lint/theme/localization checks, type checks, privacy and scoring
+tests, `prisma validate`, content validation, and all three production builds.
 
 ## Tech stack
 
@@ -110,6 +117,7 @@ tests, and an extension build on every push.
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the pieces fit together
+- [docs/EMAIL_DELIVERY.md](docs/EMAIL_DELIVERY.md) — free SMTP setup for password resets
 - [docs/DECISIONS.md](docs/DECISIONS.md) — why the load-bearing choices were made
 - [packages/guard-core/README.md](packages/guard-core/README.md) — the engine
 - [server/content/README.md](server/content/README.md) — the content format

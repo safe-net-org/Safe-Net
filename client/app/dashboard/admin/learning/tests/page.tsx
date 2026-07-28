@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCoursesList } from '@/hooks/admin/learning/use-courses'
 import { useTests } from '@/hooks/admin/tests/use-tests'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { ITest } from '@/services/admin/admin.types'
 import { AnimatePresence, m } from 'framer-motion'
-import { FileQuestion, Plus, Search, X } from 'lucide-react'
+import { FileQuestion, Plus, Search, X } from '@/components/ui/icons'
 import { useMemo, useState } from 'react'
 
 export default function TestsPage() {
+  const { t } = useI18n()
+  const c = t.adminTests.list
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
@@ -53,7 +56,7 @@ export default function TestsPage() {
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center'>
           <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4' />
-          <p className='text-sm text-gray-400'>Loading...</p>
+          <p className='text-sm text-gray-400'>{c.loading}</p>
         </div>
       </div>
     )
@@ -62,21 +65,21 @@ export default function TestsPage() {
   return (
     <>
       <div className='min-h-screen'>
-        <div className='max-w-7xl mx-auto px-6 py-8 space-y-6'>
+        <div className='max-w-7xl mx-auto space-y-6'>
           {/* Header */}
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-4xl font-bold text-white mb-2'>Tests</h1>
+              <h1 className='text-4xl font-bold text-white mb-2'>{c.heading}</h1>
               <p className='text-gray-400'>
-                Manage tests for courses
+                {c.subtitle}
               </p>
             </div>
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className='bg-white text-black hover:bg-white/80'
+              className='border border-border bg-white text-black shadow-md hover:bg-white/80'
             >
               <Plus className='w-5 h-5' />
-              Create test
+              {c.createTest}
             </Button>
           </div>
 
@@ -90,7 +93,7 @@ export default function TestsPage() {
                 <FileQuestion className='w-5 h-5 text-blue-400' />
               </div>
               <span className='text-xs text-gray-500 uppercase font-semibold'>
-                Total tests
+                {c.totalTests}
               </span>
             </div>
             <p className='text-3xl font-bold text-white'>{tests?.length ?? 0}</p>
@@ -100,7 +103,7 @@ export default function TestsPage() {
           <div className='relative'>
             <Search className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
             <Input
-              placeholder='Search by title, description, or course...'
+              placeholder={c.searchPlaceholder}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className='pl-12 pr-10 h-12 bg-white/15! border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50'
@@ -118,7 +121,7 @@ export default function TestsPage() {
           {/* Active search info */}
           {searchQuery && (
             <div className='flex items-center gap-3 text-sm'>
-              <span className='text-gray-500'>Found:</span>
+              <span className='text-gray-500'>{c.foundLabel}</span>
               <span className='font-bold text-white'>{filteredTests.length}</span>
             </div>
           )}
@@ -154,12 +157,12 @@ export default function TestsPage() {
                   <FileQuestion className='w-10 h-10 text-gray-600' />
                 </div>
                 <h3 className='text-xl font-semibold text-white mb-2'>
-                  {searchQuery ? 'Not Found' : 'No tests yet'}
+                  {searchQuery ? c.notFound : c.empty}
                 </h3>
                 <p className='text-gray-400 mb-6'>
                   {searchQuery
-                    ? 'Try changing your search query'
-                    : 'Create your first test'}
+                    ? c.tryChangingQuery
+                    : c.createFirst}
                 </p>
                 <Button
                   onClick={
@@ -169,7 +172,7 @@ export default function TestsPage() {
                   }
                   className='bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
                 >
-                  {searchQuery ? 'Clear search' : 'Create test'}
+                  {searchQuery ? c.clearSearch : c.createTest}
                 </Button>
               </m.div>
             )}

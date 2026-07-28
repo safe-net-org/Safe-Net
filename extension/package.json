@@ -1,6 +1,6 @@
 {
   "name": "safe-net-guard",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "wxt",
@@ -8,6 +8,8 @@
     "build:firefox": "wxt build -b firefox",
     "postinstall": "wxt prepare",
     "zip": "wxt zip",
+    "check:i18n": "bun scripts/check-i18n.ts",
+    "test:privacy": "bun scripts/test-privacy.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

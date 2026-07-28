@@ -1,0 +1,101 @@
+title: "Итоговый тест: Социальная инженерия"
+description: "Проверка понимания техник манипуляции и того, как на самом деле сработало ограбление Bangladesh Bank."
+passingScore: 80
+questions:
+  - text: "Злоумышленник оставляет на парковке подписанный USB-накопитель, надеясь, что кто-то его подключит. Как это называется?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Предлог (pretexting)"
+        isCorrect: false
+      - text: "Приманка (baiting)"
+        isCorrect: true
+      - text: "Проход за кем-то (tailgating)"
+        isCorrect: false
+      - text: "Услуга за услугу (quid pro quo)"
+        isCorrect: false
+
+  - text: "Что из этого эксплуатирует именно авторитет, а не любопытство или обычную вежливость?"
+    type: MULTI_CHOICE
+    options:
+      - text: "«Это директор, немедленно переведи деньги»"
+        isCorrect: true
+      - text: "Звонящий, выдающий себя за ИТ-поддержку, просит «подтвердить» ваш пароль"
+        isCorrect: true
+      - text: "Соблазнительный USB-накопитель, оставленный на парковке"
+        isCorrect: false
+      - text: "Кто-то с коробками просит придержать дверь"
+        isCorrect: false
+      - text: "Необычно щедрый кэшбэк за регистрацию сегодня"
+        isCorrect: false
+
+  - text: "Звонок якобы от техподдержки просит продиктовать код, только что полученный по SMS. Это:"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Стандартный шаг верификации"
+        isCorrect: false
+      - text: "Социальная инженерия (вишинг)"
+        isCorrect: true
+      - text: "Легитимная процедура банка"
+        isCorrect: false
+      - text: "Обычное поведение техподдержки"
+        isCorrect: false
+
+  - text: "В ограблении Bangladesh Bank в 2016 году, какая примерно часть из почти 1 миллиарда долларов мошеннических запросов реально прошла?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Около 101 миллиона долларов"
+        isCorrect: true
+      - text: "Весь миллиард долларов"
+        isCorrect: false
+      - text: "Менее 1 миллиона долларов"
+        isCorrect: false
+      - text: "Ничего -- всё было заблокировано"
+        isCorrect: false
+
+  - text: "Что конкретно привело к блокировке большей части оставшихся мошеннических запросов?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Антивирусное ПО"
+        isCorrect: false
+      - text: "Орфографическая ошибка («fandation»), привлёкшая внимание в транзитном банке"
+        isCorrect: true
+      - text: "Bangladesh Bank заметил немедленно"
+        isCorrect: false
+      - text: "Система ИИ, встроенная в SWIFT"
+        isCorrect: false
+
+  - text: "Что сделало кражу в Bangladesh Bank возможной, учитывая, что само ядро сети SWIFT не было взломано?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Глобальная сеть SWIFT была взломана напрямую"
+        isCorrect: false
+      - text: "Злоумышленники использовали настоящие, украденные учётные данные из собственных скомпрометированных систем банка"
+        isCorrect: true
+      - text: "ФРБ одобрил переводы вообще без проверки"
+        isCorrect: false
+      - text: "В атаке вообще не было задействовано вредоносное ПО"
+        isCorrect: false
+
+  - text: "Телефонная социальная инженерия Кевина Митника обычно полагалась на выдачу себя за какую роль?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Полицейского"
+        isCorrect: false
+      - text: "ИТ-поддержку"
+        isCorrect: true
+      - text: "CEO компании"
+        isCorrect: false
+      - text: "Курьера доставки"
+        isCorrect: false
+
+  - text: "Какой психологический рычаг в первую очередь использует фраза «Я решу твою проблему, но сначала мне нужен твой пароль»?"
+    type: SINGLE_CHOICE
+    options:
+      - text: "Услуга за услугу (quid pro quo)"
+        isCorrect: true
+      - text: "Проход за кем-то (tailgating)"
+        isCorrect: false
+      - text: "Приманка (baiting)"
+        isCorrect: false
+      - text: "Авторитет"
+        isCorrect: false

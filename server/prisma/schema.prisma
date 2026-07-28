@@ -17,6 +17,12 @@ enum UserStatus {
   BLOCKED
 }
 
+enum FeedbackStatus {
+  NEW
+  REVIEWED
+  ARCHIVED
+}
+
 enum TaskType {
   SINGLE_CHOICE
   MULTI_CHOICE
@@ -67,6 +73,13 @@ model User {
   rights   Role[]     @default([USER])
   status   UserStatus @default(ACTIVE)
 
+  /// Immutable registration-consent audit fields. Nullable only for accounts
+  /// that predate consent tracking; every new registration writes all three.
+  termsAcceptedAt   DateTime? @map("terms_accepted_at")
+  privacyAcceptedAt DateTime? @map("privacy_accepted_at")
+  legalVersion      String?   @map("legal_version")
+  legalLocale       String?   @map("legal_locale")
+
   /// XP granted by achievements. Kept separate from CourseProgress.totalXp so
   /// that achievement rewards can never feed back into the XP thresholds that
   /// unlock XP achievements.
@@ -79,8 +92,52 @@ model User {
   testResults      TestResult[]
   completedLessons CompletedLesson[]
   passwordResets   PasswordResetToken[]
+  refreshSessions  RefreshSession[]
+  feedback         Feedback[]
 
   @@map("users")
+}
+
+/// Product feedback is private by default. Only REVIEWED + featured rows are
+/// exposed by the public landing endpoint.
+model Feedback {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating     Int
+  message    String
+  sourcePage String?        @map("source_page")
+  status     FeedbackStatus @default(NEW)
+  featured   Boolean        @default(false)
+  reviewedAt DateTime?      @map("reviewed_at")
+
+  @@index([status, createdAt])
+  @@index([featured, createdAt])
+  @@index([userId, createdAt])
+  @@map("feedback")
+}
+
+/// Server-side state for a rotating refresh-token family. The database stores
+/// only opaque identifiers and lifecycle timestamps, never the raw JWT.
+model RefreshSession {
+  id        String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  familyId  String    @map("family_id")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_sessions")
 }
 
 /// A single-use, expiring password-reset token. Only the SHA-256 hash of the
@@ -111,7 +168,12 @@ model Stage {
   slug     String  @unique
   title    String
   subtitle String?
-  icon     String? // Lucide icon slug
+  icon     String? // Phosphor-compatible icon slug
+
+  /// Russian translations. Nullable: content rolls out per-item, and a
+  /// missing value means "fall back to the English column above."
+  titleRu    String? @map("title_ru")
+  subtitleRu String? @map("subtitle_ru")
 
   courses Course[]
 
@@ -130,6 +192,9 @@ model Course {
   title       String
   description String
   difficulty  Difficulty @default(MEDIUM)
+
+  titleRu       String? @map("title_ru")
+  descriptionRu String? @map("description_ru")
 
   lessons      Lesson[]
   tests        Test[]
@@ -150,6 +215,8 @@ model Lesson {
   order             Int
   title             String
   estimatedDuration Int
+
+  titleRu String? @map("title_ru")
 
   blocks    LessonBlock[]
   tasks     Task[]
@@ -174,6 +241,9 @@ model LessonBlock {
   title   String?
   content String // Markdown text
 
+  titleRu   String? @map("title_ru")
+  contentRu String? @map("content_ru")
+
   @@index([lessonId])
   @@index([lessonId, order])
   @@map("lesson_blocks")
@@ -196,9 +266,18 @@ model Task {
   points      Int        @default(10)
   difficulty  Difficulty @default(MEDIUM)
 
+  titleRu       String? @map("title_ru")
+  questionRu    String? @map("question_ru")
+  metaRu        Json?   @map("meta_ru") // Same shape as meta, translated (redFlag spans re-anchored to metaRu's own text)
+  explanationRu String? @map("explanation_ru")
+
   // Correct answers
   correctAnswerIndex Int? // For SINGLE/MULTI_CHOICE
   correctAnswer      String? // For SHORT_ANSWER/TEXT_INPUT
+
+  /// Russian equivalent of correctAnswer -- SHORT_ANSWER/TEXT_INPUT are graded
+  /// by exact text match, so a Russian question needs its own accepted answer.
+  correctAnswerRu String? @map("correct_answer_ru")
 
   options  TaskOption[]
   attempts TaskAttempt[]
@@ -217,6 +296,8 @@ model TaskOption {
   order     Int
   text      String
   isCorrect Boolean @default(false)
+
+  textRu String? @map("text_ru")
 
   @@unique([taskId, order])
   @@index([taskId])
@@ -294,6 +375,9 @@ model Test {
   description  String?
   passingScore Int     @default(80)
 
+  titleRu       String? @map("title_ru")
+  descriptionRu String? @map("description_ru")
+
   questions TestQuestion[]
   results   TestResult[]
 
@@ -312,6 +396,8 @@ model TestQuestion {
   type               TaskType
   correctAnswerIndex Int?
 
+  textRu String? @map("text_ru")
+
   options TestQuestionOption[]
 
   @@index([testId])
@@ -328,6 +414,8 @@ model TestQuestionOption {
   order     Int
   text      String
   isCorrect Boolean @default(false)
+
+  textRu String? @map("text_ru")
 
   @@unique([testQuestionId, order])
   @@index([testQuestionId])
@@ -363,6 +451,9 @@ model Achievement {
   title       String
   description String
   icon        String
+
+  titleRu       String? @map("title_ru")
+  descriptionRu String? @map("description_ru")
 
   category AchievementCategory @default(MILESTONE)
   tier     AchievementTier     @default(BRONZE)

@@ -13,9 +13,9 @@ import { m } from 'framer-motion'
 import {
 	ChevronLeft,
 	ChevronRight,
-	LucideIcon,
+	AppIcon,
 	MoreHorizontal,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { memo } from 'react'
@@ -23,7 +23,7 @@ import { memo } from 'react'
 export interface BreadcrumbItem {
 	label: string
 	href?: string
-	icon?: LucideIcon
+	icon?: AppIcon
 }
 
 interface BreadcrumbProps {
@@ -84,7 +84,7 @@ export const Breadcrumb = memo(
 					{item.href && !isLast ? (
 						<Link
 							href={item.href}
-							className='flex items-center gap-1.5 hover:text-white transition-colors duration-200 group'
+							className='group flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 hover:text-foreground'
 						>
 							{Icon && (
 								<Icon className='h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity' />
@@ -106,7 +106,7 @@ export const Breadcrumb = memo(
 							<span
 								className={cn(
 									'truncate max-w-[120px] sm:max-w-none',
-									isLast && 'text-white font-semibold'
+								isLast && 'text-foreground font-semibold'
 								)}
 							>
 								{item.label}
@@ -115,7 +115,7 @@ export const Breadcrumb = memo(
 					)}
 
 					{!isLast && (
-						<ChevronRight className='h-3.5 w-3.5 text-white/40 shrink-0' />
+						<ChevronRight className='h-3.5 w-3.5 shrink-0 text-muted-foreground' />
 					)}
 				</div>
 			)
@@ -139,12 +139,12 @@ export const Breadcrumb = memo(
 						onClick={() => router.back()}
 						className='h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 group shadow-sm shrink-0 transition-all duration-300'
 					>
-						<ChevronLeft className='w-4 h-4 sm:w-5 sm:h-5 text-white/70 group-hover:text-white group-hover:-translate-x-1 transition-all duration-300' />
+						<ChevronLeft className='w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-foreground group-hover:-translate-x-1 transition-all duration-300' />
 					</Button>
 				)}
 
 				<nav
-					className='flex items-center gap-2 text-xs sm:text-sm text-white/60 font-medium overflow-hidden'
+					className='flex items-center gap-2 overflow-hidden text-xs font-medium text-muted-foreground sm:text-sm'
 					aria-label='Breadcrumb'
 				>
 					{items.length <= 2 ? (
@@ -171,7 +171,7 @@ export const Breadcrumb = memo(
 													size='sm'
 													className='h-6 w-6 p-0 hover:bg-white/10 rounded-lg transition-colors'
 												>
-													<MoreHorizontal className='h-4 w-4 text-white/40' />
+														<MoreHorizontal className='h-4 w-4 text-muted-foreground' />
 													<span className='sr-only'>
 														Show hidden items
 													</span>
@@ -187,7 +187,7 @@ export const Breadcrumb = memo(
 											</DropdownMenuContent>
 										</DropdownMenu>
 
-										<ChevronRight className='h-3.5 w-3.5 text-white/40 shrink-0' />
+										<ChevronRight className='h-3.5 w-3.5 shrink-0 text-muted-foreground' />
 									</>
 								)}
 
@@ -196,7 +196,7 @@ export const Breadcrumb = memo(
 									{LastIcon && (
 										<LastIcon className='h-4 w-4 opacity-100 shrink-0' />
 									)}
-									<span className='text-white font-semibold truncate'>
+									<span className='truncate font-semibold text-foreground'>
 										{lastItem.label}
 									</span>
 								</div>

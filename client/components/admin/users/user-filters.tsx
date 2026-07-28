@@ -1,7 +1,7 @@
 'use client'
 
 import { m } from 'framer-motion'
-import { Search } from 'lucide-react'
+import { Search } from '@/components/ui/icons'
 
 interface UserFiltersProps {
 	search: string

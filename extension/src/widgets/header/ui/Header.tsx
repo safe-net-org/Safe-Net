@@ -1,7 +1,10 @@
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
 import { Pill } from '@/src/shared/ui/Pill'
 
 export function Header() {
+  const { locale, setLocale, t } = useExtensionI18n()
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -38,16 +41,32 @@ export function Header() {
           fontSize: 10, color: T.textDim, fontFamily: FONT_MONO,
           letterSpacing: '0.16em', textTransform: 'uppercase', marginTop: 2,
         }}>
-          25+ эвристик · ML · open DB
+          {t('header.tagline')}
         </div>
       </div>
+      <button
+        type="button"
+        aria-label={t('locale.label')}
+        title={t('locale.label')}
+        onClick={() => void setLocale(locale === 'en' ? 'ru' : 'en')}
+        style={{
+          minWidth: 34, height: 26, padding: '0 8px',
+          borderRadius: 999, border: `1px solid ${T.borderStrong}`,
+          background: T.surface2, color: T.textMuted,
+          fontFamily: FONT_MONO, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.08em', cursor: 'pointer',
+          transition: 'transform 0.18s cubic-bezier(.22, 1, .36, 1), color 0.18s',
+        }}
+      >
+        {locale.toUpperCase()}
+      </button>
       <Pill color={T.ok} bg="oklch(72% 0.18 155 / 0.1)" border="oklch(72% 0.18 155 / 0.3)">
         <span style={{
           width: 6, height: 6, borderRadius: '50%',
           background: T.ok, boxShadow: `0 0 6px ${T.ok}`,
           animation: 'pulse-dot 2s infinite',
         }} />
-        Active
+        {t('header.active')}
       </Pill>
     </div>
   )

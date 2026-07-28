@@ -12,14 +12,21 @@ export default defineConfig({
     startUrls: ['http://localhost:3000'],
   },
   manifest: {
-    name: 'SafeNet Guard',
+    default_locale: 'en',
+    name: '__MSG_extensionName__',
     short_name: 'SafeNet Guard',
-    description: 'AI-защита от фишинга в реальном времени. Определяет поддельные сайты, IDN-homograph атаки и тайпсквоттинг.',
-    version: '0.1.0',
+    description: '__MSG_extensionDescription__',
+    version: '0.2.0',
     permissions: ['webNavigation', 'tabs', 'storage', 'activeTab', 'scripting'],
     host_permissions: ['<all_urls>'],
     action: {
-      default_title: 'SafeNet Guard — открыть панель',
+      default_title: '__MSG_actionTitle__',
+    },
+    commands: {
+      'toggle-panel': {
+        suggested_key: { default: 'Alt+Shift+S' },
+        description: '__MSG_commandDescription__',
+      },
     },
     web_accessible_resources: [
       {

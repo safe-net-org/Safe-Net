@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 type TestState = 'loading' | 'not-started' | 'active' | 'completed' | 'error'
+type InteractiveTestState = Exclude<TestState, 'loading' | 'error'>
 
 export function useTestDetail() {
 	const params = useParams()
@@ -18,7 +19,8 @@ export function useTestDetail() {
 	const testId = params.id as string
 
 	// State
-	const [testState, setTestState] = useState<TestState>('loading')
+	const [testState, setTestState] =
+		useState<InteractiveTestState>('not-started')
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 	const [answers, setAnswers] = useState<Map<string, string[]>>(new Map())
 	const [elapsedTime, setElapsedTime] = useState(0)
@@ -195,17 +197,6 @@ export function useTestDetail() {
 		submitMutation,
 	])
 
-	// Lifecycle - update test state
-	useEffect(() => {
-		if (isLoading) {
-			setTestState('loading')
-		} else if (isError) {
-			setTestState('error')
-		} else if (test && testState === 'loading') {
-			setTestState('not-started')
-		}
-	}, [isLoading, isError, test, testState])
-
 	// Cleanup timer on unmount
 	useEffect(() => {
 		return stopTimer
@@ -213,7 +204,7 @@ export function useTestDetail() {
 
 	return {
 		// State
-		testState,
+		testState: isLoading ? 'loading' : isError ? 'error' : testState,
 		currentQuestionIndex,
 		answers,
 		elapsedTime,

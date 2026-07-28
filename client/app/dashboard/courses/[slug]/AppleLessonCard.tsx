@@ -1,9 +1,11 @@
 import Link from 'next/link'
 
-import { BookOpen, CheckCircle2, Play } from 'lucide-react'
+import { BookOpen, CheckCircle2, Play } from '@/components/ui/icons'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { cn } from '@/lib/utils'
 
 interface Lesson {
@@ -19,6 +21,7 @@ interface AppleLessonCardProps {
 	index: number
 }
 const AppleLessonCard = ({ lesson, slug, index }: AppleLessonCardProps) => {
+	const { locale, t } = useI18n()
 	const isCompleted = lesson.completed
 	return (
 		<Link
@@ -55,11 +58,18 @@ const AppleLessonCard = ({ lesson, slug, index }: AppleLessonCardProps) => {
 								</h3>
 								<div className='flex flex-wrap gap-2'>
 									<div className='font-semibold text-white/60 sm:text-sm mt-0.5'>
-										Lesson {lesson.order}
+										{t.dashboardLesson.badges.lessonNumTemplate.replace(
+											'{order}',
+											String(lesson.order)
+										)}
 									</div>
 									<Badge className='bg-white/10 backdrop-blur-sm border-white/20 text-white/80 px-2 py-0.5 text-xs sm:px-3 sm:py-1 rounded-md shrink-0'>
 										{lesson.tasksCount}{' '}
-										{lesson.tasksCount === 1 ? 'task' : 'tasks'}
+										{selectPlural(locale, lesson.tasksCount, {
+											one: t.dashboardLesson.sidebar.taskWordOne,
+											few: t.dashboardLesson.sidebar.taskWordFew,
+											many: t.dashboardLesson.sidebar.taskWordMany,
+										})}
 									</Badge>
 								</div>
 							</div>
@@ -77,7 +87,9 @@ const AppleLessonCard = ({ lesson, slug, index }: AppleLessonCardProps) => {
 								<BookOpen className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
 							</div>
 							<span className='truncate hidden sm:inline'>
-								{lesson.completed ? 'Retake' : 'Start lesson'}
+								{lesson.completed
+									? t.dashboardComponents.retake
+									: t.dashboardCourseDetail.startLesson}
 							</span>
 						</div>
 						<div

@@ -1,11 +1,18 @@
+import axios from 'axios'
+
 export const getContentType = () => ({
 	'Content-Type': 'application/json'
 })
-export const errorCatch = (error: any): string => {
-	const message = error?.response?.data?.message
-	return message
-		? typeof error.response.data.message === 'object'
-			? message[0]
-			: message
-		: error.message
+
+interface ApiErrorData {
+	message?: string | string[]
+}
+
+export const errorCatch = (error: unknown): string => {
+	if (axios.isAxiosError<ApiErrorData>(error)) {
+		const message = error.response?.data?.message
+		if (Array.isArray(message)) return message[0] ?? 'Request failed'
+		if (message) return message
+	}
+	return error instanceof Error ? error.message : 'Request failed'
 }

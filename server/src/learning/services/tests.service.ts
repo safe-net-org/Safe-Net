@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma.service'
 import { SubmitTestDto } from '../dto/submit-test.dto'
 import { TestDetailsDto, TestResultResponseDto } from '../dto/test-question.dto'
 import { AchievementsService } from './achievements.service'
+import { Locale, pickLocalized } from '../../i18n/locale'
 
 @Injectable()
 export class TestsService {
@@ -29,7 +30,7 @@ export class TestsService {
 		})
 	}
 
-	async getTestById(id: string): Promise<TestDetailsDto> {
+	async getTestById(id: string, locale: Locale): Promise<TestDetailsDto> {
 		const test = await this.prisma.test.findUnique({
 			where: { id },
 			include: {
@@ -52,8 +53,8 @@ export class TestsService {
 
 		return {
 			id: test.id,
-			title: test.title,
-			description: test.description,
+			title: pickLocalized(locale, test.title, test.titleRu),
+			description: pickLocalized(locale, test.description, test.descriptionRu),
 			course: test.course,
 			passingScore: test.passingScore,
 			courseTitle: test.course?.title ?? null,
@@ -61,13 +62,13 @@ export class TestsService {
 			questions: test.questions.map(q => ({
 				id: q.id,
 				order: q.order,
-				text: q.text,
+				text: pickLocalized(locale, q.text, q.textRu),
 				type: q.type,
 				options:
 					q.type === TaskType.SINGLE_CHOICE || q.type === TaskType.MULTI_CHOICE
 						? q.options.map(o => ({
 								id: o.id,
-								text: o.text,
+								text: pickLocalized(locale, o.text, o.textRu),
 							}))
 						: undefined,
 			})),

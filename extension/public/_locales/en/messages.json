@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "SafeNet Guard"
+  },
+  "extensionDescription": {
+    "message": "Local-first phishing protection with optional domain intelligence and ML. Detects spoofed sites, IDN homographs, and typosquatting."
+  },
+  "actionTitle": {
+    "message": "SafeNet Guard — open panel"
+  },
+  "commandDescription": {
+    "message": "Open or close the SafeNet Guard panel"
+  }
+}

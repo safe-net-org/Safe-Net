@@ -1,10 +1,12 @@
 'use client'
 
 import { usePublicStats } from '@/hooks/public/usePublicStats'
-import { animate, m, useInView, useMotionValue } from 'framer-motion'
-import { BookOpen, CheckCircle, Target, Users } from 'lucide-react'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { animate, m, useInView, useMotionValue, useReducedMotion } from 'framer-motion'
+import { BookOpen, CheckCircle, Info, Target, Users } from '@/components/ui/icons'
 import { useEffect, useRef, useState } from 'react'
 import { IStatItem } from './stats.interface'
+import { MOTION } from '@/config/motion.config'
 
 function AnimatedNumber({
 	value,
@@ -16,6 +18,7 @@ function AnimatedNumber({
 	duration?: number
 }) {
 	const count = useMotionValue(0)
+	const reduceMotion = useReducedMotion()
 	const [display, setDisplay] = useState('0' + suffix)
 
 	useEffect(() => {
@@ -24,14 +27,14 @@ function AnimatedNumber({
 			setDisplay(n.toLocaleString() + suffix)
 		})
 		const controls = animate(count, value, {
-			duration,
+			duration: reduceMotion ? 0 : duration,
 			ease: [0.22, 1, 0.36, 1],
 		})
 		return () => {
 			unsubscribe()
 			controls.stop()
 		}
-	}, [count, value, suffix, duration])
+	}, [count, value, suffix, duration, reduceMotion])
 
 	return <span>{display}</span>
 }
@@ -43,67 +46,60 @@ function StatItem({ icon: Icon, label, value, suffix, index }: IStatItem) {
 	return (
 		<m.div
 			ref={ref}
-			initial={{ opacity: 0, y: 40, scale: 0.8 }}
-			whileInView={{ opacity: 1, y: 0, scale: 1 }}
+			initial={{ opacity: 0, y: 8 }}
+			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true }}
 			transition={{
-				duration: 0.6,
-				delay: index * 0.15,
-				ease: [0.25, 0.8, 0.25, 1],
+				duration: MOTION.reveal,
+				delay: index * MOTION.stagger,
+				ease: MOTION.ease,
 			}}
 			className='text-center'
 		>
 			<m.div
-				whileHover={{ scale: 1.15, boxShadow: '0 0 15px #a78bfa' }}
-				transition={{ type: 'spring', stiffness: 300 }}
-				className='w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3'
+				whileHover={{ y: -1 }}
+				transition={{ duration: MOTION.hover, ease: MOTION.ease }}
+				className='mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-brand/10 text-brand'
 			>
-				<Icon className='w-6 h-6 text-white' />
+				<Icon className='size-5' aria-hidden='true' />
 			</m.div>
-			<m.div
-				initial={{ opacity: 0, y: 10 }}
-				whileInView={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.7, delay: 0.2 + index * 0.13 }}
-				className='text-3xl font-bold text-white mb-1'
-			>
+			<div className='mb-1 text-3xl font-semibold tabular-nums text-foreground'>
 				{isInView ? (
 					<AnimatedNumber value={value} suffix={suffix} duration={1.6} />
 				) : (
 					<span>0{suffix}</span>
 				)}
-			</m.div>
-			<div className='text-sm text-slate-400'>{label}</div>
+			</div>
+			<div className='text-sm text-muted-foreground'>{label}</div>
 		</m.div>
 	)
 }
 
 export default function Stats() {
-	const { stats, isLoading } = usePublicStats()
+	const { stats, isLoading, error } = usePublicStats()
+	const { t } = useI18n()
 
 	// Mapping API data to stats
 	const statsData = [
 		{
-			label: 'Active Users',
+			label: t.statsSection.activeUsers,
 			value: stats?.totalUsers ?? 0,
-			suffix: '+',
 			icon: Users,
 		},
 		{
-			label: 'Tasks Completed',
+			label: t.statsSection.tasksCompleted,
 			value: stats?.totalTasks ?? 0,
-			suffix: '+',
 			icon: CheckCircle,
 		},
 		{
-			label: 'Average Accuracy',
+			label: t.statsSection.averageAccuracy,
 			value: stats?.averageAccuracy ?? 0,
 			suffix: '%',
 			icon: Target,
 		},
 		{
-			label: 'Courses Available',
+			label: t.statsSection.coursesAvailable,
 			value: stats?.totalLessons ?? 0,
-			suffix: '+',
 			icon: BookOpen,
 		},
 	]
@@ -111,14 +107,14 @@ export default function Stats() {
 	// Skeleton loader
 	if (isLoading) {
 		return (
-			<section id='stats' className='py-16 bg-slate-800/30'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='grid grid-cols-2 lg:grid-cols-4 gap-6'>
+			<section id='stats' className='border-y border-border bg-secondary/35 py-16'>
+				<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+					<div className='grid grid-cols-2 gap-6 lg:grid-cols-4'>
 						{[...Array(4)].map((_, i) => (
-							<div key={i} className='text-center animate-pulse'>
-								<div className='w-12 h-12 bg-slate-700 rounded-xl mx-auto mb-3' />
-								<div className='h-8 w-24 bg-slate-700 rounded mx-auto mb-1' />
-								<div className='h-4 w-32 bg-slate-700 rounded mx-auto' />
+							<div key={i} className='animate-pulse text-center'>
+								<div className='mx-auto mb-3 size-11 rounded-xl bg-muted' />
+								<div className='mx-auto mb-1 h-8 w-24 rounded bg-muted' />
+								<div className='mx-auto h-4 w-32 rounded bg-muted' />
 							</div>
 						))}
 					</div>
@@ -127,12 +123,28 @@ export default function Stats() {
 		)
 	}
 
+	if (error || !stats) {
+		return (
+			<section id='stats' className='border-y border-border bg-secondary/35 py-12'>
+				<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+					<div
+						className='mx-auto flex max-w-xl items-center justify-center gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground shadow-sm'
+						role='status'
+					>
+						<Info className='size-4 shrink-0 text-brand' aria-hidden='true' />
+						<span>{t.statsSection.unavailable}</span>
+					</div>
+				</div>
+			</section>
+		)
+	}
+
 	return (
-		<section id='stats' className='py-16 bg-slate-800/30'>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-				<div className='grid grid-cols-2 lg:grid-cols-4 gap-6'>
-					{statsData.map((stat, i) => (
-						<StatItem key={i} {...stat} index={i} />
+		<section id='stats' className='border-y border-border bg-secondary/35 py-16'>
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='grid grid-cols-2 gap-6 lg:grid-cols-4'>
+					{statsData.map((stat, index) => (
+						<StatItem key={stat.label} {...stat} index={index} />
 					))}
 				</div>
 			</div>

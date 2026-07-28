@@ -1,10 +1,11 @@
 'use client'
 
 import { ROUTES } from '@/config/pages-url.config'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 
 import { m } from 'framer-motion'
-import { Award, ExternalLink } from 'lucide-react'
+import { Award, ExternalLink } from '@/components/ui/icons'
 import Link from 'next/link'
 
 interface Certificate {
@@ -22,6 +23,9 @@ interface UserCertificatesBlockProps {
 export default function UserCertificatesBlock({
 	certificates,
 }: UserCertificatesBlockProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userCertificatesBlock
+
 	if (!certificates || certificates.length === 0) {
 		return (
 			<m.div
@@ -30,9 +34,7 @@ export default function UserCertificatesBlock({
 				className='flex flex-col items-center justify-center py-16 bg-white/[0.02] backdrop-blur-sm rounded-2xl border border-white/5'
 			>
 				<Award className='w-12 h-12 text-white/20 mb-4' />
-				<p className='text-white/50 text-center max-w-md'>
-					Certificates are issued after successful course completion
-				</p>
+				<p className='text-white/50 text-center max-w-md'>{c.empty}</p>
 			</m.div>
 		)
 	}
@@ -45,7 +47,7 @@ export default function UserCertificatesBlock({
 						format: 'date-medium',
 						locale: 'en-US',
 						gracefulFail: true,
-					}) || 'Date unknown'
+					}) || c.dateUnknown
 
 				return (
 					<m.div
@@ -68,7 +70,10 @@ export default function UserCertificatesBlock({
 										{cert.courseTitle}
 									</h3>
 									<p className='text-white/60 text-sm mb-2'>
-										№ {cert.certificateNumber}
+										{c.certificateNumberTemplate.replace(
+											'{number}',
+											cert.certificateNumber
+										)}
 									</p>
 									<p className='text-white/40 text-xs'>{formattedDate}</p>
 								</div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { ExtensionMessage } from '@/src/entities/analysis'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
+import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
+import type { ExtensionLocale } from '@/src/shared/i18n/messages'
 import { Pill } from '@/src/shared/ui/Pill'
 import { flagEmoji } from '../model/geo'
 import { getSettings } from '@/src/shared/lib/settings'
@@ -39,19 +41,22 @@ interface DomainTabProps {
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
 
-function fmtDate(ms: number | null): string {
+function fmtDate(ms: number | null, locale: ExtensionLocale): string {
   if (!ms) return '—'
-  return new Date(ms).toLocaleDateString('ru-RU', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(ms).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', {
+    year: 'numeric', month: 'short', day: 'numeric',
+  })
 }
 
-function fmtAge(ms: number | null): string {
+function fmtAge(ms: number | null, locale: ExtensionLocale): string {
   if (!ms) return '—'
   const days = Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000))
-  if (days < 30) return `${days} дн.`
+  if (days < 30) return `${days} ${locale === 'ru' ? 'дн.' : 'd'}`
   const months = Math.floor(days / 30)
-  if (months < 12) return `${months} мес.`
+  if (months < 12) return `${months} ${locale === 'ru' ? 'мес.' : 'mo'}`
   const years = Math.floor(days / 365)
   const remMonths = Math.floor((days - years * 365) / 30)
+  if (locale === 'en') return remMonths ? `${years}y ${remMonths}mo` : `${years}y`
   return remMonths ? `${years} г. ${remMonths} мес.` : `${years} г.`
 }
 
@@ -68,6 +73,7 @@ function trustColor(level: TrustBreakdown['level']): string {
 }
 
 export function DomainTab({ url }: DomainTabProps) {
+  const { locale, t } = useExtensionI18n()
   const domain = extractDomain(url)
   const [intel, setIntel] = useState<DomainIntel | null>(null)
   const [status, setStatus] = useState<Status>('idle')
@@ -93,7 +99,7 @@ export function DomainTab({ url }: DomainTabProps) {
   }, [domain, reloadKey])
 
   if (!domain) {
-    return <div style={{ padding: 20, textAlign: 'center', color: T.textDim, fontSize: 12 }}>Не удалось распознать домен.</div>
+    return <div style={{ padding: 20, textAlign: 'center', color: T.textDim, fontSize: 12 }}>{t('domain.invalid')}</div>
   }
 
   if (status === 'loading' || status === 'idle') {
@@ -110,10 +116,10 @@ export function DomainTab({ url }: DomainTabProps) {
           fontSize: 11, color: T.textDim, fontFamily: FONT_MONO,
           letterSpacing: '0.18em', textTransform: 'uppercase',
         }}>
-          опрос открытых баз…
+          {t('domain.loading')}
         </span>
         <span style={{ fontSize: 10.5, color: T.textDim, textAlign: 'center', lineHeight: 1.6, maxWidth: 240 }}>
-          RDAP · DoH · crt.sh CT · ipapi · Quad9 · AdGuard · URLhaus · VirusTotal
+          {t('domain.loadingHint')}
         </span>
       </div>
     )
@@ -122,7 +128,26 @@ export function DomainTab({ url }: DomainTabProps) {
   if (status === 'error' || !intel) {
     return (
       <div style={{ padding: 24, textAlign: 'center', color: T.textDim, fontSize: 12 }}>
-        Не удалось загрузить данные.
+        {t('domain.error')}
+      </div>
+    )
+  }
+
+  if (intel.errors.includes('intel-disabled')) {
+    return (
+      <div style={{
+        padding: '20px 18px',
+        background: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: T.radTile,
+        color: T.textMuted,
+        fontSize: 12,
+        lineHeight: 1.6,
+      }}>
+        <div style={{ color: T.text, fontWeight: 700, marginBottom: 6 }}>
+          {t('domain.disabledTitle')}
+        </div>
+        {t('domain.disabledBody')}
       </div>
     )
   }
@@ -160,7 +185,7 @@ export function DomainTab({ url }: DomainTabProps) {
               fontSize: 11, color: T.textDim, fontFamily: FONT_MONO,
               letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 3,
             }}>
-              {geo?.country ?? 'страна неизвестна'} · {geo?.city ?? '—'}
+              {geo?.country ?? t('domain.unknownCountry')} · {geo?.city ?? '—'}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -168,13 +193,13 @@ export function DomainTab({ url }: DomainTabProps) {
               fontSize: 16, fontWeight: 700, color: ageRiskColor(createdAt),
               lineHeight: 1, letterSpacing: '-0.02em',
             }}>
-              {createdApprox ? '≈ ' : ''}{fmtAge(createdAt)}
+              {createdApprox ? '≈ ' : ''}{fmtAge(createdAt, locale)}
             </div>
             <div style={{
               fontSize: 9.5, color: T.textDim, fontFamily: FONT_MONO,
               letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 3,
             }}>
-              возраст
+              {t('domain.age')}
             </div>
           </div>
         </div>
@@ -205,7 +230,7 @@ export function DomainTab({ url }: DomainTabProps) {
             {trust.factors.map((f) => (
               <span
                 key={f.key}
-                title={`${f.label} · вес ${f.weight}`}
+                title={locale === 'ru' ? `${f.label} · вес ${f.weight}` : `${f.key} · weight ${f.weight}`}
                 style={{
                   padding: '2px 6px', borderRadius: 999,
                   fontSize: 9.5, fontFamily: FONT_MONO,
@@ -233,10 +258,10 @@ export function DomainTab({ url }: DomainTabProps) {
           <span style={{ fontSize: 22 }}>🚨</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, color: T.danger, fontWeight: 700, marginBottom: 3 }}>
-              Домен в {threatCount} threat-feed
+              {t('domain.threatTitle', { count: threatCount })}
             </div>
             <div style={{ fontSize: 11, color: T.textMuted, lineHeight: 1.4 }}>
-              Резолверы безопасности блокируют этот домен. Не вводи здесь данные.
+              {t('domain.threatBody')}
             </div>
           </div>
         </div>
@@ -244,7 +269,7 @@ export function DomainTab({ url }: DomainTabProps) {
 
       {/* THREAT INTEL */}
       <IntelSection
-        title="Угрозы · открытые базы"
+        title={t('domain.threats')}
         badge={
           <Pill
             color={threatCount > 0 ? T.danger : T.ok}
@@ -259,10 +284,10 @@ export function DomainTab({ url }: DomainTabProps) {
           <InfoRow
             key={h.source}
             label={h.source}
-            value={h.listed ? '⚠ в списке' : '✓ не найден'}
+            value={h.listed ? `⚠ ${t('domain.listed')}` : `✓ ${t('domain.notFound')}`}
             color={h.listed ? T.danger : T.ok}
           />
-        )) ?? <InfoRow label="DNS-блоклисты" value="недоступно" />}
+        )) ?? <InfoRow label="DNS blocklists" value={t('domain.unavailable')} />}
       </IntelSection>
 
       {/* VIRUSTOTAL */}
@@ -270,54 +295,57 @@ export function DomainTab({ url }: DomainTabProps) {
 
       {/* WHOIS / RDAP */}
       <IntelSection title="Whois · RDAP">
-        <InfoRow label="Регистратор" value={rdap?.registrar ?? '—'} />
+        <InfoRow label={t('domain.registrar')} value={rdap?.registrar ?? '—'} />
         <InfoRow
-          label="Создан"
+          label={t('domain.created')}
           value={
             rdap?.createdAt
-              ? fmtDate(rdap.createdAt)
+              ? fmtDate(rdap.createdAt, locale)
               : cert?.firstSeen
-                ? `≈ ${fmtDate(cert.firstSeen)} · по CT`
+                ? `≈ ${fmtDate(cert.firstSeen, locale)} · CT`
                 : '—'
           }
           mono
         />
-        <InfoRow label="Истекает" value={fmtDate(rdap?.expiresAt ?? null)} mono />
-        <InfoRow label="Обновлён" value={fmtDate(rdap?.updatedAt ?? null)} mono />
+        <InfoRow label={t('domain.expires')} value={fmtDate(rdap?.expiresAt ?? null, locale)} mono />
+        <InfoRow label={t('domain.updated')} value={fmtDate(rdap?.updatedAt ?? null, locale)} mono />
         {rdap?.status && rdap.status.length > 0 && (
-          <InfoRow label="Статус" value={rdap.status.slice(0, 2).join(', ')} />
+          <InfoRow label={t('domain.status')} value={rdap.status.slice(0, 2).join(', ')} />
         )}
         {rdap?.nameservers && rdap.nameservers.length > 0 && (
           <InfoRow label="NS" value={rdap.nameservers[0]} mono />
         )}
         {!rdap && (
-          <InfoRow label="RDAP" value="нет публичного RDAP для зоны (.ru/.рф)" />
+          <InfoRow
+            label="RDAP"
+            value={locale === 'ru' ? 'нет публичного RDAP для зоны (.ru/.рф)' : 'no public RDAP for this zone (.ru/.рф)'}
+          />
         )}
       </IntelSection>
 
       {/* HOSTING */}
-      <IntelSection title="Хостинг · IP">
+      <IntelSection title={t('domain.hosting')}>
         <InfoRow label="IPv4" value={dns?.a?.[0] ?? '—'} mono />
         {dns?.aaaa?.[0] && <InfoRow label="IPv6" value={dns.aaaa[0]} mono />}
         <InfoRow label="ASN" value={geo?.asn ?? '—'} mono />
-        <InfoRow label="Провайдер" value={geo?.org ?? '—'} />
-        <InfoRow label="Страна" value={geo?.country ? `${flagEmoji(geo.countryCode)} ${geo.country}` : '—'} />
+        <InfoRow label={t('domain.provider')} value={geo?.org ?? '—'} />
+        <InfoRow label={t('domain.country')} value={geo?.country ? `${flagEmoji(geo.countryCode)} ${geo.country}` : '—'} />
       </IntelSection>
 
       {/* DNS */}
       <IntelSection
-        title="DNS · резолвинг"
+        title={t('domain.dns')}
         badge={
           <Pill
             color={dns?.dnssecValid ? T.ok : T.textMuted}
             bg={dns?.dnssecValid ? 'oklch(72% 0.18 155 / 0.1)' : T.surface2}
             border={dns?.dnssecValid ? 'oklch(72% 0.18 155 / 0.3)' : T.border}
           >
-            {dns?.dnssecValid ? '🔐 DNSSEC' : 'без DNSSEC'}
+            {dns?.dnssecValid ? '🔐 DNSSEC' : t('domain.noDnssec')}
           </Pill>
         }
       >
-        <InfoRow label="A-записи" value={dns?.a?.length ?? 0} mono />
+        <InfoRow label={locale === 'ru' ? 'A-записи' : 'A records'} value={dns?.a?.length ?? 0} mono />
         <InfoRow label="MX" value={dns?.mx?.length ?? 0} mono />
         <InfoRow label="NS" value={dns?.ns?.length ?? 0} mono />
         <InfoRow label="TXT" value={dns?.txt?.length ?? 0} mono />
@@ -333,10 +361,10 @@ export function DomainTab({ url }: DomainTabProps) {
         }
       >
         <InfoRow label="Issuer" value={cert?.issuer ?? '—'} />
-        <InfoRow label="Сертификатов" value={cert?.totalCerts ?? 0} mono />
+        <InfoRow label={t('domain.certificates')} value={cert?.totalCerts ?? 0} mono />
         <InfoRow label="Wildcard" value={cert?.wildcardCount ?? 0} mono />
-        <InfoRow label="Первый" value={fmtDate(cert?.firstSeen ?? null)} mono />
-        <InfoRow label="Последний" value={fmtDate(cert?.lastSeen ?? null)} mono />
+        <InfoRow label={t('domain.first')} value={fmtDate(cert?.firstSeen ?? null, locale)} mono />
+        <InfoRow label={t('domain.last')} value={fmtDate(cert?.lastSeen ?? null, locale)} mono />
       </IntelSection>
 
       {/* FOOTER */}
@@ -348,7 +376,9 @@ export function DomainTab({ url }: DomainTabProps) {
           fontSize: 10, color: T.textDim,
           fontFamily: FONT_MONO, letterSpacing: '0.14em', textTransform: 'uppercase',
         }}>
-          {new Date(intel.fetchedAt).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })} · кэш 6 ч
+          {new Date(intel.fetchedAt).toLocaleTimeString(locale === 'ru' ? 'ru-RU' : 'en-US', {
+            hour: '2-digit', minute: '2-digit',
+          })} · {t('domain.cache')}
         </span>
         <button
           onClick={() => setReloadKey((k) => k + 1)}
@@ -365,7 +395,7 @@ export function DomainTab({ url }: DomainTabProps) {
             letterSpacing: '0.08em',
           }}
         >
-          ↻ обновить
+          ↻ {t('domain.refresh')}
         </button>
       </div>
     </div>

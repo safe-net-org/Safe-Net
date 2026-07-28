@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/config/pages-url.config'
 import { TEST_CONSTANTS } from '@/constants/tests.constants'
 import { useTest } from '@/hooks/admin/tests/use-test'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { adminService } from '@/services/admin/admin.service'
 import { getQuestionsLabel } from '@/utils/test.utils'
 import { AnimatePresence, m } from 'framer-motion'
@@ -20,12 +21,14 @@ import {
     Plus,
     Target,
     Trash2,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function TestEditPage() {
+	const { t } = useI18n()
+	const c = t.adminTests.detail
 	const params = useParams()
 	const router = useRouter()
 	const testId = params.id as string
@@ -43,11 +46,11 @@ export default function TestEditPage() {
 	const handleDeleteTest = async () => {
 		try {
 			await adminService.deleteTest(testId)
-			toast.success('Test successfully deleted')
+			toast.success(c.deleteSuccessToast)
 			router.push('/dashboard/admin/learning/tests')
 		} catch (error) {
 			console.error('Delete error:', error)
-			toast.error('Error deleting test')
+			toast.error(c.deleteErrorToast)
 		}
 	}
 
@@ -61,7 +64,7 @@ export default function TestEditPage() {
 					className='text-center'
 				>
 					<div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4' />
-					<p className='text-sm text-gray-400'>Loading...</p>
+					<p className='text-sm text-gray-400'>{c.loading}</p>
 				</m.div>
 			</div>
 		)
@@ -79,15 +82,15 @@ export default function TestEditPage() {
 					<div className='w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6'>
 						<AlertCircle className='w-10 h-10 text-red-400' />
 					</div>
-					<h2 className='text-2xl font-bold text-white mb-3'>Test not found</h2>
+					<h2 className='text-2xl font-bold text-white mb-3'>{c.notFound.title}</h2>
 					<p className='text-gray-400 mb-8'>
-						The requested test does not exist or has been deleted
+						{c.notFound.subtitle}
 					</p>
 					<Button
 						onClick={() => router.push('/dashboard/admin/learning/tests')}
 						className='bg-white text-black hover:bg-white/80 font-semibold'
 					>
-						Back to tests
+						{c.notFound.back}
 					</Button>
 				</m.div>
 			</div>
@@ -97,7 +100,7 @@ export default function TestEditPage() {
 	return (
 		<>
 			<div className='min-h-screen'>
-				<div className='max-w-7xl mx-auto px-6 py-8 space-y-6'>
+				<div className='max-w-7xl mx-auto space-y-6'>
 					{/* Breadcrumb */}
 					<m.div
 						initial={{ opacity: 0, y: -10 }}
@@ -107,7 +110,7 @@ export default function TestEditPage() {
 						<Breadcrumb
 							showBackButton
 							items={[
-								{ label: 'Tests', href: ROUTES.ADMIN.LEARNING.TESTS },
+								{ label: c.breadcrumbTests, href: ROUTES.ADMIN.LEARNING.TESTS },
 								{ label: test.title },
 							]}
 						/>
@@ -144,7 +147,7 @@ export default function TestEditPage() {
 								className='gap-2 border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-800/10 hover:border-red-800/30 hover:text-red-400 transition-all'
 							>
 								<Trash2 className='w-4 h-4' />
-								Delete test
+								{c.deleteTest}
 							</Button>
 						</m.div>
 					</m.div>
@@ -166,7 +169,7 @@ export default function TestEditPage() {
 									<FileQuestion className='w-5 h-5 text-blue-400' />
 								</div>
 								<span className='text-xs text-gray-500 uppercase font-semibold'>
-									Questions in test
+									{c.stats.questionsInTest}
 								</span>
 							</div>
 							<p className='text-3xl font-bold text-white'>
@@ -184,7 +187,7 @@ export default function TestEditPage() {
 									<Target className='w-5 h-5 text-purple-400' />
 								</div>
 								<span className='text-xs text-gray-500 uppercase font-semibold'>
-									Passing score
+									{c.stats.passingScore}
 								</span>
 							</div>
 							<p className='text-3xl font-bold text-white'>
@@ -206,12 +209,12 @@ export default function TestEditPage() {
 							</div>
 							<div className='flex-1'>
 								<h3 className='font-semibold text-amber-400 mb-1.5'>
-									We recommend adding more questions
+									{c.warning.heading}
 								</h3>
 								<p className='text-sm text-amber-200/70 leading-relaxed'>
-									For a thorough knowledge check we recommend at least{' '}
-									{TEST_CONSTANTS.MIN_QUESTIONS_RECOMMENDED} questions. You
-									currently have {getQuestionsLabel(stats.questionsCount)}.
+									{c.warning.bodyTemplate
+										.replace('{min}', String(TEST_CONSTANTS.MIN_QUESTIONS_RECOMMENDED))
+										.replace('{questionsLabel}', getQuestionsLabel(stats.questionsCount))}
 								</p>
 							</div>
 						</m.div>
@@ -239,12 +242,15 @@ export default function TestEditPage() {
 							<div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
 								<div>
 									<h2 className='text-2xl font-bold text-white mb-1'>
-										Test questions
+										{c.questions.heading}
 									</h2>
 									<p className='text-sm text-gray-400'>
 										{stats.questionsCount === 0
-											? 'Add questions to activate the test'
-											: `Total ${getQuestionsLabel(stats.questionsCount)}`}
+											? c.questions.activatePrompt
+											: c.questions.totalTemplate.replace(
+													'{questionsLabel}',
+													getQuestionsLabel(stats.questionsCount)
+												)}
 									</p>
 								</div>
 
@@ -254,7 +260,7 @@ export default function TestEditPage() {
 										className='gap-2 bg-white text-black hover:bg-white/80 font-semibold'
 									>
 										<Plus className='w-5 h-5' />
-										Add question
+										{c.questions.addQuestion}
 									</Button>
 								</m.div>
 							</div>
@@ -290,10 +296,10 @@ export default function TestEditPage() {
 											<FileQuestion className='w-10 h-10 text-gray-600' />
 										</div>
 										<h3 className='text-xl font-semibold text-white mb-2'>
-											No questions yet
+											{c.questions.empty}
 										</h3>
 										<p className='text-gray-400 max-w-md mx-auto mb-8 leading-relaxed'>
-											Add the first question so users can take this test
+											{c.questions.emptySubtitle}
 										</p>
 										<m.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 											<Button
@@ -301,7 +307,7 @@ export default function TestEditPage() {
 												className='gap-2 bg-white text-black hover:bg-white/80 font-semibold'
 											>
 												<Plus className='w-5 h-5' />
-												Create first question
+												{c.questions.createFirst}
 											</Button>
 										</m.div>
 									</m.div>

@@ -26,4 +26,8 @@ export interface IUser {
 }
 export interface IFormData extends Pick<IUser, 'name' | 'email'> {
 	password: string
+	termsAccepted?: boolean
+	privacyAccepted?: boolean
+	legalVersion?: string
+	legalLocale?: 'en' | 'ru'
 }

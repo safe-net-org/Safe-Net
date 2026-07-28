@@ -1,77 +1,61 @@
 'use client'
-import { Star } from 'lucide-react'
 
-import { testimonials } from '@/lib/data'
-import { useEffect, useState } from 'react'
+import { m } from 'framer-motion'
+import { ArrowRight, ScanSearch, ShieldCheck } from '@/components/ui/icons'
+
+import { MOTION } from '@/config/motion.config'
+import { useI18n } from '@/i18n/LocaleProvider'
+
+const fallbackIcons = [ScanSearch, ShieldCheck, ArrowRight]
 
 export default function Testimonials() {
-	const [activeTestimonial, setActiveTestimonial] = useState(0)
-	const [isTransitioning, setIsTransitioning] = useState(false)
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setIsTransitioning(true)
-			setTimeout(() => {
-				setActiveTestimonial(prev => (prev + 1) % testimonials.length)
-				setIsTransitioning(false)
-			}, 300)
-		}, 5000)
-		return () => clearInterval(timer)
-	}, [])
+	const { t } = useI18n()
+
 	return (
-		<section className='py-20 bg-slate-800/30'>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-				<div className='text-center mb-16'>
-					<h3 className='text-3xl sm:text-4xl font-bold text-white mb-4'>
-						Student Reviews
-					</h3>
-					<p className='text-lg text-slate-400'>
-						What our graduates are saying
+		<section className='border-y border-border bg-secondary/35 py-20 sm:py-24'>
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='mx-auto mb-12 max-w-2xl text-center'>
+					<h2 className='mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl'>
+						{t.testimonialsSection.heading}
+					</h2>
+					<p className='text-base leading-7 text-muted-foreground sm:text-lg'>
+						{t.testimonialsSection.subtitle}
 					</p>
 				</div>
-				<div className='relative max-w-4xl mx-auto'>
-					<div className='bg-slate-800 rounded-2xl p-8 md:p-12 border border-slate-700 shadow-xl min-h-64 overflow-hidden'>
-						<div className='flex gap-1 mb-6 justify-center'>
-							{[...Array(testimonials[activeTestimonial].rating)].map(
-								(_, i) => (
-									<Star
-										key={i}
-										className='w-5 h-5 text-yellow-500 fill-yellow-500'
-									/>
+
+				<div className='grid gap-4 md:grid-cols-3'>
+					{t.testimonialsSection.items.map((item, index) => {
+								const Icon = fallbackIcons[index]
+								return (
+									<m.article
+										key={item.author}
+										initial={{ opacity: 0, y: 8 }}
+										whileInView={{ opacity: 1, y: 0 }}
+										viewport={{ once: true }}
+										transition={{
+											duration: MOTION.reveal,
+											delay: index * MOTION.stagger,
+											ease: MOTION.ease,
+										}}
+										className='rounded-2xl border border-border bg-card p-6 shadow-sm'
+									>
+										<div className='mb-8 flex items-center justify-between'>
+											<span className='text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground'>
+												0{index + 1}
+											</span>
+											<div className='flex size-9 items-center justify-center rounded-xl bg-brand/10 text-brand'>
+												<Icon className='size-4.5' aria-hidden='true' />
+											</div>
+										</div>
+										<h3 className='mb-3 text-lg font-semibold text-card-foreground'>
+											{item.author}
+										</h3>
+										<p className='text-sm leading-6 text-muted-foreground'>
+											{item.text}
+										</p>
+									</m.article>
 								)
-							)}
-						</div>
-						<div
-							className={`transition-opacity duration-300 ${
-								isTransitioning ? 'opacity-0' : 'opacity-100'
-							}`}
-						>
-							<p className='text-xl text-slate-200 text-center mb-6 leading-relaxed italic'>
-								&quot;{testimonials[activeTestimonial].text}&quot;
-							</p>
-							<p className='text-center text-slate-400 font-medium'>
-								— {testimonials[activeTestimonial].author}
-							</p>
-						</div>
-					</div>
-					<div className='flex items-center justify-center gap-2 mt-6'>
-						{testimonials.map((_, index) => (
-							<button
-								key={index}
-								onClick={() => {
-									setIsTransitioning(true)
-									setTimeout(() => {
-										setActiveTestimonial(index)
-										setIsTransitioning(false)
-									}, 50)
-								}}
-								className={`h-2 rounded-full transition-all ${
-									index === activeTestimonial
-										? 'w-8 bg-indigo-500'
-										: 'w-2 bg-slate-600 hover:bg-slate-500'
-								}`}
-							/>
-						))}
-					</div>
+						})}
 				</div>
 			</div>
 		</section>

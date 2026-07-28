@@ -1,5 +1,5 @@
 'use client'
-import { ArrowRight, Play, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, Play, ShieldCheck, Sparkles } from '@/components/ui/icons'
 
 import { useI18n } from '@/i18n/LocaleProvider'
 import { AuthDialog } from '../Auth/AuthDialog'
@@ -11,10 +11,9 @@ export default function Hero() {
 		<section className='relative overflow-hidden'>
 			<div className='absolute inset-0 bg-linear-to-br from-indigo-500/10 via-purple-500/5 to-pink-500/10'></div>
 			<div className='absolute inset-0'>
-				<div className='absolute top-20 left-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-pulse'></div>
+				<div className='absolute left-20 top-20 h-72 w-72 rounded-full bg-indigo-500/15 blur-3xl'></div>
 				<div
-					className='absolute bottom-20 right-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse'
-					style={{ animationDelay: '1s' }}
+					className='absolute bottom-20 right-20 h-96 w-96 rounded-full bg-purple-500/15 blur-3xl'
 				></div>
 			</div>
 			<div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32'>
@@ -22,16 +21,14 @@ export default function Hero() {
 					<div>
 						<div className='inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-2 mb-6'>
 							<Sparkles className='w-4 h-4 text-indigo-400' />
-							<span className='text-sm text-indigo-300 font-medium'>
-								{t.hero.badge}
-							</span>
+							<span className='text-sm text-landing-accent font-medium'>{t.hero.badge}</span>
 						</div>
-						<h2 className='text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6'>
-							<span className='bg-linear-to-r from-white to-slate-300 bg-clip-text text-transparent'>
+						<h1 className='text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6'>
+							<span className='bg-linear-to-r from-landing-foreground to-landing-muted bg-clip-text text-transparent'>
 								{t.hero.title}
 							</span>
-						</h2>
-						<p className='text-lg sm:text-xl text-slate-300 mb-8 leading-relaxed'>
+						</h1>
+						<p className='text-lg sm:text-xl text-landing-muted mb-8 leading-relaxed'>
 							{t.hero.subtitle}
 						</p>
 						<div className='flex flex-wrap gap-4 mb-8'>
@@ -39,16 +36,15 @@ export default function Hero() {
 								triggerButton={{
 									text: t.hero.startLearning,
 									className:
-										'bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-xl shadow-indigo-500/30 flex items-center gap-2 group text-normal',
-									icon: (
-										<Play className='w-5 h-5 group-hover:scale-110 transition-transform' />
-									),
+										'bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-[box-shadow,filter] duration-300 ease-out shadow-xl shadow-indigo-500/25 flex items-center gap-2 group text-normal hover:brightness-105',
+									icon: <Play className='w-5 h-5' />,
 									position: 'start',
+									smoothMotion: true
 								}}
 							/>
 							<a
 								href='/guard'
-								className='bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-xl font-semibold transition-all border border-slate-700 flex items-center gap-2 group'
+								className='bg-landing-surface hover:bg-landing-surface/80 text-landing-foreground px-8 py-4 rounded-xl font-semibold transition-all border border-landing-border flex items-center gap-2 group'
 							>
 								<ShieldCheck className='w-5 h-5 text-indigo-400' />
 								{t.hero.tryGuard}

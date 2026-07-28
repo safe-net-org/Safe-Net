@@ -7,27 +7,29 @@ import LessonsList from '@/components/admin/learning/lessons/lessons-list'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/config/pages-url.config'
+import { useI18n } from '@/i18n/LocaleProvider'
+import { selectPlural } from '@/i18n/plural'
 import { adminService } from '@/services/admin/admin.service'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, m } from 'framer-motion'
-import { AlertCircle, BookOpen, GraduationCap, Plus, Trash2 } from 'lucide-react'
+import { AlertCircle, BookOpen, GraduationCap, Plus, Trash2 } from '@/components/ui/icons'
 import { useParams, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-const getLessonWord = (count: number) => {
-	const lastDigit = count % 10
-	const lastTwoDigits = count % 100
-	if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return 'lessons'
-	if (lastDigit === 1) return 'lesson'
-	if (lastDigit >= 2 && lastDigit <= 4) return 'lessons'
-	return 'lessons'
-}
-
 export default function CourseEditPage() {
+	const { locale, t } = useI18n()
+	const c = t.adminCourses.edit
 	const params = useParams()
 	const router = useRouter()
 	const courseId = params.id as string
+
+	const getLessonWord = (count: number) =>
+		selectPlural(locale, count, {
+			one: c.lessonWordOne,
+			few: c.lessonWordFew,
+			many: c.lessonWordMany,
+		})
 
 	const [showCreateLesson, setShowCreateLesson] = useState(false)
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -49,19 +51,19 @@ export default function CourseEditPage() {
 	const handleDeleteCourse = async () => {
 		try {
 			await adminService.deleteCourse(courseId)
-			toast.success('Course successfully deleted')
+			toast.success(c.deleteSuccessToast)
 			router.push(ROUTES.ADMIN.LEARNING.COURSES)
-		} catch (error) {
-			toast.error('Error while deleting course')
+		} catch {
+			toast.error(c.deleteErrorToast)
 		}
 	}
 
 	const getDifficultyConfig = (difficulty: string) => {
 		switch (difficulty) {
-			case 'EASY': return { label: 'Easy', color: 'bg-green-500/10 text-green-400 border-green-500/20' }
-			case 'MEDIUM': return { label: 'Medium', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' }
-			case 'HARD': return { label: 'Hard', color: 'bg-red-500/10 text-red-400 border-red-500/20' }
-			default: return { label: 'Medium', color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' }
+			case 'EASY': return { label: c.difficulty.easy, color: 'bg-green-500/10 text-green-400 border-green-500/20' }
+			case 'MEDIUM': return { label: c.difficulty.medium, color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' }
+			case 'HARD': return { label: c.difficulty.hard, color: 'bg-red-500/10 text-red-400 border-red-500/20' }
+			default: return { label: c.difficulty.medium, color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' }
 		}
 	}
 
@@ -75,9 +77,9 @@ export default function CourseEditPage() {
 		<div className='min-h-screen flex items-center justify-center'>
 			<div className='max-w-md w-full p-12 rounded-2xl text-center bg-white/5 border border-white/10'>
 				<AlertCircle className='w-10 h-10 text-red-400 mx-auto mb-6' />
-				<h2 className='text-2xl font-bold text-white mb-3'>Course not found</h2>
+				<h2 className='text-2xl font-bold text-white mb-3'>{c.notFound.title}</h2>
 				<Button onClick={() => router.push(ROUTES.ADMIN.LEARNING.COURSES)} className='bg-white text-black font-semibold hover:bg-white/80'>
-					Back to courses
+					{c.notFound.back}
 				</Button>
 			</div>
 		</div>
@@ -87,10 +89,10 @@ export default function CourseEditPage() {
 
 	return (
 		<>
-			<div className='max-w-7xl mx-auto px-6 py-8 space-y-6'>
+			<div className='max-w-7xl mx-auto space-y-6'>
 				<Breadcrumb
 					showBackButton
-					items={[{ label: 'Courses', href: ROUTES.ADMIN.LEARNING.COURSES }, { label: course.title }]}
+					items={[{ label: c.breadcrumbCourses, href: ROUTES.ADMIN.LEARNING.COURSES }, { label: course.title }]}
 				/>
 
 				{/* Header Card */}
@@ -120,7 +122,7 @@ export default function CourseEditPage() {
 							className='gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-all'
 						>
 							<Trash2 className='w-4 h-4' />
-							Delete course
+							{c.deleteCourse}
 						</Button>
 					</div>
 				</m.div>
@@ -128,7 +130,7 @@ export default function CourseEditPage() {
 				{/* Editor */}
 				<div className='rounded-[24px] bg-white/[0.03] border border-white/[0.08] overflow-hidden'>
 					<div className='p-6 border-b border-white/[0.05]'>
-						<h2 className='text-lg font-semibold text-white'>Course information</h2>
+						<h2 className='text-lg font-semibold text-white'>{c.courseInfo.heading}</h2>
 					</div>
 					<div className='p-6'>
 						<CourseEditForm course={course} onSuccess={refetch} />
@@ -139,31 +141,31 @@ export default function CourseEditPage() {
 				<div className='rounded-[24px] bg-white/[0.03] border border-white/[0.08] overflow-hidden'>
 					<div className='p-6 border-b border-white/[0.05] flex items-center justify-between'>
 						<div>
-							<h2 className='text-lg font-semibold text-white'>Course lessons</h2>
-							<p className='text-sm text-gray-500'>Manage learning content</p>
+							<h2 className='text-lg font-semibold text-white'>{c.lessons.heading}</h2>
+							<p className='text-sm text-gray-500'>{c.lessons.subtitle}</p>
 						</div>
 						<Button
 							onClick={() => setShowCreateLesson(true)}
 							className='gap-2 bg-white text-black hover:bg-white/90 font-semibold'
 						>
 							<Plus className='w-4 h-4' />
-							Add lesson
+							{c.lessons.addLesson}
 						</Button>
 					</div>
 
 					<div className='p-6'>
 						<AnimatePresence mode='wait'>
 							{stats.lessonsCount > 0 ? (
-								<LessonsList lessons={course.lessons} courseId={course.id} onUpdate={refetch} />
+								<LessonsList lessons={course.lessons} onUpdate={refetch} />
 							) : (
 								<div className='text-center py-16 rounded-2xl border border-dashed border-white/[0.08]'>
 									<BookOpen className='w-12 h-12 text-gray-700 mx-auto mb-4' />
-									<h3 className='text-white font-medium mb-6'>No lessons yet</h3>
+									<h3 className='text-white font-medium mb-6'>{c.lessons.empty}</h3>
 									<Button
 										onClick={() => setShowCreateLesson(true)}
 										className='bg-white text-black font-semibold'
 									>
-										Create first lesson
+										{c.lessons.createFirst}
 									</Button>
 								</div>
 							)}

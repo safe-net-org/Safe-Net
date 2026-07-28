@@ -15,7 +15,8 @@ data cannot silently drift.
 
     .venv/bin/python scripts/test_parity.py    # needs `bun` on PATH
 
-Requires bun to run the TS dump. Skips with a clear message if bun is absent.
+Requires bun to run the TS dump. Bun executes TypeScript directly, so the test
+does not need bunx to download or cache an extra runner.
 """
 
 import json
@@ -34,7 +35,7 @@ DUMP_SCRIPT = REPO_ROOT / "packages" / "guard-core" / "scripts" / "dump-detectio
 
 def load_ts_data() -> dict:
     result = subprocess.run(
-        ["bunx", "tsx", str(DUMP_SCRIPT)],
+        ["bun", str(DUMP_SCRIPT)],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT / "packages" / "guard-core",

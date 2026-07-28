@@ -32,11 +32,12 @@ const prisma = new PrismaClient({ adapter })
 
 const DEMO_PASSWORD = 'password123'
 const CONTENT_DIR = join(__dirname, '../content')
+const CONTENT_RU_DIR = join(__dirname, '../content-ru')
 
 async function main() {
 	// Parsed before the wipe: if the content is invalid, the existing database
 	// should survive untouched rather than be emptied for nothing.
-	const { stages, stats } = loadContent(CONTENT_DIR)
+	const { stages, stats } = loadContent(CONTENT_DIR, CONTENT_RU_DIR)
 	console.log(`📚 Loaded content: ${describeStats(stats)}`)
 
 	const hashedPassword = await hash(DEMO_PASSWORD)
@@ -120,6 +121,8 @@ async function createStage(tx: TransactionClient, stage: CompiledStage) {
 			title: stage.title,
 			subtitle: stage.subtitle,
 			icon: stage.icon,
+			titleRu: stage.titleRu,
+			subtitleRu: stage.subtitleRu,
 		},
 	})
 	console.log(`  📦 ${stage.title}`)
@@ -141,6 +144,8 @@ async function createCourse(
 			title: course.title,
 			description: course.description,
 			difficulty: course.difficulty,
+			titleRu: course.titleRu,
+			descriptionRu: course.descriptionRu,
 		},
 	})
 
@@ -164,6 +169,7 @@ async function createLesson(
 			order: lesson.order,
 			title: lesson.title,
 			estimatedDuration: lesson.estimatedDuration,
+			titleRu: lesson.titleRu,
 		},
 	})
 
@@ -174,6 +180,8 @@ async function createLesson(
 			type: block.type,
 			title: block.title,
 			content: block.content,
+			titleRu: block.titleRu,
+			contentRu: block.contentRu,
 		})),
 	})
 
@@ -200,6 +208,11 @@ async function createTask(
 			meta: task.meta ?? undefined,
 			correctAnswer: task.correctAnswer,
 			correctAnswerIndex: task.correctAnswerIndex,
+			correctAnswerRu: task.correctAnswerRu,
+			titleRu: task.titleRu,
+			questionRu: task.questionRu,
+			explanationRu: task.explanationRu,
+			metaRu: task.metaRu ?? undefined,
 		},
 	})
 
@@ -210,6 +223,7 @@ async function createTask(
 				order: option.order,
 				text: option.text,
 				isCorrect: option.isCorrect,
+				textRu: option.textRu,
 			})),
 		})
 	}
@@ -226,6 +240,8 @@ async function createTest(
 			title: test.title,
 			description: test.description,
 			passingScore: test.passingScore,
+			titleRu: test.titleRu,
+			descriptionRu: test.descriptionRu,
 		},
 	})
 
@@ -237,6 +253,7 @@ async function createTest(
 				text: question.text,
 				type: question.type,
 				correctAnswerIndex: question.correctAnswerIndex,
+				textRu: question.textRu,
 			},
 		})
 
@@ -246,6 +263,7 @@ async function createTest(
 				order: option.order,
 				text: option.text,
 				isCorrect: option.isCorrect,
+				textRu: option.textRu,
 			})),
 		})
 	}

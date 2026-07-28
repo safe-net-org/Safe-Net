@@ -14,6 +14,11 @@ from urllib.parse import urlparse
 
 import tldextract
 
+# Feature extraction is part of a request and must never trigger a background
+# Public Suffix List download. The bundled snapshot is deterministic, works in
+# offline deployments, and avoids an undeclared third-party network call.
+TLD_EXTRACT = tldextract.TLDExtract(cache_dir=None, suffix_list_urls=())
+
 # Visual homoglyph map — characters that look Latin but are not. Kept in sync
 # with packages/guard-core/src/shared/brands.ts (CYRILLIC_TO_LATIN_MAP); the CI
 # parity test fails if they drift. Covers Cyrillic, Greek, and fullwidth Latin.
@@ -281,7 +286,7 @@ def _de_leet(text: str) -> str:
 
 def detect_leet_squat(unicode_host: str) -> tuple[bool, str]:
     """Digit/symbol-substitution typosquat: paypa1, g00gle, sb3rbank."""
-    extracted = tldextract.extract(unicode_host)
+    extracted = TLD_EXTRACT(unicode_host)
     raw = (extracted.domain or "").lower()
     if not re.search(r"[0-9$@|!]", raw):
         return False, ""
@@ -303,7 +308,7 @@ def detect_brand_token(unicode_host: str) -> tuple[bool, str, bool]:
     Returns (found, brand, via_leet). `via_leet` is True when the token only
     matched after de-leeting (micros0ft) — deliberate evasion, scored higher.
     """
-    extracted = tldextract.extract(unicode_host)
+    extracted = TLD_EXTRACT(unicode_host)
     sld = (extracted.domain or "").lower()
     translit = transliterate(sld)
     if re.sub(r"[^a-z0-9]", "", translit) in BRAND_SET:
@@ -333,7 +338,7 @@ def has_excessive_encoding(raw_url: str) -> bool:
 
 def detect_typosquat(unicode_host: str) -> tuple[bool, str, int]:
     """Returns (is_typosquat, nearest_brand, distance) on a Unicode host."""
-    extracted = tldextract.extract(unicode_host)
+    extracted = TLD_EXTRACT(unicode_host)
     raw = (extracted.domain or "").lower()
     domain = re.sub(r"[^a-z0-9]", "", transliterate(raw).lower())
     if not domain or domain in BRAND_SET:
@@ -363,7 +368,7 @@ def extract_features(raw_url: str) -> UrlFeatures:
     path = parsed.path or ""
     query = parsed.query or ""
 
-    extracted = tldextract.extract(unicode_host)
+    extracted = TLD_EXTRACT(unicode_host)
     tld = extracted.suffix.lower()
     domain = (extracted.domain or "").lower()
     full_domain = f"{extracted.domain}.{tld}" if tld else extracted.domain

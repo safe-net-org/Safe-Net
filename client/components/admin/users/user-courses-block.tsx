@@ -1,8 +1,9 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { m } from 'framer-motion'
-import { BookOpen, Calendar, CheckCircle2, Zap } from 'lucide-react'
+import { BookOpen, Calendar, CheckCircle2, Zap } from '@/components/ui/icons'
 
 interface Course {
 	id: string
@@ -18,6 +19,9 @@ interface UserCoursesBlockProps {
 }
 
 export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
+	const { t } = useI18n()
+	const c = t.adminUserComponents.userCoursesBlock
+
 	if (!courses || courses.length === 0) {
 		return (
 			<m.div
@@ -26,7 +30,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 				className='flex flex-col items-center justify-center py-16 bg-white/[0.02] backdrop-blur-sm rounded-2xl border border-white/5'
 			>
 				<BookOpen className='w-12 h-12 text-white/20 mb-4' />
-				<p className='text-white/50'>User is not enrolled in any course</p>
+				<p className='text-white/50'>{c.empty}</p>
 			</m.div>
 		)
 	}
@@ -44,7 +48,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{completedCourses.length}
 					</div>
-					<div className='text-white/60 text-xs'>Completed</div>
+					<div className='text-white/60 text-xs'>{c.stats.completed}</div>
 				</div>
 
 				<div className='bg-linear-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-4'>
@@ -52,7 +56,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{activeCourses.length}
 					</div>
-					<div className='text-white/60 text-xs'>In progress</div>
+					<div className='text-white/60 text-xs'>{c.stats.inProgress}</div>
 				</div>
 
 				<div className='bg-linear-to-br from-gray-500/10 to-gray-600/5 border border-gray-500/20 rounded-xl p-4'>
@@ -60,7 +64,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 					<div className='text-2xl font-bold text-white mb-1'>
 						{notStartedCourses.length}
 					</div>
-					<div className='text-white/60 text-xs'>Not started</div>
+					<div className='text-white/60 text-xs'>{c.stats.notStarted}</div>
 				</div>
 			</div>
 
@@ -72,7 +76,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 							format: 'date-medium',
 							locale: 'en-US',
 							gracefulFail: true,
-						}) || 'Recently'
+						}) || c.recentlyFallback
 
 					return (
 						<m.div
@@ -89,7 +93,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 											{course.title}
 										</h3>
 										<p className='text-white/60 text-sm line-clamp-2 mb-2'>
-											{course.description || 'No description'}
+											{course.description || c.noDescription}
 										</p>
 									</div>
 
@@ -101,7 +105,7 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 								{/* Progress bar */}
 								<div className='mb-3'>
 									<div className='flex items-center justify-between text-xs mb-1.5'>
-										<span className='text-white/60'>Progress</span>
+										<span className='text-white/60'>{c.progress}</span>
 										<span className='text-white/80 font-semibold'>
 											{course.progress}%
 										</span>
@@ -122,7 +126,9 @@ export default function UserCoursesBlock({ courses }: UserCoursesBlockProps) {
 									</div>
 									<div className='flex items-center gap-1.5 text-amber-400/80'>
 										<Zap className='w-3.5 h-3.5' />
-										<span className='font-semibold'>{course.totalXp} XP</span>
+										<span className='font-semibold'>
+											{c.xpTemplate.replace('{xp}', String(course.totalXp))}
+										</span>
 									</div>
 								</div>
 							</div>

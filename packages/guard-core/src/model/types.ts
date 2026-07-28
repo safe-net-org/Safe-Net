@@ -84,6 +84,8 @@ export interface AnalysisResult {
   domScore?: number
   domSignals?: RiskSignal[]
   mlEnhanced?: boolean
+  /** Host is on the user's trusted list — checks were skipped, verdict forced safe. */
+  trusted?: boolean
 }
 
 export interface StoredResult extends AnalysisResult {
@@ -116,3 +118,4 @@ export type ExtensionMessage =
   | { type: 'CURRENT_RESULT'; result: AnalysisResult | null }
   | { type: 'TOGGLE_PANEL' }
   | { type: 'CLOSE_PANEL' }
+  | { type: 'TRUST_SITE'; host: string }

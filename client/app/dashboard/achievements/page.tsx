@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ROUTES } from '@/config/pages-url.config'
 import { useAchievements } from '@/hooks/learning/useAchievements'
+import { useI18n } from '@/i18n/LocaleProvider'
+import type { Messages } from '@/i18n/messages'
 import { cn } from '@/lib/utils'
 import type {
 	AchievementTier,
@@ -13,8 +15,8 @@ import type {
 } from '@/services/learning/learning.types'
 import { formatDate } from '@/utils/date-time/dateFormatter'
 import { AnimatePresence, m } from 'framer-motion'
-import { icons, Lock, LucideIcon, Sparkles, Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { icons, Lock, AppIcon, Sparkles, Trophy } from '@/components/ui/icons'
+import { createElement, useState } from 'react'
 
 // Apple-style easing curves
 const appleEasing = [0.42, 0, 0.58, 1] as const
@@ -22,38 +24,44 @@ const appleEaseOut = [0.16, 1, 0.3, 1] as const
 
 // Rarity is the whole point of tiers, so each one gets a visibly different
 // treatment rather than the single purple every card used to share.
-const TIER_STYLES: Record<
+const tierStyles = (
+	t: Messages['dashboardAchievements']
+): Record<
 	AchievementTier,
 	{ label: string; icon: string; card: string; badge: string }
-> = {
+> => ({
 	BRONZE: {
-		label: 'Bronze',
-		icon: 'text-amber-600',
+		label: t.tiers.bronze,
+		icon: 'text-amber-700 dark:text-amber-600',
 		card: 'from-amber-600/5 to-amber-700/5 border-amber-600/20',
-		badge: 'bg-amber-600/15 text-amber-500 ring-amber-600/30',
+		badge:
+			'bg-amber-100 text-amber-800 ring-amber-300 dark:bg-amber-600/15 dark:text-amber-500 dark:ring-amber-600/30',
 	},
 	SILVER: {
-		label: 'Silver',
-		icon: 'text-slate-300',
+		label: t.tiers.silver,
+		icon: 'text-slate-600 dark:text-slate-300',
 		card: 'from-slate-300/5 to-slate-400/5 border-slate-300/20',
-		badge: 'bg-slate-300/15 text-slate-200 ring-slate-300/30',
+		badge:
+			'bg-slate-200 text-slate-800 ring-slate-300 dark:bg-slate-300/15 dark:text-slate-200 dark:ring-slate-300/30',
 	},
 	GOLD: {
-		label: 'Gold',
-		icon: 'text-yellow-400',
+		label: t.tiers.gold,
+		icon: 'text-yellow-700 dark:text-yellow-400',
 		card: 'from-yellow-500/5 to-orange-500/5 border-yellow-500/25',
-		badge: 'bg-yellow-500/15 text-yellow-400 ring-yellow-500/30',
+		badge:
+			'bg-yellow-100 text-yellow-800 ring-yellow-300 dark:bg-yellow-500/15 dark:text-yellow-400 dark:ring-yellow-500/30',
 	},
 	PLATINUM: {
-		label: 'Platinum',
-		icon: 'text-cyan-300',
+		label: t.tiers.platinum,
+		icon: 'text-cyan-700 dark:text-cyan-300',
 		card: 'from-cyan-400/5 to-violet-500/10 border-cyan-400/25',
-		badge: 'bg-cyan-400/15 text-cyan-300 ring-cyan-400/30',
+		badge:
+			'bg-cyan-100 text-cyan-800 ring-cyan-300 dark:bg-cyan-400/15 dark:text-cyan-300 dark:ring-cyan-400/30',
 	},
-}
+})
 
 // Function to get an icon by slug
-const getIconBySlug = (slug: string): LucideIcon => {
+const getIconBySlug = (slug: string): AppIcon => {
 	const pascalCase = slug
 		.split('-')
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -61,10 +69,25 @@ const getIconBySlug = (slug: string): LucideIcon => {
 
 	// Use named import from icons object
 	const icon = icons[pascalCase as keyof typeof icons]
-	return (icon as LucideIcon) || Trophy
+	return (icon as AppIcon) || Trophy
+}
+
+function AchievementIcon({
+	slug,
+	className,
+}: {
+	slug: string
+	className: string
+}) {
+	return createElement(getIconBySlug(slug), {
+		className,
+		strokeWidth: 1.5,
+		'aria-hidden': true,
+	})
 }
 
 export default function AchievementsPage() {
+	const { t } = useI18n()
 	const { achievements, userAchievements, isLoading } = useAchievements()
 	const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 	const [filter, setFilter] = useState<'all' | 'earned' | 'locked'>('all')
@@ -112,7 +135,7 @@ export default function AchievementsPage() {
 
 	if (isLoading) {
 		return (
-			<div className='container mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6'>
+			<div className='space-y-6'>
 				<Skeleton className='h-8 w-64 bg-white/5' />
 				<div className='grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3'>
 					{[...Array(6)].map((_, i) => (
@@ -124,12 +147,15 @@ export default function AchievementsPage() {
 	}
 
 	return (
-		<div className='container mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8'>
+		<div className='space-y-6 sm:space-y-8'>
 				<Breadcrumb
 					showBackButton
 					items={[
-						{ label: 'Home', href: ROUTES.HOME },
-						{ label: 'Achievements', href: ROUTES.ACHIEVEMENTS },
+						{ label: t.dashboardAchievements.breadcrumb.home, href: ROUTES.HOME },
+						{
+							label: t.dashboardAchievements.breadcrumb.achievements,
+							href: ROUTES.ACHIEVEMENTS,
+						},
 					]}
 				/>
 
@@ -150,27 +176,19 @@ export default function AchievementsPage() {
 								className='flex items-center gap-3'
 							>
 								<div className='rounded-xl bg-gradient-to-br from-yellow-500/30 to-orange-500/30 p-2.5 shadow-lg shadow-yellow-500/20 ring-1 ring-yellow-500/30 sm:rounded-2xl sm:p-3'>
-									<Trophy className='h-6 w-6 text-yellow-400 sm:h-8 sm:w-8' />
+									<Trophy className='h-6 w-6 text-amber-700 dark:text-yellow-400 sm:h-8 sm:w-8' />
 								</div>
-								<h1 className='text-2xl font-bold text-white sm:text-3xl md:text-4xl'>
-									Achievements
+								<h1 className='text-2xl font-bold text-foreground sm:text-3xl md:text-4xl'>
+									{t.dashboardAchievements.title}
 								</h1>
 							</m.div>
 
-							<p className='text-sm text-white/70 sm:text-base md:text-lg'>
-								{hasAchievements ? (
-									<>
-										Received{' '}
-										<span className='font-semibold text-white'>
-											{earnedCount}
-										</span>{' '}
-										out of{' '}
-										<span className='font-semibold text-white'>{totalCount}</span>{' '}
-										achievements. Keep learning and unlock new rewards!
-									</>
-								) : (
-									'Complete tasks, courses, and tests to earn your first achievements'
-								)}
+							<p className='text-sm text-muted-foreground sm:text-base md:text-lg'>
+								{hasAchievements
+									? t.dashboardAchievements.subtitleEarnedTemplate
+											.replace('{earned}', String(earnedCount))
+											.replace('{total}', String(totalCount))
+									: t.dashboardAchievements.subtitleNone}
 							</p>
 
 							{/* Filter Tabs */}
@@ -182,10 +200,10 @@ export default function AchievementsPage() {
 									className={
 										filter === 'all'
 											? ''
-											: 'border-white/20 bg-slate-800/50 hover:bg-slate-700/50'
+											: 'border-border bg-card text-card-foreground hover:bg-accent'
 									}
 								>
-									All
+									{t.dashboardAchievements.filters.all}
 								</Button>
 								<Button
 									variant='default'
@@ -194,10 +212,13 @@ export default function AchievementsPage() {
 									className={
 										filter === 'earned'
 											? ''
-											: 'border-white/20 bg-slate-800/50 hover:bg-slate-700/50'
+											: 'border-border bg-card text-card-foreground hover:bg-accent'
 									}
 								>
-									Received ({earnedCount})
+									{t.dashboardAchievements.filters.receivedTemplate.replace(
+										'{count}',
+										String(earnedCount)
+									)}
 								</Button>
 								<Button
 									variant='default'
@@ -206,10 +227,13 @@ export default function AchievementsPage() {
 									className={
 										filter === 'locked'
 											? ''
-											: 'border-white/20 bg-slate-800/50 hover:bg-slate-700/50'
+											: 'border-border bg-card text-card-foreground hover:bg-accent'
 									}
 								>
-									Locked ({totalCount - earnedCount})
+									{t.dashboardAchievements.filters.lockedTemplate.replace(
+										'{count}',
+										String(totalCount - earnedCount)
+									)}
 								</Button>
 							</div>
 						</div>
@@ -219,14 +243,14 @@ export default function AchievementsPage() {
 							<div className='flex flex-col justify-center space-y-3 sm:space-y-4'>
 								<StatCard
 									icon={Trophy}
-									label='Progress'
+									label={t.dashboardAchievements.stats.progress}
 									value={`${Math.round((earnedCount / totalCount) * 100)}%`}
 									color='yellow'
 									delay={0.1}
 								/>
 								<StatCard
 									icon={Sparkles}
-									label='Bonus XP earned'
+									label={t.dashboardAchievements.stats.bonusXp}
 									value={earnedXp}
 									color='purple'
 									delay={0.2}
@@ -267,15 +291,17 @@ export default function AchievementsPage() {
 								<Lock className='h-8 w-8 text-white/50 sm:h-12 sm:w-12' />
 							</div>
 							<h3 className='mb-2 text-lg font-semibold text-white sm:text-xl'>
-								No achievements
+								{t.dashboardAchievements.empty.title}
 							</h3>
 							<p className='mb-6 text-sm text-white/70 sm:text-base'>
 								{filter === 'earned'
-									? "You haven't earned any achievements yet"
-									: 'All achievements are already unlocked!'}
+									? t.dashboardAchievements.empty.filterEarned
+									: t.dashboardAchievements.empty.filterLocked}
 							</p>
 							{filter !== 'all' && (
-								<Button onClick={() => setFilter('all')}>Show all</Button>
+								<Button onClick={() => setFilter('all')}>
+									{t.dashboardAchievements.empty.showAll}
+								</Button>
 							)}
 						</CardContent>
 					</Card>
@@ -292,7 +318,7 @@ function StatCard({
 	color,
 	delay,
 }: {
-	icon: LucideIcon
+	icon: AppIcon
 	label: string
 	value: number | string
 	color: 'yellow' | 'purple'
@@ -340,14 +366,17 @@ function AchievementCard({
 	isHovered: boolean
 	onHover: (id: string | null) => void
 }) {
+	const { t } = useI18n()
 	// A secret achievement's reveal is its reward, so an unearned one shows
 	// neither its name nor how to get it.
 	const isHiddenSecret = achievement.isSecret && !isEarned
-	const tier = TIER_STYLES[achievement.tier] ?? TIER_STYLES.BRONZE
-	const IconComponent = getIconBySlug(achievement.icon || 'trophy')
-	const title = isHiddenSecret ? 'Secret achievement' : achievement.title
+	const tierStylesMap = tierStyles(t.dashboardAchievements)
+	const tier = tierStylesMap[achievement.tier] ?? tierStylesMap.BRONZE
+	const title = isHiddenSecret
+		? t.dashboardAchievements.secret.title
+		: achievement.title
 	const description = isHiddenSecret
-		? 'Keep exploring to reveal this one.'
+		? t.dashboardAchievements.secret.description
 		: achievement.description
 
 	return (
@@ -407,9 +436,9 @@ function AchievementCard({
 					animate={{
 						borderColor: isHovered
 							? isEarned
-								? 'rgba(168, 85, 247, 0.3)'
-								: 'rgba(255, 255, 255, 0.1)'
-							: 'rgba(168, 85, 247, 0)',
+								? 'color-mix(in oklab, var(--chart-purple) 30%, transparent)'
+								: 'color-mix(in oklab, var(--foreground) 10%, transparent)'
+							: 'transparent',
 					}}
 					transition={{
 						borderColor: {
@@ -434,12 +463,12 @@ function AchievementCard({
 						}}
 					>
 						{isEarned ? (
-							<IconComponent
+							<AchievementIcon
+								slug={achievement.icon || 'trophy'}
 								className={cn(
 									'w-9 h-9 sm:w-11 sm:h-11 transition-all duration-500',
 									tier.icon
 								)}
-								strokeWidth={1.5}
 							/>
 						) : (
 							<Lock
@@ -465,12 +494,15 @@ function AchievementCard({
 							<span
 								className={cn(
 									'rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ring-1',
-									isEarned
-										? 'bg-purple-500/15 text-purple-300 ring-purple-500/30'
+								isEarned
+										? 'bg-purple-100 text-purple-800 ring-purple-300 dark:bg-purple-500/15 dark:text-purple-300 dark:ring-purple-500/30'
 										: 'bg-white/5 text-white/40 ring-white/10'
 								)}
 							>
-								+{achievement.xpReward} XP
+								{t.dashboardAchievements.xpRewardTemplate.replace(
+									'{xp}',
+									String(achievement.xpReward)
+								)}
 							</span>
 						)}
 					</div>

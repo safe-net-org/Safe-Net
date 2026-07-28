@@ -3,16 +3,10 @@ import { ReactNode } from 'react'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
 	return (
-		<div className='flex h-screen'>
+		<div className='flex min-h-screen bg-background text-foreground'>
 			<DashboardSidebar />
 
-			{/* Main Content */}
-			<div className='flex-1 overflow-x-hidden'>
-				{/* Content */}
-				<main className='flex-1 overflow-x-hidden'>
-					<div className='p-8'>{children}</div>
-				</main>
-			</div>
+			<main className='min-w-0 flex-1 overflow-x-hidden'>{children}</main>
 		</div>
 	)
 }

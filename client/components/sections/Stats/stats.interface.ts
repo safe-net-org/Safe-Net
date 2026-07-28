@@ -1,7 +1,7 @@
-import { LucideIcon } from 'lucide-react'
+import { AppIcon } from '@/components/ui/icons'
 
 export interface IStatItem {
-	icon: LucideIcon
+	icon: AppIcon
 	label: string
 	value: number
 	suffix?: string

@@ -9,4 +9,9 @@ export class PublicController {
 	async getPublicStats(): Promise<PublicStatsResponse> {
 		return this.publicService.getStats()
 	}
+
+	@Get('feedback')
+	async getFeaturedFeedback() {
+		return this.publicService.getFeaturedFeedback()
+	}
 }
