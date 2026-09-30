@@ -1,9 +1,9 @@
 # Architecture
 
-Safe-Net is a monorepo of five deployable/loadable pieces that share one thing:
-the phishing-detection rule engine. The organising principle is that the same
-detection logic teaches, tests, and enforces — so a rule can never mean one thing
-in a lesson and another in the tool.
+Safe-Net contains a learning web app, a learning API, a browser extension, a
+shared TypeScript URL rule engine and an optional Python model service. The web
+scanner and extension import the same rule engine. The Python service mirrors
+those rules; the course answer evaluator is a separate part of the API.
 
 ```
                          ┌──────────────────────────────┐
@@ -73,8 +73,9 @@ probability, the rule score, and which side won — so the blend is transparent.
 `meta.redFlags`, which is stripped from the lesson content the client received.
 An exact match — every flag found, nothing innocent flagged — is required to pass.
 
-**Scoring a URL in the extension.** `guard-core` scores locally and instantly.
-If the ML service is reachable, its raw probability is blended in via
+**Scoring a URL in the extension.** `guard-core` scores the URL locally.
+When the user enables the optional model request and the service is reachable,
+its raw probability is blended in via
 `blendWithMl`; if not, the local verdict stands. The rules override the net at the
 extremes and defer to it in the uncertain middle.
 

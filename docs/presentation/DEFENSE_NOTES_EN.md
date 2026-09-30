@@ -1,69 +1,77 @@
-# Safe-Net: short defense notes
+# Safe-Net — English defense notes
 
-Suggested delivery: about five minutes. Use your own words and accurately identify which parts you built, any collaborators and AI assistance. Do not read every item on each slide.
+Presenter: **Volkov Artem Aleksandrovich**. This script follows the 15-slide visual edition. Aim for 5–6 minutes and pause on the screenshots.
 
 ## 1. Safe-Net
 
-Safe-Net is a cybersecurity learning prototype. I wanted to connect explanations in a course with decisions in a simulated phishing task and with the reasons shown by a URL warning. The current project runs locally. I am looking for feedback on the system and the next evaluation.
+I'm Volkov Artem Aleksandrovich, a high-school student. Safe-Net is my cybersecurity learning project. It combines a learning web app with Guard, a browser extension that explains URL warnings. I'll show the local prototype, how it is structured, and the evaluation I would like to conduct next.
 
 ## 2. The research question
 
-My question is whether practice with explanations helps people recognize unfamiliar phishing cues. A correct answer on a familiar example could reflect memorization, so I would compare interactive practice with an equal-duration text lesson and assess different examples after a delay. This is a proposed study. I have not yet measured learning gains.
+My question is whether practice with explanations helps people recognise phishing cues in examples they have not seen before. I have not measured that yet. I would compare interactive practice with a text lesson of equal duration, then assess new examples immediately and after a delay.
 
 ## 3. How the system works
 
-The web app presents English and Russian learning content. The learning API grades answers and stores progress in PostgreSQL. The web URL scanner and the Chrome extension import the same TypeScript rules package. An optional Python service mirrors those rules and can add a model opinion. The shared package helps keep the scanner and extension consistent.
+The web app handles courses and practice. The learning API grades answers and saves progress in PostgreSQL. The web scanner and extension import the same TypeScript URL rules. An optional Python service mirrors those rules and can add a model opinion.
 
-## 4. The learning experience
+## 4. Inside the repository
 
-The repository contains 21 courses, 27 lessons, 163 tasks and 21 final tests. This screenshot comes from a synthetic local account. I completed six lesson tasks and an eight-question test, then received one certificate. The purpose was to check the course flow. The 100% score is not a participant outcome or evidence that the course improves learning.
+The code separates the web interface, API, extension, shared rules and optional model service. Course material is versioned separately and validated before it enters the database. This structure lets me change the interface without duplicating URL checks. The BERT checkpoint comes from a third party; I did not train it.
 
-## 5. Server-side assessment
+## 5. The learning experience
 
-For a phishing simulation, the learner selects suspicious text. The server compares that selection against an answer key that is excluded from the learner's payload. Progress is tied to the account, so a fresh tab can restore completed tasks. Database constraints also prevent duplicate task XP awards and duplicate course certificates.
+The current content includes 21 courses, 27 lessons, 163 tasks and 21 final tests. The interface supports English and Russian. The screenshot shows the actual local catalog, not a design mockup.
 
-## 6. An explainable warning
+## 6. Practice, then an explanation
 
-This is an illustrative URL, not a site to visit. The local rule engine returns 88 out of 100 because a brand name contains a zero instead of the letter o, and the path contains a suspicious word. The important output is the explanation. The score expresses a product policy; it is not a calibrated probability of an attack.
+Here the learner answers a question about what an internet provider can see when a VPN is used. The server returns an explanation. This task was already completed in the demo account, so the repeated answer earns zero additional XP.
 
-## 7. Privacy and model boundaries
+## 7. Server-side assessment
 
-The default URL rules run locally. The optional model endpoint requires opt-in and receives a sanitized URL. Credentials, query values and fragments are removed, but the host and path can still contain sensitive information. The BERT checkpoint is a third-party component. I have not independently established its accuracy for the Safe-Net use case.
+The API keeps answer keys out of the learner payload and checks submitted answers on the server. Progress and awards belong to the authenticated account. Database constraints prevent repeated XP awards and duplicate certificates.
 
-## 8. Engineering evidence
+## 8. Guard: the reasons behind a warning
 
-The local API regression suite has 98 tests. A curated set of 30 URLs compares the TypeScript and Python rule outputs. Local builds, package checks and HTTP integration checks passed. A local SMTP inbox received account emails in both languages. These checks support engineering correctness for those cases; they do not establish real-world detection accuracy.
+This example changes the spelling of Microsoft by replacing an “o” with zero. Guard gives it a score of 88 and lists the signals that caused the warning. The URL is analysed as text; it is not opened. The score reflects the rule policy, not a calibrated probability of phishing.
 
-## 9. Evidence limits
+## 9. Progress and course completion
 
-The current scope is a local prototype. Installed Chrome behavior, external email delivery, hosted CI and broader browser and accessibility scenarios remain release acceptance work. No human study or independent detector benchmark has been completed. I am keeping those distinctions explicit so feedback can focus on the next useful contribution.
+The local demo account completed six tasks and an eight-question final test in the VPN course. The app saved the result and issued one certificate. That certificate records completion within SafeNet. The demonstration uses known answers and is not evidence of learning improvement.
 
-## 10. Proposed learning-transfer study
+## 10. Privacy and model boundaries
 
-I would use different item banks for baseline, immediate and delayed assessment, with separate domains and templates. Participants would receive either interactive practice or text material with comparable time and content. The proposed primary outcome is change in balanced accuracy at the delayed assessment. I would also report phishing recall, legitimate-example false alarms and missing follow-ups. The interval, sample size and consent process still need justification.
+Local URL checks do not need a request to the model service. The optional request requires a separate action and removes credentials, query values and fragments. Hostnames and paths remain, so the request still has a privacy cost. The model is an upstream checkpoint whose independent evaluation remains open.
 
-## 11. A reproducible next contribution
+## 11. Engineering evidence
 
-The fastest substantial next artifact may be an independent detector evaluation. I would compare rules, the optional model and their blend on a versioned test procedure with source-separated data. I would publish the analysis and failure cases before claiming accuracy. This experiment is separate from evaluating whether learners improve.
+The recorded local checks include 98 API regression tests and a 30-URL rule parity corpus. Local builds passed, and Mailpit received account emails in both languages. These checks support the engineering implementation; they do not measure detection accuracy or learning outcomes.
 
-## 12. Feedback requested
+## 12. Current scope and remaining checks
 
-My first request is methodological. How should I distinguish learning transfer from recognizing familiar examples? Which assessment choice would most strengthen a small pilot? I would also value advice on whether detector error analysis or the learner study should come first.
+The project is ready for feedback on its local implementation and proposed study. Installed Chrome behavior, external email delivery, hosted CI and broader browser coverage still need release checks. I have not run a user study or an independent detector benchmark.
 
-# Questions you should be ready to answer
+## 13. Proposed learning-transfer study
 
-**What did you personally contribute?** Explain a real decision in the rule engine, simulation flow, privacy boundary or assessment logic. Identify external dependencies, collaborators and AI help. Do not claim sole authorship of work you cannot explain.
+I would use separate example sets at baseline, immediately after learning, and after a delay. The primary outcome would be change in balanced accuracy on unfamiliar delayed examples. I would also report phishing recall, benign false alarms and attrition. Recruitment, sample size and consent procedures need review before data collection.
 
-**Why is this different from existing phishing training?** The design connects course cues with simulations and shared warning explanations. Its usefulness is still a hypothesis, and novelty needs a literature review. Do not claim it is the first system to do this.
+## 14. Next step: evaluate the detector
 
-**What does 88/100 mean?** A deterministic combination of risk signals under product thresholds, not an 88% chance that a website is phishing.
+A separate detector evaluation would compare rules, the optional model and their blend on independently labelled URLs. I would separate sources between training or tuning and evaluation, report false positives, and analyse errors by attack family and language. This is planned work.
 
-**How accurate is it?** There is no independent accuracy estimate yet. Regression and parity tests establish behavior for selected cases. A separately labelled benchmark is planned.
+## 15. Feedback requested
 
-**Did you train the model?** The BERT checkpoint is from a third party. Describe only the integration or rule work that you actually did.
+I'd appreciate feedback on how to distinguish learning transfer from memorising familiar cues, and which assessment design would make a small pilot credible. I would also like to know whether detector error analysis or a learning study would be the more useful next step.
 
-**What happens without ML?** Local rules still produce a result. The optional model contributes an opinion under the documented blend policy.
+## Likely questions
 
-**What data would you collect in a study?** A pseudonymous participant ID, condition, item version, phase, answer, confidence and elapsed time. The protocol proposes no real credentials or browsing history. The research collection flow is not implemented yet.
+**What is original here?** The project combines learning tasks, server grading, account progress and explainable URL checks. The contribution I can show now is the implemented system and its documented checks. Any scientific contribution depends on the planned evaluation.
 
-**Can I try it remotely?** The current demo is local. Provide screenshots or a recording; do not present localhost as a usable link for the professor.
+**How accurate is Guard?** I do not have an independent accuracy estimate. Rule regression tests and cross-language parity checks do not provide one.
+
+**Does the certificate establish expertise?** It records course completion within the platform. It is not professional accreditation.
+
+**Did you train the model?** No. The checkpoint is third-party and pinned in the model card. I integrated the optional service.
+
+**Was AI used?** AI assistance supported implementation, editing and presentation preparation. I should explain what I reviewed and can reproduce, and distinguish that work from third-party dependencies and the upstream model.
+
+**Can I access the demo remotely?** The demonstrated service runs locally. A professor needs a recorded demonstration or a separately prepared public deployment; localhost will not work on their computer.

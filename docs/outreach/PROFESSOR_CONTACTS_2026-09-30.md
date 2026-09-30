@@ -1,14 +1,14 @@
 # Safe-Net: US professor feedback shortlist
 
-Verified on **30 September 2026** against opened university, faculty and laboratory pages. Public email addresses are reproduced from those sources; none were guessed. This is a shortlist for a narrowly scoped request for project feedback, not an internship offer, partnership or endorsement. No messages have been sent.
+Verified on **30 September 2026** against opened university, faculty and laboratory pages. Public email addresses are reproduced from those sources; none were guessed. The list is intended for a focused request for project feedback. Contacting a professor does not establish a partnership or endorsement. No messages have been sent.
 
 ## First three contacts
 
-Ranked by relevance to the next Safe-Net evaluation, not university prestige or an estimated chance of reply. These rankings and project-fit assessments are recommendations, not claims made by the universities.
+The order reflects relevance to the next Safe-Net evaluation. Project-fit assessments are recommendations based on the sources below; they do not predict a reply or represent university views.
 
 | Priority | Professor and current affiliation | Public email | Why this is a useful first contact | One focused question |
 |---|---|---|---|---|
-| 1 | **Daniel Zappala**, Professor, Computer Science, Brigham Young University; leads its Usable Security and Privacy Lab | `zappala@cs.byu.edu` | His current research explicitly includes how teenagers reason about security and privacy. Strong fit for testing whether Safe-Net teaches transferable reasoning rather than merely rewarding correct answers. | “For a small evaluation of a teen-focused security learning prototype, would unfamiliar phishing examples plus a delayed follow-up be a useful way to distinguish understanding from memorization?” |
+| 1 | **Daniel Zappala**, Professor, Computer Science, Brigham Young University; leads its Usable Security and Privacy Lab | `zappala@cs.byu.edu` | His current research explicitly includes how teenagers reason about security and privacy. His work is relevant to testing whether learners can apply Safe-Net explanations to unfamiliar examples. | “For a small evaluation of a teen-focused security learning prototype, would unfamiliar phishing examples plus a delayed follow-up be a useful way to distinguish understanding from memorization?” |
 | 2 | **Anthony Vance**, Professor and Commonwealth Cyber Initiative Fellow, Business Information Technology, Virginia Tech | `anthonyvance@vt.edu` | Behavioral cybersecurity and research on warning habituation fit Guard's warning interface. His teaching materials also connect security research with practical learning activities. | “What would be the most informative first measure of warning usefulness in a small pilot: comprehension, safe action, or repeated-warning response—and what failure mode should I control for?” |
 | 3 | **Heather Richter Lipford**, Professor, Software and Information Systems, University of North Carolina at Charlotte | `heather.lipford@charlotte.edu` | Her work covers usable security, interface security assessment and security education; useful for evaluating the connection between lessons and real interface decisions. | “What single study-design change would most strengthen a small comparison between short security lessons alone and lessons paired with an explanation-based warning prototype?” |
 
@@ -41,7 +41,7 @@ Ranked by relevance to the next Safe-Net evaluation, not university prestige or 
 
 Her [CMU CyLab profile](https://www.cylab.cmu.edu/directory/bios/cranor-lorrie.html) confirms her current roles; her [faculty contact page](https://lorrie.cranor.org/) publishes this email. Her [prospective-student instructions](https://lorrie.cranor.org/prospective.html) explicitly say that she cannot hire or supervise high-school students who are not local to CMU and is not offering remote internships. Respect that boundary. If contacting her at all, ask only a short, specific methodological question and acknowledge that you are not requesting supervision. Relevant context: [CyLab anti-phishing research overview](https://cylab.cmu.edu/research/research-impact/usable-privacy-and-security.html) and [CUPS laboratory overview](https://cups.cs.cmu.edu/).
 
-## A credible feedback request
+## How to request feedback
 
 1. Start with **one professor**, then adapt later messages to the recipient's actual work. Avoid sending the same presentation to a large list in one batch.
 2. Identify yourself accurately as a high-school student and the builder of a working prototype. Describe the exact parts you personally implemented; credit collaborators, open-source dependencies and AI assistance where relevant.
@@ -54,9 +54,9 @@ Her [CMU CyLab profile](https://www.cylab.cmu.edu/directory/bios/cranor-lorrie.h
 
 ## What makes this a strong activity
 
-The strongest defensible record is a sequence of **built artifact → explicit question → documented feedback → concrete revision → measured result**. The number or prestige of people emailed is not a project outcome. Contact does not establish a collaboration, and feedback does not establish admissions advantage.
+Document a specific question, the feedback received, the change you made and how you evaluated it. That record shows what the project gained from the exchange. The number of people contacted says little about the outcome; a reply alone does not establish a collaboration or an admissions advantage.
 
-A useful next deliverable would be a short, consent-based evaluation protocol with unfamiliar examples, legitimate examples as controls, a delayed check and clear privacy boundaries. Seek feedback on that protocol before recruiting participants. If an institution becomes involved, ask its faculty member what review and consent procedures apply, especially for participants who are minors. No surprise phishing, credential collection or use of real malicious sites is necessary to demonstrate the prototype.
+A useful next deliverable would be a short, consent-based evaluation protocol with unfamiliar examples, legitimate examples as controls, a delayed check and clear privacy boundaries. Seek feedback on that protocol before recruiting participants. If an institution becomes involved, ask its faculty member what review and consent procedures apply, especially for participants who are minors. Use simulated examples for the demonstration, without collecting credentials or exposing participants to real malicious sites.
 
 ## Research limits
 
