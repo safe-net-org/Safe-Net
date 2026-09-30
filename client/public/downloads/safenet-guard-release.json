@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "sourceCommit": "working-tree",
+  "sourceCommit": "8d1b2dcfda42",
   "sha256": "0d6acb960e675ded968df06e2e20cb1572bdc86a3f2a8689189b5c008b419a1a",
   "browser": "Chrome, Manifest V3",
   "permissions": [

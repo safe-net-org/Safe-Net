@@ -16,6 +16,8 @@
 | Check | Result |
 | --- | --- |
 | `bun run check` | Typecheck, lint and EN/RU parity passed |
+| Final `bun run verify` | Checks, all configured test suites, secret scan, API/web/Guard builds and packaged ZIP passed |
+| CI content checks | Legacy admin boundary, semantic colors and all 163 tasks / 21 tests validated |
 | API regression suite | 15 suites / 98 tests passed |
 | Isolated PostgreSQL/HTTP | Auth lifecycle, grading, XP concurrency, course snapshots, unique certificates, ownership and per-user persisted task completion passed |
 | Fresh workspace install | `bun install --frozen-lockfile` succeeded without existing node_modules |
@@ -25,6 +27,11 @@
 | Fresh tab | 6/6 tasks loaded from the server; an incorrect repeat retained completion |
 | Local SMTP + HTTP | EN/RU verification, password reset, address-change confirmation and old-address notice delivered into Mailpit; links consumed and replay rejected |
 | Configured SMTP | Existing Yandex SMTP connection and authentication succeeded; no real-recipient message sent |
+
+The isolated integration database was removed after the checks. The main database
+and running local application remain available. The local source commit is
+`8d1b2dc`; it is unsigned because the configured 1Password signing executable is
+absent. No persistent Git signing setting was changed and nothing was pushed.
 
 ![Final test](screenshots/local-final-test-20260930.jpg)
 
