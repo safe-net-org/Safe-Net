@@ -1,6 +1,6 @@
 # Safe-Net — research and product brief
 
-Draft for methodological feedback, 2026-09-29. The application is not yet a public demo and no human study has been conducted.
+Draft for methodological feedback, updated 2026-09-30. The application is a working local prototype, not yet a public demo, and no human study has been conducted. The [English presentation package](presentation/README.md) includes slides, a mindmap and defense notes.
 
 ## Question
 
@@ -12,7 +12,7 @@ The Next.js interface presents lessons and scanning explanations. A NestJS/Postg
 
 ## Evidence currently available
 
-The repository contains 8 stages, 21 courses, 27 lessons, 163 tasks and 21 tests. Local server tests pass (86 tests in 14 suites). A 30-URL curated corpus compares TypeScript and Python rule outputs. The downloadable extension ZIP has a reproducible SHA-256 and a synthetic fresh-install privacy check. A separate PostgreSQL demo confirmed login and several negative grading/auth cases through HTTP. These are engineering checks, not estimates of learning improvement or detection accuracy. [Detailed evidence and limitations](EVIDENCE_AND_LIMITATIONS.md).
+The repository contains 8 stages, 21 courses, 27 lessons, 163 tasks and 21 tests. Local server tests pass (98 tests in 15 suites). A 30-URL curated corpus compares TypeScript and Python rule outputs. The downloadable extension ZIP has a reproducible SHA-256 and a synthetic fresh-install privacy check. An isolated PostgreSQL/HTTP check covered auth, grading, concurrent XP and certificate ownership. A synthetic learner completed six lesson tasks and an eight-question test in the browser, received one certificate, and reloaded persisted progress in a fresh tab. Local Mailpit received EN/RU account lifecycle emails. These are engineering checks, not estimates of learning improvement or detection accuracy. [Detailed evidence and limitations](EVIDENCE_AND_LIMITATIONS.md).
 
 ## Proposed study
 
