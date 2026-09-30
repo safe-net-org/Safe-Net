@@ -1,16 +1,20 @@
 'use client'
 
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { useI18n } from '@/i18n/LocaleProvider'
 import authService from '@/services/auth/auth.service'
 
 export function useLogout() {
 	const { t } = useI18n()
+	const queryClient = useQueryClient()
 
 	const logout = async (redirectTo?: string) => {
 		try {
 			await authService.logout()
+			await queryClient.cancelQueries()
+			queryClient.clear()
 			toast.success(t.nav.logoutSuccess)
 
 			if (redirectTo) {

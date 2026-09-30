@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { analyzeUrl, blendWithMl, scoreUrl } from './index'
+import { analyzeUrl, blendWithMl, riskLevelForScore, scoreUrl } from './index'
 
 /**
  * These mirror ml-service/scripts/test_scoring.py. The blend must reach the
@@ -11,6 +11,15 @@ function local(url: string) {
 }
 
 describe('blendWithMl', () => {
+	it('uses the same verdict at every score boundary as local rules', () => {
+		for (const [score, level] of [
+			[30, 'safe'], [31, 'suspicious'], [39, 'suspicious'],
+			[40, 'suspicious'], [69, 'suspicious'], [70, 'danger'],
+			[71, 'danger'],
+		] as const) {
+			expect(riskLevelForScore(score)).toBe(level)
+		}
+	})
 	it('lets rules override a nervous net on a known brand', () => {
 		// BERT screams phishing at Gmail; the rules recognise the brand and win.
 		const result = blendWithMl(local('https://mail.google.com'), 0.98)

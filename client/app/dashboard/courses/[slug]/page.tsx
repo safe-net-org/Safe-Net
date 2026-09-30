@@ -183,7 +183,7 @@ export default function CourseDetailPage() {
 							)}
 							<span className='relative z-10 flex items-center justify-center gap-1.5 sm:gap-2'>
 								<BookOpen className='w-3.5 h-3.5 sm:w-4.5 sm:h-4.5' />
-								<span className='hidden xs:inline'>
+								<span>
 									{t.dashboardCourseDetail.tabs.lessons}
 								</span>{' '}
 								({lessons.length})
@@ -207,7 +207,7 @@ export default function CourseDetailPage() {
 							)}
 							<span className='relative z-10 flex items-center justify-center gap-1.5 sm:gap-2'>
 								<Award className='w-3.5 h-3.5 sm:w-4.5 sm:h-4.5' />
-								<span className='hidden xs:inline'>
+								<span>
 									{t.dashboardCourseDetail.tabs.tests}
 								</span>{' '}
 								({tests.length})

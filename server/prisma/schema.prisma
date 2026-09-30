@@ -69,6 +69,7 @@ model User {
 
   email    String     @unique
   emailVerifiedAt DateTime? @map("email_verified_at")
+  authVersion Int @default(0) @map("auth_version")
   name     String
   password String?
   rights   Role[]     @default([USER])
@@ -94,6 +95,7 @@ model User {
   completedLessons CompletedLesson[]
   passwordResets   PasswordResetToken[]
   emailVerifications EmailVerificationToken[]
+  emailChanges EmailChangeToken[]
   refreshSessions  RefreshSession[]
   feedback         Feedback[]
 
@@ -175,6 +177,22 @@ model EmailVerificationToken {
 
   @@index([userId])
   @@map("email_verification_tokens")
+}
+
+/// A pending address change is confirmed through a single-use link sent to
+/// the new address. The current verified email remains unchanged until then.
+model EmailChangeToken {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  userId String @map("user_id")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  newEmail String @map("new_email")
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt DateTime? @map("used_at")
+
+  @@index([userId])
+  @@map("email_change_tokens")
 }
 
 /// Learning structure: stages → courses → lessons → tasks
@@ -339,6 +357,7 @@ model TaskAttempt {
 
   isCorrect Boolean
   awardedXp Int     @default(0)
+  xpAwardKey String? @unique @map("xp_award_key")
 
   @@index([userId])
   @@index([taskId])
@@ -515,6 +534,6 @@ model Certificate {
 
   certificateNumber String @unique @map("certificate_number")
 
-  @@index([userId, courseId])
+  @@unique([userId, courseId])
   @@map("certificates")
 }

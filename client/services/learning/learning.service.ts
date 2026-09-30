@@ -4,6 +4,7 @@ import {
     ICertificate,
     ICertificateListItem,
     ICourseDetail,
+    ICourseSummary,
     ILesson,
     IStage,
     ITaskAnswerResponse, // ✅ New type import
@@ -16,6 +17,11 @@ import {
 class LearningService {
 	async getStages(): Promise<IStage[]> {
 		const { data } = await instance.get('/learning/stages')
+		return data
+	}
+
+	async getCoursesByStage(slug: string): Promise<ICourseSummary[]> {
+		const { data } = await instance.get(`/learning/courses/stage/${slug}`)
 		return data
 	}
 
@@ -50,7 +56,7 @@ class LearningService {
 		payload: {
 			selectedOptionIds: string[]
 			textAnswer?: string
-			selectedSpans?: { location: string; text: string }[]
+			selectedSpans?: { location: string; text: string; start: number; end: number }[]
 		}
 	): Promise<ITaskAnswerResponse> {
 		const { data } = await instance.post(

@@ -14,7 +14,7 @@
 	"scripts": {
 		"menu": "bun tools/command-center.ts",
 		"check": "bun run typecheck && bun run lint && bun run check:i18n",
-		"verify": "bun run check && bun run test && bun run build",
+		"verify": "bun run check && bun run test && bun run test:secrets && bun run build && bun run test:package",
 		"lint": "bun run lint:web",
 		"dev": "bun run db:up && concurrently -n api,web,ml -c cyan,magenta,yellow --kill-others-on-fail \"bun:dev:api\" \"bun:dev:web\" \"bun:dev:ml\"",
 		"dev:no-ml": "bun run db:up && concurrently -n api,web -c cyan,magenta --kill-others-on-fail \"bun:dev:api\" \"bun:dev:web\"",
@@ -27,15 +27,16 @@
 		"start:web": "bun run --cwd client start",
 		"db:up": "docker compose up -d --wait",
 		"db:down": "docker compose down",
-		"db:reset": "docker compose down -v && docker compose up -d --wait && cd server && bunx prisma migrate deploy && bunx prisma db seed",
-		"setup": "bun run install:all && bun run db:up && cd server && bunx prisma generate && bunx prisma migrate deploy && bunx prisma db seed",
+		"setup": "bun run install:all && bun run config:local && bun run db:up && cd server && bunx prisma generate && bunx prisma migrate deploy",
+		"setup:demo": "bun run setup && cd server && bunx prisma db seed",
+		"config:local": "node tools/setup-local.mjs",
 		"setup:ml": "cd ml-service && python3.12 -m venv .venv && .venv/bin/pip install -q -U pip && .venv/bin/pip install -r requirements.txt",
 		"install:all": "bun install",
-		"build": "concurrently -n api,web,ext -c cyan,magenta,green --kill-others-on-fail \"bun:build:api\" \"bun:build:web\" \"bun:build:ext\"",
+		"build": "bun run package:ext && concurrently -n api,web -c cyan,magenta --kill-others-on-fail \"bun:build:api\" \"bun:build:web\"",
 		"build:api": "bun run --cwd server build",
 		"build:web": "bun run --cwd client build",
 		"build:ext": "bun run --cwd extension build",
-		"package:ext": "cd extension && rm -f .output/safe-net-guard-*-chrome.zip && bun run zip && cp .output/safe-net-guard-*-chrome.zip ../client/public/downloads/safenet-guard-chrome.zip",
+		"package:ext": "node tools/package-extension.mjs",
 		"typecheck": "concurrently -n api,web,ext,guard -c cyan,magenta,green,blue --kill-others-on-fail \"bun:typecheck:api\" \"bun:typecheck:web\" \"bun:typecheck:ext\" \"bun:typecheck:guard\"",
 		"typecheck:api": "bun run --cwd server typecheck",
 		"typecheck:web": "bun run --cwd client typecheck",
@@ -46,14 +47,22 @@
 		"check:i18n": "concurrently -n web,ext -c magenta,green --kill-others-on-fail \"bun:check:i18n:web\" \"bun:check:i18n:ext\"",
 		"check:i18n:web": "bun run --cwd client check:i18n",
 		"check:i18n:ext": "bun run --cwd extension check:i18n",
-		"test": "concurrently -n api,guard,ml -c cyan,green,yellow --kill-others-on-fail \"bun:test:api\" \"bun:test:guard\" \"bun:test:ml\"",
+		"test": "concurrently -n api,guard,ml,ext -c cyan,green,yellow,blue --kill-others-on-fail \"bun:test:api\" \"bun:test:guard\" \"bun:test:ml\" \"bun:test:ext\"",
 		"test:api": "bun run --cwd server test",
 		"test:guard": "bun run --cwd packages/guard-core test",
-		"test:ml": "cd ml-service && if [ ! -x .venv/bin/python ]; then echo '[ml] skipped — run bun run setup:ml'; else .venv/bin/python scripts/test_scoring.py && .venv/bin/python scripts/test_parity.py && .venv/bin/python scripts/evaluate.py --mode rules; fi",
+		"test:ml": "cd ml-service && { [ -x .venv/bin/python ] || { echo '[ml] missing .venv — run bun run setup:ml'; exit 1; }; } && .venv/bin/python scripts/test_scoring.py && .venv/bin/python scripts/test_parity.py && .venv/bin/python scripts/test_privacy.py && .venv/bin/python scripts/evaluate.py --mode rules",
+		"test:ext": "bun run --cwd extension test:privacy",
+		"test:package": "node tools/check-extension-zip.cjs",
+		"test:secrets": "node tools/check-secret-files.cjs",
+		"test:http": "node tools/test-http-integration.cjs",
 		"validate:content": "bun run --cwd server validate:content",
-		"clean:ports": "lsof -ti:3000,4200,8000 2>/dev/null | xargs kill -9 2>/dev/null || true"
+		"clean:ports": "lsof -ti:3000,4200,8000 2>/dev/null | xargs kill -9 2>/dev/null || true",
+		"test:mail": "node tools/test-email-integration.cjs"
 	},
 	"devDependencies": {
 		"concurrently": "^9.1.0"
+	},
+	"overrides": {
+		"@vitejs/plugin-react": "4.7.0"
 	}
 }

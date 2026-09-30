@@ -10,6 +10,10 @@ import {
 import { Throttle } from '@nestjs/throttler'
 import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
+import { Auth } from './decorators/auth.decorator'
+import { CurrentUser } from './decorators/user.decorator'
+import { ConfirmEmailChangeDto, RequestEmailChangeDto } from './dto/email-change.dto'
+import { EmailChangeService } from './email-change.service'
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto'
 import {
 	ForgotPasswordDto,
@@ -28,7 +32,8 @@ export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
 		private readonly passwordResetService: PasswordResetService,
-		private readonly emailVerificationService: EmailVerificationService
+		private readonly emailVerificationService: EmailVerificationService,
+		private readonly emailChangeService: EmailChangeService
 	) {}
 	// ValidationPipe is now global (see main.ts) — the per-route @UsePipes it
 	// replaced was the reason every other DTO went unvalidated.
@@ -118,8 +123,33 @@ export class AuthController {
 		@Body() dto: VerifyEmailDto,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const { userId, ...response } = await this.emailVerificationService.verify(dto.token)
-		const { accessToken, refreshToken } = await this.authService.createVerifiedSession(userId)
+		const { userId, authVersion, ...response } = await this.emailVerificationService.verify(dto.token)
+		const { accessToken, refreshToken } = await this.authService.createVerifiedSession(userId, authVersion)
+		this.authService.addAccessTokenToResponse(res, accessToken)
+		this.authService.addRefreshTokenToResponse(res, refreshToken)
+		return response
+	}
+
+	@Auth()
+	@Throttle({ default: { ttl: ONE_MINUTE_MS, limit: AUTH_ATTEMPTS_PER_MINUTE } })
+	@HttpCode(200)
+	@Post('email/change/request')
+	async requestEmailChange(
+		@CurrentUser('id') userId: string,
+		@Body() dto: RequestEmailChangeDto
+	) {
+		return this.emailChangeService.request(userId, dto.email, dto.currentPassword)
+	}
+
+	@Throttle({ default: { ttl: ONE_MINUTE_MS, limit: AUTH_ATTEMPTS_PER_MINUTE } })
+	@HttpCode(200)
+	@Post('email/change/confirm')
+	async confirmEmailChange(
+		@Body() dto: ConfirmEmailChangeDto,
+		@Res({ passthrough: true }) res: Response
+	) {
+		const { userId, authVersion, ...response } = await this.emailChangeService.confirm(dto.token)
+		const { accessToken, refreshToken } = await this.authService.createVerifiedSession(userId, authVersion)
 		this.authService.addAccessTokenToResponse(res, accessToken)
 		this.authService.addRefreshTokenToResponse(res, refreshToken)
 		return response

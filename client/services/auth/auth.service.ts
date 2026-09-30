@@ -16,7 +16,11 @@ class AuthService {
 		return response
 	}
 	async getNewTokens() {
-		const response = await axiosClassic.post<IAuthResponse>('/auth/login/access-token')
+		const response = await axiosClassic.post<IAuthResponse>(
+			'/auth/login/access-token',
+			undefined,
+			{ timeout: 30_000 }
+		)
 		return response
 	}
 	async logout() {
@@ -44,6 +48,10 @@ class AuthService {
 	}
 	async resendVerification(email: string) {
 		const response = await axiosClassic.post<{ message: string }>('/auth/email/resend', { email })
+		return response.data
+	}
+	async confirmEmailChange(token: string) {
+		const response = await axiosClassic.post<{ message: string }>('/auth/email/change/confirm', { token })
 		return response.data
 	}
 }

@@ -8,8 +8,8 @@ suspicious and then use the same reasoning while browsing?”
 
 The project joins four pieces that are usually separate: a bilingual LMS,
 interactive phishing simulations, a live URL scanner, and a Chrome extension.
-They share the same detection logic so that the educational examples and the
-protective tool do not contradict each other.
+The web scanner and extension consume the same TypeScript rule engine. The
+optional Python service mirrors the rules and has a selected-case parity check.
 
 ## Problem
 
@@ -28,7 +28,7 @@ receive an explanation, and then recognise the same signal in a real context.
 - An optional ML layer whose result is blended with deterministic rules rather
   than replacing them.
 - Automated checks for content quality, English/Russian parity, TypeScript
-  correctness, and rule/ML parity.
+  correctness, and selected TypeScript/Python rule cases.
 
 ## Decisions that matter
 
@@ -60,7 +60,8 @@ content quality alongside code.
 - [System architecture and data flows](ARCHITECTURE.md)
 - [Detection engine README](../packages/guard-core/README.md)
 - [Content source and format](../server/content/README.md)
-- [Hardening plan and known limits](PRODUCT_HARDENING_PLAN.md)
+- [Evidence and limitations](EVIDENCE_AND_LIMITATIONS.md)
+- [Current work ledger](../FIX.md)
 - [Repository entry point](../README.md)
 
 ## What I would do next

@@ -76,13 +76,20 @@ export class PasswordResetService {
 			const token = randomBytes(TOKEN_BYTES).toString('hex')
 			const expiresAt = new Date(Date.now() + EXPIRY_MINUTES * MS_PER_MINUTE)
 
-			await this.prisma.passwordResetToken.create({
-				data: {
-					userId: user.id,
-					tokenHash: this.hashToken(token),
-					expiresAt,
-				},
+			const issued = await this.prisma.$transaction(async tx => {
+				// This no-op write locks the user row and rejects an email/password
+				// snapshot superseded while the request was preparing its token.
+				const current = await tx.user.updateMany({
+					where: { id: user.id, authVersion: user.authVersion },
+					data: { authVersion: user.authVersion },
+				})
+				if (current.count !== 1) return false
+				await tx.passwordResetToken.create({
+					data: { userId: user.id, tokenHash: this.hashToken(token), expiresAt },
+				})
+				return true
 			})
+			if (!issued) return { message: 'If an account exists for that email, a reset link has been sent.' }
 
 			const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000'
 			const link = `${frontendUrl}/?auth=reset&token=${token}`
@@ -132,23 +139,26 @@ export class PasswordResetService {
 		const now = new Date()
 		const passwordHash = await hash(newPassword)
 
-		// Claim the token with a conditional write before changing the password.
-		// Only one concurrent request can update a token whose usedAt is still
-		// null, making its single-use guarantee database-enforced.
+		// Lock the user before claiming the token. All credential transitions
+		// take this lock first, preventing competing links from surviving or
+		// deadlocking by each holding a different token row.
 		await this.prisma.$transaction(async tx => {
-			const consumed = await tx.passwordResetToken.updateMany({
-				where: { tokenHash, usedAt: null, expiresAt: { gt: now } },
-				data: { usedAt: now },
-			})
-			if (consumed.count !== 1) {
-				throw new BadRequestException('Invalid or expired reset link')
-			}
-
 			const record = await tx.passwordResetToken.findUnique({
 				where: { tokenHash },
-				select: { userId: true },
 			})
-			if (!record) {
+			if (!record || record.usedAt || record.expiresAt <= new Date()) {
+				throw new BadRequestException('Invalid or expired reset link')
+			}
+			await tx.user.update({
+				where: { id: record.userId },
+				data: { authVersion: { increment: 1 } },
+			})
+			const consumedAt = new Date()
+			const consumed = await tx.passwordResetToken.updateMany({
+				where: { tokenHash, usedAt: null, expiresAt: { gt: consumedAt } },
+				data: { usedAt: consumedAt },
+			})
+			if (consumed.count !== 1) {
 				throw new BadRequestException('Invalid or expired reset link')
 			}
 
@@ -163,6 +173,12 @@ export class PasswordResetService {
 			await tx.refreshSession.updateMany({
 				where: { userId: record.userId, revokedAt: null },
 				data: { revokedAt: now },
+			})
+			await tx.emailChangeToken.updateMany({
+				where: { userId: record.userId, usedAt: null }, data: { usedAt: now },
+			})
+			await tx.emailVerificationToken.updateMany({
+				where: { userId: record.userId, usedAt: null }, data: { usedAt: now },
 			})
 		})
 

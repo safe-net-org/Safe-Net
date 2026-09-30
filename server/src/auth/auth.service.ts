@@ -42,20 +42,20 @@ export class AuthService {
 
 	async login(dto: AuthLoginDto) {
 		const { password, ...user } = await this.validateUser(dto)
-		const tokens = await this.issueInitialTokens(user.id)
+		const tokens = await this.issueInitialTokens(user.id, user.authVersion)
 		return {
 			user,
 			...tokens,
 		}
 	}
 
-	async createVerifiedSession(userId: string) {
+	async createVerifiedSession(userId: string, expectedAuthVersion: number) {
 		const user = await this.userService.getById(userId)
-		if (!user || user.status === UserStatus.BLOCKED || !user.emailVerifiedAt) {
+		if (!user || user.status === UserStatus.BLOCKED || !user.emailVerifiedAt || user.authVersion !== expectedAuthVersion) {
 			throw new UnauthorizedException('Unable to create a session')
 		}
 		const { password: _password, ...safeUser } = user
-		return { user: safeUser, ...(await this.issueInitialTokens(user.id)) }
+		return { user: safeUser, ...(await this.issueInitialTokens(user.id, user.authVersion)) }
 	}
 	async register(dto: AuthRegisterDto) {
 		try {
@@ -83,15 +83,17 @@ export class AuthService {
 	// full account-takeover endpoint. A real reset flow needs a single-use,
 	// expiring token delivered out of band before this comes back.
 
-	private buildTokens(userId: string, sessionId: string) {
+	private buildTokens(userId: string, sessionId: string, authVersion: number) {
 		const accessPayload: AuthTokenPayload = {
 			id: userId,
 			type: JWT_TOKEN_TYPE.ACCESS,
+			authVersion,
 		}
 		const refreshPayload: AuthTokenPayload = {
 			id: userId,
 			type: JWT_TOKEN_TYPE.REFRESH,
 			sessionId,
+			authVersion,
 		}
 		const accessToken = this.jwt.sign(accessPayload, {
 			secret: this.jwtSecrets.access,
@@ -117,7 +119,7 @@ export class AuthService {
 		return new Date(Date.now() + this.EXPIRE_DAY_REFRESH_TOKEN * 24 * 60 * 60 * 1000)
 	}
 
-	private async issueInitialTokens(userId: string) {
+	private async issueInitialTokens(userId: string, authVersion: number) {
 		const session = await this.prisma.refreshSession.create({
 			data: {
 				id: randomUUID(),
@@ -127,7 +129,7 @@ export class AuthService {
 			},
 		})
 
-		return this.buildTokens(userId, session.id)
+		return this.buildTokens(userId, session.id, authVersion)
 	}
 	private async validateUser(dto: AuthLoginDto) {
 		const user = await this.userService.getByEmail(dto.email)
@@ -218,7 +220,8 @@ export class AuthService {
 		}
 
 		const storedUser = await this.userService.getById(result.id)
-		if (!storedUser || storedUser.status === UserStatus.BLOCKED || !storedUser.emailVerifiedAt) {
+		if (!storedUser || storedUser.status === UserStatus.BLOCKED || !storedUser.emailVerifiedAt ||
+			result.authVersion !== storedUser.authVersion) {
 			await this.revokeRefreshFamily(session.familyId, now)
 			throw new UnauthorizedException('Invalid refresh token')
 		}
@@ -257,7 +260,7 @@ export class AuthService {
 		}
 
 		const { password: _password, ...user } = storedUser
-		const tokens = this.buildTokens(user.id, nextSessionId)
+		const tokens = this.buildTokens(user.id, nextSessionId, storedUser.authVersion)
 		return {
 			user,
 			...tokens,
@@ -274,26 +277,40 @@ export class AuthService {
 	async revokeRefreshToken(refreshToken?: string) {
 		if (!refreshToken) return
 
+		let payload: AuthTokenPayload
 		try {
-			const payload = await this.jwt.verifyAsync<AuthTokenPayload>(refreshToken, {
+			payload = await this.jwt.verifyAsync<AuthTokenPayload>(refreshToken, {
 				secret: this.jwtSecrets.refresh,
 				issuer: JWT_ISSUER,
 				audience: JWT_AUDIENCE,
 				algorithms: ['HS256'],
 			})
-			if (
-				payload.type === JWT_TOKEN_TYPE.REFRESH &&
-				typeof payload.sessionId === 'string'
-			) {
-				await this.prisma.refreshSession.updateMany({
-					where: { id: payload.sessionId, revokedAt: null },
-					data: { revokedAt: new Date() },
-				})
-			}
 		} catch {
 			// Logout is intentionally idempotent. An invalid/expired cookie is
 			// still removed by the controller without exposing token details.
+			return
 		}
+		if (payload.type !== JWT_TOKEN_TYPE.REFRESH ||
+			typeof payload.sessionId !== 'string' || typeof payload.id !== 'string' ||
+			typeof payload.authVersion !== 'number' || !Number.isSafeInteger(payload.authVersion) || payload.authVersion < 0) return
+		const now = new Date()
+		await this.prisma.$transaction(async tx => {
+			const session = await tx.refreshSession.findUnique({ where: { id: payload.sessionId } })
+			if (!session || session.userId !== payload.id || session.expiresAt <= now || session.revokedAt) return
+			// A simultaneous refresh can consume the cookie before logout reaches
+			// the server. Its persisted session still proves the current account
+			// generation; an older generation cannot revoke a later login.
+			const invalidated = await tx.user.updateMany({
+				where: { id: payload.id, authVersion: payload.authVersion },
+				data: { authVersion: { increment: 1 } },
+			})
+			if (invalidated.count !== 1) return
+			// Logout is global: invalidate every access token by version and
+			// every refresh token by revoking all active sessions.
+			await tx.refreshSession.updateMany({
+				where: { userId: payload.id, revokedAt: null }, data: { revokedAt: now },
+			})
+		})
 	}
 	removeRefreshTokenFromResponse(res: Response) {
 		res.cookie(this.REFRESH_TOKEN_NAME, '', {

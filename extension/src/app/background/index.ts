@@ -1,7 +1,7 @@
 import type { ExtensionMessage } from '@/src/entities/analysis'
 import { analyzeAndStore, mergeDomFeatures, mergeIntelThreat, shouldAnalyze } from '@/src/features/analyze-url'
 import { pruneExpiredCache } from '@/src/features/analyze-url/model/cache'
-import { trustHost } from '@/src/shared/lib/allowlist'
+import { getTrustedHosts, normalizeHost, trustHost, untrustHost } from '@/src/shared/lib/allowlist'
 import { STORAGE_KEYS } from '@/src/shared/lib/storage-keys'
 
 export function registerBackground(): void {
@@ -42,20 +42,47 @@ export function registerBackground(): void {
       void mergeDomFeatures(tabId, message.features)
     }
 
-    if (message.type === 'INTEL_THREAT') {
+    if (message.type === 'INTEL_THREAT' && sender.url?.startsWith(browser.runtime.getURL('/')) && !sender.tab) {
       void mergeIntelThreat(message.payload)
     }
 
-    if (message.type === 'TRUST_SITE') {
-      // The host to trust is derived from the sender tab, not the message
-      // payload — a content script can only ever allowlist the page it runs on.
-      const tabId = sender.tab?.id
-      const url = sender.tab?.url
-      if (tabId && url && shouldAnalyze(url)) {
-        // Re-analyze right away so the tab's verdict flips to safe and the
-        // content script gets the update that clears its warnings.
-        void trustHost(url).then(() => analyzeAndStore(url, tabId))
+    if (message.type === 'TRUST_ACTIVE_SITE') {
+      // Only an extension-owned page can authorize permanent trust. Content
+      // scripts run beside untrusted page DOM and must never reach this branch.
+      if (!sender.url?.startsWith(browser.runtime.getURL('/')) || sender.tab) {
+        sendResponse(false)
+        return
       }
+      void browser.tabs.query({ active: true, currentWindow: true }).then(async ([tab]) => {
+        if (!tab?.id || !tab.url || !/^https?:\/\//i.test(tab.url)) {
+          sendResponse(false)
+          return
+        }
+        await trustHost(tab.url)
+        await analyzeAndStore(tab.url, tab.id)
+        sendResponse(true)
+      }).catch(() => sendResponse(false))
+      return true
+    }
+
+    if (message.type === 'UNTRUST_HOST') {
+      if (!sender.url?.startsWith(browser.runtime.getURL('/')) || sender.tab) {
+        sendResponse(false)
+        return
+      }
+      void (async () => {
+        const host = normalizeHost(message.host)
+        if (!host || !(await getTrustedHosts()).includes(host)) return false
+        await untrustHost(host)
+        const tabs = await browser.tabs.query({})
+        for (const tab of tabs) {
+          if (!tab.id || !tab.url || !/^https?:\/\//i.test(tab.url) || normalizeHost(tab.url) !== host) continue
+          await browser.storage.local.remove(STORAGE_KEYS.cache(tab.url))
+          await analyzeAndStore(tab.url, tab.id)
+        }
+        return true
+      })().then(sendResponse).catch(() => sendResponse(false))
+      return true
     }
   })
 

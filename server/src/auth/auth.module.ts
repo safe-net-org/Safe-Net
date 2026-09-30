@@ -8,6 +8,7 @@ import { UserModule } from 'src/user/user.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { EmailVerificationService } from './email-verification.service'
+import { EmailChangeService } from './email-change.service'
 import { JwtStrategy } from './jwt.strategy'
 import { PasswordResetMailer } from './password-reset-mailer.service'
 import { PasswordResetService } from './password-reset.service'
@@ -27,6 +28,7 @@ import { PasswordResetService } from './password-reset.service'
 	providers: [
 		AuthService,
 		EmailVerificationService,
+		EmailChangeService,
 		PasswordResetMailer,
 		PasswordResetService,
 		JwtStrategy,

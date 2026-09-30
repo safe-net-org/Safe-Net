@@ -115,6 +115,35 @@ export function buildEmailVerificationEmail(link: string, locale: MailLocale) {
 	}
 }
 
+export function buildEmailChangeEmail(link: string, locale: MailLocale) {
+	const safeLink = escapeHtml(link)
+	return locale === 'ru'
+		? {
+			subject: 'Подтвердите новый email SafeNet',
+			text: `Подтвердите новый адрес: ${link}\n\nСсылка одноразовая и действует 30 минут. Если вы не запрашивали смену адреса, ничего делать не нужно.`,
+			html: `<p>Подтвердите новый адрес: <a href="${safeLink}">Подтвердить email</a></p><p>Ссылка одноразовая и действует 30 минут. Если вы не запрашивали смену адреса, ничего делать не нужно.</p>`,
+		}
+		: {
+			subject: 'Confirm your new SafeNet email',
+			text: `Confirm your new address: ${link}\n\nThis single-use link expires in 30 minutes. If you did not request this change, no action is needed.`,
+			html: `<p>Confirm your new address: <a href="${safeLink}">Confirm email</a></p><p>This single-use link expires in 30 minutes. If you did not request this change, no action is needed.</p>`,
+		}
+}
+
+export function buildEmailChangeNotice(locale: MailLocale) {
+	return locale === 'ru'
+		? {
+			subject: 'Запрошена смена email SafeNet',
+			text: 'Для вашего аккаунта SafeNet запрошена смена email. Ваш текущий адрес остаётся активным до подтверждения нового. Если это были не вы, смените пароль.',
+			html: '<p>Для вашего аккаунта SafeNet запрошена смена email. Текущий адрес остаётся активным до подтверждения нового. Если это были не вы, смените пароль.</p>',
+		}
+		: {
+			subject: 'SafeNet email change requested',
+			text: 'An email change was requested for your SafeNet account. Your current address remains active until the new one is confirmed. If this was not you, change your password.',
+			html: '<p>An email change was requested for your SafeNet account. Your current address remains active until the new one is confirmed. If this was not you, change your password.</p>',
+		}
+}
+
 @Injectable()
 export class PasswordResetMailer {
 	private readonly resend: Resend | null
@@ -187,6 +216,14 @@ export class PasswordResetMailer {
 
 	async sendVerificationLink(to: string, link: string, locale: MailLocale = 'en') {
 		return this.send(to, buildEmailVerificationEmail(link, locale))
+	}
+
+	async sendEmailChangeLink(to: string, link: string, locale: MailLocale = 'en') {
+		return this.send(to, buildEmailChangeEmail(link, locale))
+	}
+
+	async sendEmailChangeNotice(to: string, locale: MailLocale = 'en') {
+		return this.send(to, buildEmailChangeNotice(locale))
 	}
 
 	private async send(

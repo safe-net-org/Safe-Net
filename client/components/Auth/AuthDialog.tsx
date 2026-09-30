@@ -126,9 +126,10 @@ export function AuthDialog({
 
 	const login = useMutation({
 		mutationFn: (data: IFormData) => authService.main('login', data),
-		onSuccess: () => {
+		onSuccess: async () => {
+			await queryClient.cancelQueries()
+			queryClient.clear()
 			toast.success(t.authDialog.toasts.loggedIn)
-			queryClient.invalidateQueries({ queryKey: ['profile'] })
 			setOpen(false)
 			router.push('/dashboard')
 		},
@@ -149,7 +150,9 @@ export function AuthDialog({
 	})
 	const resetPassword = useMutation({
 		mutationFn: () => authService.resetPassword(token, password),
-		onSuccess: response => {
+		onSuccess: async response => {
+			await queryClient.cancelQueries()
+			queryClient.clear()
 			toast.success(response.message)
 			router.replace('/')
 			selectMode('login')
@@ -158,9 +161,10 @@ export function AuthDialog({
 	})
 	const verifyEmail = useMutation({
 		mutationFn: () => authService.verifyEmail(token),
-		onSuccess: response => {
+		onSuccess: async response => {
+			await queryClient.cancelQueries()
+			queryClient.clear()
 			toast.success(response.message)
-			queryClient.invalidateQueries({ queryKey: ['profile'] })
 			setOpen(false)
 			router.push('/dashboard')
 		},

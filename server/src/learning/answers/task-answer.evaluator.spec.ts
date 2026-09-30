@@ -3,9 +3,15 @@ import {
 	evaluatePhishingAnswer,
 	evaluateTextAnswer,
 	PhishingTaskMeta,
+	RedFlagLocation,
 } from './task-answer.evaluator'
 
 const phishingMeta: PhishingTaskMeta = {
+	email: {
+		from: 'alerts@paypa1.com',
+		subject: 'Account notice',
+		body: 'Act within 24 hours and confirm your password now. Dear customer',
+	},
 	redFlags: [
 		{
 			id: 'sender-domain',
@@ -28,12 +34,56 @@ const phishingMeta: PhishingTaskMeta = {
 	],
 }
 
+function select(meta: PhishingTaskMeta, location: RedFlagLocation, text: string) {
+	const source = location === 'from' || location === 'subject' || location === 'body'
+		? meta.email?.[location] : meta.site?.[location]
+	const start = source?.indexOf(text) ?? -1
+	if (start < 0) throw new Error(`Missing selection: ${location} ${text}`)
+	return { location, text, start, end: start + text.length }
+}
+
 describe('evaluatePhishingAnswer', () => {
+	it('rejects highlighting the entire field or one common character', () => {
+		const meta: PhishingTaskMeta = {
+			email: {
+				from: 'alerts@paypa1.com',
+				subject: 'Account notice',
+				body: 'Hello. Act within 24 hours and confirm your password. Thanks.',
+			},
+			redFlags: phishingMeta.redFlags,
+		}
+		const whole = evaluatePhishingAnswer(meta, [
+			select(meta, 'from', 'alerts@paypa1.com'),
+			select(meta, 'body', meta.email!.body),
+		])
+		expect(whole.isCorrect).toBe(false)
+		expect(whole.falsePositives).toHaveLength(2)
+		expect(evaluatePhishingAnswer(meta, [
+			select(meta, 'from', 'a'),
+			select(meta, 'body', 'a'),
+		]).isCorrect).toBe(false)
+	})
+
+	it('accepts slight selection imprecision in the original field', () => {
+		const meta: PhishingTaskMeta = {
+			email: {
+				from: 'alerts@paypa1.com',
+				subject: 'Account notice',
+				body: 'Act within 24 hours and confirm your password now.',
+			},
+			redFlags: phishingMeta.redFlags,
+		}
+		expect(evaluatePhishingAnswer(meta, [
+			select(meta, 'from', 'paypa1.com'),
+			select(meta, 'body', 'within 24 hours and'),
+			select(meta, 'body', 'confirm your password'),
+		]).isCorrect).toBe(true)
+	})
 	it('marks a clean sweep correct', () => {
 		const result = evaluatePhishingAnswer(phishingMeta, [
-			{ location: 'from', text: 'paypa1.com' },
-			{ location: 'body', text: 'within 24 hours' },
-			{ location: 'body', text: 'confirm your password' },
+			select(phishingMeta, 'from', 'paypa1.com'),
+			select(phishingMeta, 'body', 'within 24 hours'),
+			select(phishingMeta, 'body', 'confirm your password'),
 		])
 
 		expect(result.isCorrect).toBe(true)
@@ -43,8 +93,8 @@ describe('evaluatePhishingAnswer', () => {
 
 	it('fails when a red flag is missed, and reports which one', () => {
 		const result = evaluatePhishingAnswer(phishingMeta, [
-			{ location: 'from', text: 'paypa1.com' },
-			{ location: 'body', text: 'within 24 hours' },
+			select(phishingMeta, 'from', 'paypa1.com'),
+			select(phishingMeta, 'body', 'within 24 hours'),
 		])
 
 		expect(result.isCorrect).toBe(false)
@@ -54,24 +104,22 @@ describe('evaluatePhishingAnswer', () => {
 	// The whole point of the design: flagging everything must not pass.
 	it('fails when innocent text is flagged, even if all red flags are found', () => {
 		const result = evaluatePhishingAnswer(phishingMeta, [
-			{ location: 'from', text: 'paypa1.com' },
-			{ location: 'body', text: 'within 24 hours' },
-			{ location: 'body', text: 'confirm your password' },
-			{ location: 'body', text: 'Dear customer' },
+			select(phishingMeta, 'from', 'paypa1.com'),
+			select(phishingMeta, 'body', 'within 24 hours'),
+			select(phishingMeta, 'body', 'confirm your password'),
+			select(phishingMeta, 'body', 'Dear customer'),
 		])
 
 		expect(result.isCorrect).toBe(false)
 		expect(result.foundFlagIds).toHaveLength(3)
-		expect(result.falsePositives).toEqual([
-			{ location: 'body', text: 'Dear customer' },
-		])
+		expect(result.falsePositives).toEqual([select(phishingMeta, 'body', 'Dear customer')])
 	})
 
 	it('accepts an imprecise selection that overlaps the flagged span', () => {
 		const result = evaluatePhishingAnswer(phishingMeta, [
-			{ location: 'from', text: 'paypa1' },
-			{ location: 'body', text: 'WITHIN 24  HOURS' },
-			{ location: 'body', text: 'confirm your password' },
+			select(phishingMeta, 'from', 'paypa1'),
+			select(phishingMeta, 'body', 'within 24 hours and'),
+			select(phishingMeta, 'body', 'confirm your password'),
 		])
 
 		expect(result.isCorrect).toBe(true)
@@ -79,9 +127,9 @@ describe('evaluatePhishingAnswer', () => {
 
 	it('does not credit the right text found in the wrong place', () => {
 		const result = evaluatePhishingAnswer(phishingMeta, [
-			{ location: 'subject', text: 'paypa1.com' },
-			{ location: 'body', text: 'within 24 hours' },
-			{ location: 'body', text: 'confirm your password' },
+			{ location: 'subject', text: 'paypa1.com', start: 0, end: 10 },
+			select(phishingMeta, 'body', 'within 24 hours'),
+			select(phishingMeta, 'body', 'confirm your password'),
 		])
 
 		expect(result.isCorrect).toBe(false)

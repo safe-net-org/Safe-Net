@@ -26,10 +26,12 @@ export interface RedFlag {
 
 export interface PhishingTaskMeta {
 	redFlags?: RedFlag[]
+	email?: { from: string; subject: string; body: string }
+	site?: { url: string; page: string }
 }
 
 /**
- * What the learner highlighted, by location and raw text.
+ * What the learner highlighted, by location and offsets in the raw field.
  *
  * Deliberately *not* red flag ids: the client is never told which ids exist,
  * because the id list is the answer key. The server matches the submitted text
@@ -39,6 +41,8 @@ export interface PhishingTaskMeta {
 export interface SelectedSpan {
 	location: RedFlagLocation
 	text: string
+	start: number
+	end: number
 }
 
 export interface PhishingEvaluation {
@@ -66,18 +70,19 @@ export function evaluatePhishingAnswer(
 
 	const foundFlagIds: string[] = []
 	const missedFlagIds: string[] = []
+	const { valid, invalid } = mergeValidSelections(meta, selectedSpans)
 
 	for (const flag of redFlags) {
-		const wasFound = selectedSpans.some(selection =>
-			spansMatch(flag, selection)
+		const wasFound = valid.some(selection =>
+			spansMatch(flag, selection, meta)
 		)
 		if (wasFound) foundFlagIds.push(flag.id)
 		else missedFlagIds.push(flag.id)
 	}
 
-	const falsePositives = selectedSpans.filter(
-		selection => !redFlags.some(flag => spansMatch(flag, selection))
-	)
+	const falsePositives = [...invalid, ...valid.filter(
+		selection => !redFlags.some(flag => spansMatch(flag, selection, meta))
+	)]
 
 	return {
 		// A task with no red flags defined cannot be graded; treat it as wrong
@@ -92,21 +97,51 @@ export function evaluatePhishingAnswer(
 	}
 }
 
-/**
- * A highlight counts if it is in the right part of the message and overlaps the
- * flagged text in either direction — selecting `paypa1.com` matches a flag on
- * `paypa1`, and selecting just `paypa1` matches a flag on `paypa1.com`.
- * Learners drag imprecise selections; demanding a character-exact match would
- * grade mouse accuracy rather than understanding.
- */
-function spansMatch(flag: RedFlag, selection: SelectedSpan): boolean {
+/** Compare intervals in the original field. Small imprecision around a flag is
+ * accepted, but selecting an entire field or a common character is not. */
+function spansMatch(flag: RedFlag, selection: SelectedSpan, meta?: PhishingTaskMeta | null): boolean {
 	if (flag.location !== selection.location) return false
+	const source = sourceField(meta, flag.location)
+	if (!source) return false
+	const flagStart = source.indexOf(flag.span)
+	if (flagStart < 0 || source.indexOf(flag.span, flagStart + 1) >= 0) return false
+	const overlap = Math.max(0, Math.min(flagStart + flag.span.length, selection.end) -
+		Math.max(flagStart, selection.start))
+	const needed = Math.min(flag.span.length, Math.max(4, Math.ceil(flag.span.length * 0.5)))
+	const allowedExtra = Math.max(4, Math.ceil(flag.span.length * 0.2))
+	return overlap >= needed && selection.end - selection.start - overlap <= allowedExtra
+}
 
-	const flagText = normalizeText(flag.span)
-	const selectedText = normalizeText(selection.text)
-	if (!flagText || !selectedText) return false
+function sourceField(meta: PhishingTaskMeta | null | undefined, location: RedFlagLocation): string | undefined {
+	if (location === 'from' || location === 'subject' || location === 'body') return meta?.email?.[location]
+	return meta?.site?.[location]
+}
 
-	return flagText.includes(selectedText) || selectedText.includes(flagText)
+function mergeValidSelections(meta: PhishingTaskMeta | null | undefined, selected: SelectedSpan[]) {
+	const valid: SelectedSpan[] = []
+	const invalid: SelectedSpan[] = []
+	for (const selection of selected) {
+		const source = sourceField(meta, selection.location)
+		if (!source || !Number.isInteger(selection.start) || !Number.isInteger(selection.end) ||
+			selection.start < 0 || selection.end <= selection.start ||
+			selection.end > source.length || source.slice(selection.start, selection.end) !== selection.text) {
+			invalid.push(selection)
+			continue
+		}
+		valid.push(selection)
+	}
+	valid.sort((a, b) => a.location.localeCompare(b.location) || a.start - b.start)
+	const merged: SelectedSpan[] = []
+	for (const selection of valid) {
+		const previous = merged.at(-1)
+		if (previous && previous.location === selection.location && selection.start < previous.end) {
+			previous.end = Math.max(previous.end, selection.end)
+			previous.text = sourceField(meta, selection.location)!.slice(previous.start, previous.end)
+		} else {
+			merged.push({ ...selection })
+		}
+	}
+	return { valid: merged, invalid }
 }
 
 /**

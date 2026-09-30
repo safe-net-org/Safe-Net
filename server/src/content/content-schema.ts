@@ -248,6 +248,14 @@ export const Task = z
             }.${flag.location} -- the simulator can't highlight text that isn't there`,
             path: ['meta', 'redFlags', i, 'span'],
           })
+        } else if (haystack.indexOf(flag.span, haystack.indexOf(flag.span) + 1) >= 0) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `redFlags[${i}].span must occur exactly once in meta.${
+              t.type === 'PHISHING_EMAIL' ? 'email' : 'site'
+            }.${flag.location}; use a longer unique phrase`,
+            path: ['meta', 'redFlags', i, 'span'],
+          })
         }
       })
     }

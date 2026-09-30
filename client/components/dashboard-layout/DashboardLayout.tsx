@@ -265,6 +265,9 @@ export default function DashboardSidebar() {
 								</p>
 							</div>
 						</div>
+						<Link href='/dashboard/account' className='mt-3 block rounded-lg px-3 py-2 text-center text-xs font-medium text-sidebar-foreground hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+							{t.account.manageLink}
+						</Link>
 						<m.button
 							type='button'
 							onClick={handleLogout}

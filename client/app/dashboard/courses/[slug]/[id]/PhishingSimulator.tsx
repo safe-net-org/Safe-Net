@@ -12,7 +12,7 @@ import { toast } from 'sonner'
  * The phishing simulator: a learner reads a realistic message and highlights
  * whatever looks wrong.
  *
- * Highlights are submitted as raw text plus which field they came from. The
+ * Highlights are submitted as raw text, field, and source offsets. The
  * client is deliberately never told which spans are the red flags — that list
  * is the answer key and stays on the server, the same way option `isCorrect`
  * flags are stripped from lesson content.
@@ -23,6 +23,8 @@ export type SpanLocation = 'from' | 'subject' | 'body' | 'url' | 'page'
 export interface SelectedSpan {
 	location: SpanLocation
 	text: string
+	start: number
+	end: number
 }
 
 export interface RedFlagFeedback {
@@ -71,6 +73,30 @@ export function PhishingSimulator({
 	const [pendingSelection, setPendingSelection] = useState<SelectedSpan | null>(
 		null
 	)
+	const [keyboardLocation, setKeyboardLocation] = useState<SpanLocation>(email ? 'from' : 'url')
+	const [keyboardPhrase, setKeyboardPhrase] = useState('')
+	const [keyboardOccurrence, setKeyboardOccurrence] = useState(0)
+	const fields: Array<{ location: SpanLocation; label: string; value: string }> = email
+		? [
+			{ location: 'from', label: t.dashboardSimulator.fromLabel, value: email.from },
+			{ location: 'subject', label: t.dashboardSimulator.subjectLabel, value: email.subject },
+			{ location: 'body', label: t.dashboardSimulator.bodyLabel, value: email.body },
+		]
+		: site
+			? [
+				{ location: 'url', label: t.dashboardSimulator.urlLabel, value: site.url },
+				{ location: 'page', label: t.dashboardSimulator.pageLabel, value: site.page },
+			]
+			: []
+	const source = fields.find(field => field.location === keyboardLocation)?.value ?? ''
+	const occurrences: number[] = []
+	if (keyboardPhrase) {
+		let start = source.indexOf(keyboardPhrase)
+		while (start !== -1) {
+			occurrences.push(start)
+			start = source.indexOf(keyboardPhrase, start + 1)
+		}
+	}
 
 	/**
 	 * Reads the current mouse/touch selection and works out which field it
@@ -80,11 +106,12 @@ export function PhishingSimulator({
 		if (hasSubmitted) return
 
 		const selection = window.getSelection()
-		const text = selection?.toString().trim()
-		if (!selection || !text) {
-			setPendingSelection(null)
-			return
-		}
+		if (!selection?.rangeCount) return
+		const range = selection.getRangeAt(0)
+		const text = range.toString()
+		// Keep the staged highlight when focus moves to the button, including
+		// keyboard Tab navigation, which normally collapses the DOM selection.
+		if (!text.trim()) return
 
 		if (text.length > MAX_SELECTION_LENGTH) {
 			toast.error(t.dashboardSimulator.tooLong)
@@ -92,21 +119,26 @@ export function PhishingSimulator({
 			return
 		}
 
-		const anchor =
-			selection.anchorNode instanceof Element
-				? selection.anchorNode
-				: selection.anchorNode?.parentElement
+		const anchor = range.startContainer instanceof Element
+			? range.startContainer : range.startContainer.parentElement
 		const field = anchor?.closest('[data-location]')
 		const location = field?.getAttribute('data-location') as
 			| SpanLocation
 			| undefined
 
-		if (!location) {
+		if (!location || !field || !containerRef.current?.contains(field) ||
+			!field.contains(range.startContainer) || !field.contains(range.endContainer)) {
 			setPendingSelection(null)
 			return
 		}
-
-		setPendingSelection({ location, text })
+		const prefix = range.cloneRange()
+		prefix.selectNodeContents(field)
+		prefix.setEnd(range.startContainer, range.startOffset)
+		const start = prefix.toString().length
+		prefix.setEnd(range.endContainer, range.endOffset)
+		const end = prefix.toString().length
+		if (field.textContent?.slice(start, end) !== text) { setPendingSelection(null); return }
+		setPendingSelection({ location, text, start, end })
 	}, [hasSubmitted, t.dashboardSimulator.tooLong])
 
 	useEffect(() => {
@@ -114,22 +146,44 @@ export function PhishingSimulator({
 		return () => document.removeEventListener('selectionchange', captureSelection)
 	}, [captureSelection])
 
-	const addFlag = () => {
-		if (!pendingSelection) return
-
+	const commitFlag = (spanToAdd: SelectedSpan) => {
 		const isDuplicate = selectedSpans.some(
 			span =>
-				span.location === pendingSelection.location &&
-				span.text.toLowerCase() === pendingSelection.text.toLowerCase()
+				span.location === spanToAdd.location &&
+				span.start === spanToAdd.start && span.end === spanToAdd.end
 		)
 		if (isDuplicate) {
 			toast.info(t.dashboardSimulator.alreadyFlagged)
 		} else {
-			onChange([...selectedSpans, pendingSelection])
+			onChange([...selectedSpans, spanToAdd])
 		}
+		return !isDuplicate
+	}
+
+	const addFlag = () => {
+		if (!pendingSelection) return
+		commitFlag(pendingSelection)
 
 		window.getSelection()?.removeAllRanges()
 		setPendingSelection(null)
+	}
+
+	const addTypedFlag = () => {
+		if (!keyboardPhrase) return
+		if (occurrences.length === 0) {
+			toast.error(t.dashboardSimulator.keyboardNotFound)
+			return
+		}
+		const start = occurrences[keyboardOccurrence] ?? occurrences[0]
+		if (commitFlag({
+			location: keyboardLocation,
+			text: keyboardPhrase,
+			start,
+			end: start + keyboardPhrase.length,
+		})) {
+			setKeyboardPhrase('')
+			setKeyboardOccurrence(0)
+		}
 	}
 
 	const removeFlag = (index: number) => {
@@ -149,10 +203,11 @@ export function PhishingSimulator({
 			{site && <SiteView site={site} />}
 
 			{!hasSubmitted && (
-				<div className='flex items-center gap-2'>
+				<div className='space-y-4'>
 					<Button
 						size='sm'
 						onClick={addFlag}
+						onMouseDown={event => event.preventDefault()}
 						disabled={!pendingSelection}
 						className='gap-1.5'
 					>
@@ -164,6 +219,55 @@ export function PhishingSimulator({
 								)
 							: t.dashboardSimulator.flagCta}
 					</Button>
+					<div className='space-y-3 rounded-xl border border-white/15 p-3'>
+						<p className='text-sm text-white/70'>{t.dashboardSimulator.keyboardHint}</p>
+						<label className='block text-sm' htmlFor='simulator-field'>
+							{t.dashboardSimulator.keyboardField}
+						</label>
+						<select
+						id='simulator-field'
+							value={keyboardLocation}
+							onChange={event => {
+								setKeyboardLocation(event.target.value as SpanLocation)
+								setKeyboardOccurrence(0)
+							}}
+							className='w-full rounded-lg border border-white/20 bg-slate-900 p-2 text-white'
+						>
+							{fields.map(field => <option key={field.location} value={field.location}>{field.label}</option>)}
+						</select>
+						<label className='block text-sm' htmlFor='simulator-phrase'>
+							{t.dashboardSimulator.keyboardPhrase}
+						</label>
+						<input
+							id='simulator-phrase'
+							type='text'
+							maxLength={MAX_SELECTION_LENGTH}
+							value={keyboardPhrase}
+							onChange={event => {
+								setKeyboardPhrase(event.target.value)
+								setKeyboardOccurrence(0)
+							}}
+							className='w-full rounded-lg border border-white/20 bg-slate-900 p-2 text-white'
+						/>
+						{occurrences.length > 1 && (
+							<>
+								<label className='block text-sm' htmlFor='simulator-occurrence'>
+									{t.dashboardSimulator.keyboardOccurrence}
+								</label>
+								<select
+									id='simulator-occurrence'
+									value={keyboardOccurrence}
+									onChange={event => setKeyboardOccurrence(Number(event.target.value))}
+									className='w-full rounded-lg border border-white/20 bg-slate-900 p-2 text-white'
+								>
+									{occurrences.map((start, index) => <option key={start} value={index}>{index + 1}</option>)}
+								</select>
+							</>
+						)}
+						<Button type='button' size='sm' onClick={addTypedFlag}>
+							{t.dashboardSimulator.keyboardAdd}
+						</Button>
+					</div>
 				</div>
 			)}
 

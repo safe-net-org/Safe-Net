@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import type { ExtensionMessage } from '@/src/entities/analysis'
 import { FONT_MONO, T } from '@/src/shared/config/tokens'
 import { useExtensionI18n } from '@/src/shared/i18n/ExtensionLocaleProvider'
-import { getTrustedHosts, untrustHost } from '@/src/shared/lib/allowlist'
+import { getTrustedHosts, normalizeHost } from '@/src/shared/lib/allowlist'
 import {
   checkMlHealth,
   normalizeMlServiceUrl,
@@ -47,15 +48,25 @@ export function SettingsTab() {
   const [revealKey, setRevealKey] = useState(false)
   const [mlProbe, setMlProbe] = useState<MlProbe>({ state: 'idle' })
   const [trustedHosts, setTrustedHosts] = useState<string[]>([])
+  const [currentHost, setCurrentHost] = useState<string | null>(null)
   const normalizedMlEndpoint = normalizeMlServiceUrl(settings.mlServiceUrl)
 
   useEffect(() => {
     getSettings().then(setSettings).catch(() => {})
     getTrustedHosts().then(setTrustedHosts).catch(() => {})
+    browser.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      if (tab?.url && /^https?:\/\//i.test(tab.url)) setCurrentHost(normalizeHost(tab.url))
+    }).catch(() => {})
   }, [])
 
+  async function trustCurrentSite() {
+    const accepted = await browser.runtime.sendMessage({ type: 'TRUST_ACTIVE_SITE' } satisfies ExtensionMessage)
+    if (accepted === true) setTrustedHosts(await getTrustedHosts())
+  }
+
   async function removeTrusted(host: string) {
-    setTrustedHosts(await untrustHost(host))
+    const removed = await browser.runtime.sendMessage({ type: 'UNTRUST_HOST', host } satisfies ExtensionMessage)
+    if (removed === true) setTrustedHosts(await getTrustedHosts())
   }
 
   async function persist(patch: Partial<Settings>) {
@@ -350,6 +361,15 @@ export function SettingsTab() {
           <span style={{ fontSize: 16 }}>✅</span>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: T.text }}>{t('settings.trusted.title')}</span>
         </div>
+        {currentHost && !trustedHosts.includes(currentHost) && (
+          <button type="button" onClick={() => void trustCurrentSite()} style={{
+            background: T.bg, border: `1px solid ${T.borderStrong}`, borderRadius: 8,
+            color: T.text, cursor: 'pointer', padding: '7px 10px', marginBottom: 10,
+            fontSize: 11,
+          }}>
+            {t('settings.trusted.addCurrent').replace('{host}', currentHost)}
+          </button>
+        )}
         {trustedHosts.length === 0 ? (
           <div style={hintStyle}>
             {t('settings.trusted.empty')}

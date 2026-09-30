@@ -59,14 +59,48 @@ FEATURE_LABELS: dict[str, str] = {
     "query_param_count": "Количество параметров запроса",
     "fragment_present": "Fragment-идентификатор",
 }
+FEATURE_LABELS.update({
+    "typosquat": "Домен похож на известный бренд",
+    "leet_squat": "Буквы бренда заменены цифрами",
+    "brand_token": "Имя бренда в составном домене",
+    "brand_token_leet": "Имя бренда с заменой букв в составном домене",
+    "encoded_ip": "IP-адрес замаскирован числом",
+    "ip_domain": "IP-адрес вместо имени сайта",
+    "punycode": "Punycode в домене",
+    "credential_in_query": "Учётные данные в параметрах URL",
+    "dangerous_file": "Ссылка ведёт на исполняемый файл",
+    "data_uri": "Содержимое встроено в data:-URL",
+    "suspicious_scheme": "Необычная схема URL",
+    "tld_swap": "Бренд в подозрительной доменной зоне",
+    "no_https": "Нет HTTPS",
+    "url_shortener": "Сокращатель скрывает адрес назначения",
+    "deep_subdomain": "Глубокие поддомены",
+    "suspicious_words": "Подозрительные слова в URL",
+    "suspicious_word": "Подозрительное слово в URL",
+    "suspicious_tld": "Подозрительная доменная зона",
+    "cyrillic_domain": "Кириллица в домене",
+    "nonstandard_port": "Нестандартный порт",
+    "long_url": "Необычно длинный URL",
+    "high_entropy": "Случайно выглядящий домен",
+    "at_sign": "Символ @ в URL",
+    "hex_encoding": "Hex-кодирование в URL",
+    "excessive_encoding": "Чрезмерное %-кодирование",
+    "base64_path": "Base64-подобная строка в пути",
+    "multiple_domains": "Несколько доменов в URL",
+    "many_hyphens": "Много дефисов в домене",
+})
 
 
 def _score_to_level(score: int) -> str:
-    if score >= 70:
-        return "danger"
-    if score >= 40:
+    return _rule_score_to_level(score)
+
+
+def _rule_score_to_level(score: int) -> str:
+    if score <= 30:
+        return "safe"
+    if score < 70:
         return "suspicious"
-    return "safe"
+    return "danger"
 
 
 def _signal_severity(contribution: int) -> str:
@@ -78,14 +112,14 @@ def _signal_severity(contribution: int) -> str:
 
 
 def _rule_signals(features: UrlFeatures, feat_dict: dict[str, float]) -> list[ShapSignal]:
-    """Extract rule-based signals regardless of which model is used."""
+    """Expose the same rule keys and conditions as guard-core's scorer."""
     signals: list[ShapSignal] = []
 
-    def sig(fname: str, contribution: int) -> None:
+    def sig(fname: str, contribution: int, value: float = 1.0) -> None:
         signals.append(ShapSignal(
             feature=fname,
             label=FEATURE_LABELS.get(fname, fname),
-            value=feat_dict.get(fname, 0.0),
+            value=value,
             shap_value=round(contribution / 100, 3),
             severity=_signal_severity(contribution),
         ))
@@ -94,36 +128,62 @@ def _rule_signals(features: UrlFeatures, feat_dict: dict[str, float]) -> list[Sh
         sig("idn_homograph", 90)
     if features.brand_impersonation:
         sig("brand_impersonation", 88)
-    if features.is_typosquat and features.typosquat_distance <= 2:
-        sig("is_typosquat", 75)
+    if features.is_typosquat and 1 <= features.typosquat_distance <= 2:
+        sig("typosquat", 75)
     if features.is_leet_squat:
-        sig("is_leet_squat", 80)
-    if features.has_brand_token:
-        sig("has_brand_token", 35)
-    if features.has_excessive_encoding:
-        sig("has_excessive_encoding", 15)
+        sig("leet_squat", 80)
+    if features.has_brand_token and not features.brand_impersonation and not features.is_typosquat:
+        sig("brand_token_leet" if features.brand_token_via_leet else "brand_token", 80 if features.brand_token_via_leet else 35)
+    if features.is_encoded_ip:
+        sig("encoded_ip", 40)
     if features.has_ip:
-        sig("has_ip", 35)
+        sig("ip_domain", 35)
     if features.has_punycode:
-        sig("has_punycode", 30)
-    if not features.is_https:
-        sig("is_https", 20)
+        sig("punycode", 30)
+    if features.credential_in_query:
+        sig("credential_in_query", 30)
+    if features.dangerous_extension:
+        sig("dangerous_file", 30)
+    if features.has_data_uri:
+        sig("data_uri", 25)
+    if features.has_suspicious_scheme and not features.has_data_uri:
+        sig("suspicious_scheme", 20)
+    if features.is_tld_swap:
+        sig("tld_swap", 25)
+    if not features.is_https and not features.has_suspicious_scheme:
+        sig("no_https", 20)
+    if features.is_url_shortener:
+        sig("url_shortener", 15)
+    if features.subdomain_depth >= 3:
+        sig("deep_subdomain", 15, float(features.subdomain_depth))
     if features.suspicious_word_count >= 2:
-        sig("suspicious_word_count", min(80, features.suspicious_word_count * 8))
+        sig("suspicious_words", features.suspicious_word_count * 8, float(features.suspicious_word_count))
+    elif features.suspicious_word_count == 1:
+        sig("suspicious_word", 8)
+    if features.tld_suspicious and not features.is_tld_swap:
+        sig("suspicious_tld", 15)
     if features.free_hosting:
         sig("free_hosting", 20)
-    if features.has_at_sign:
-        sig("has_at_sign", 20)
-    if features.subdomain_depth >= 3:
-        sig("subdomain_depth", 15)
-    if features.tld_suspicious:
-        sig("tld_suspicious", 15)
-    if features.multiple_domains_in_url:
-        sig("multiple_domains_in_url", 15)
-    if features.domain_entropy > 3.5:
-        sig("domain_entropy", 12)
+    if features.has_cyrillic and not features.idn_homograph and not features.brand_impersonation:
+        sig("cyrillic_domain", 10)
+    if features.non_standard_port:
+        sig("nonstandard_port", 10)
     if features.url_length > 100:
-        sig("url_length", 10)
+        sig("long_url", 10, float(features.url_length))
+    if features.domain_entropy > 4.0:
+        sig("high_entropy", 12, features.domain_entropy)
+    if features.has_at_sign:
+        sig("at_sign", 20)
+    if features.has_hex_encoding:
+        sig("hex_encoding", 10)
+    if features.has_excessive_encoding:
+        sig("excessive_encoding", 15)
+    if features.has_base64_in_path:
+        sig("base64_path", 12)
+    if features.multiple_domains_in_url:
+        sig("multiple_domains", 15)
+    if features.hyphen_count >= 4:
+        sig("many_hyphens", 8, float(features.hyphen_count))
 
     return sorted(signals, key=lambda s: -s.shap_value)
 
@@ -151,39 +211,65 @@ def _rule_score(features: UrlFeatures) -> int:
     """The deterministic score, mirroring packages/guard-core/model/score.ts."""
     score = 0
     if features.idn_homograph:
-        score += 90
+        score = max(score, 90)
     if features.brand_impersonation:
         score = max(score, 88)
-    if features.is_typosquat and features.typosquat_distance <= 2:
-        score += 75
+    if features.is_typosquat and 1 <= features.typosquat_distance <= 2:
+        score = max(score, 75)
     if features.is_leet_squat:
         score = max(score, 80)
-    if features.has_brand_token:
+    if features.has_brand_token and not features.brand_impersonation and not features.is_typosquat:
         score = max(score, 80) if _brand_token_is_leet(features) else score + 35
-    if features.has_excessive_encoding:
-        score += 15
+    if features.is_encoded_ip:
+        score += 40
     if features.has_ip:
         score += 35
     if features.has_punycode:
         score += 30
-    if not features.is_https:
+    if features.credential_in_query:
+        score += 30
+    if features.dangerous_extension:
+        score += 30
+    if features.has_data_uri:
+        score += 25
+    if features.has_suspicious_scheme and not features.has_data_uri:
         score += 20
-    if features.suspicious_word_count >= 2:
-        score += min(80, features.suspicious_word_count * 8)
-    if features.free_hosting:
+    if features.is_tld_swap:
+        score += 25
+    if not features.is_https and not features.has_suspicious_scheme:
         score += 20
-    if features.has_at_sign:
-        score += 20
+    if features.is_url_shortener:
+        score += 15
     if features.subdomain_depth >= 3:
         score += 15
-    if features.tld_suspicious:
+    if features.suspicious_word_count >= 2:
+        score += features.suspicious_word_count * 8
+    elif features.suspicious_word_count == 1:
+        score += 8
+    if features.tld_suspicious and not features.is_tld_swap:
         score += 15
-    if features.multiple_domains_in_url:
-        score += 15
-    if features.domain_entropy > 3.5:
-        score += 12
+    if features.free_hosting:
+        score += 20
+    if features.has_cyrillic and not features.idn_homograph and not features.brand_impersonation:
+        score += 10
+    if features.non_standard_port:
+        score += 10
     if features.url_length > 100:
         score += 10
+    if features.domain_entropy > 4.0:
+        score += 12
+    if features.has_at_sign:
+        score += 20
+    if features.has_hex_encoding:
+        score += 10
+    if features.has_excessive_encoding:
+        score += 15
+    if features.has_base64_in_path:
+        score += 12
+    if features.multiple_domains_in_url:
+        score += 15
+    if features.hyphen_count >= 4:
+        score += 8
     return min(100, score)
 
 
@@ -210,7 +296,7 @@ def _blend(features: UrlFeatures, bert_score: int) -> tuple[int, str]:
         # Rules are certain: never let the net argue a homograph down.
         return max(rule, bert_score), "rule-override"
 
-    no_red_flags = rule < 40
+    no_red_flags = rule <= 30
     if features.registrable_is_brand and no_red_flags:
         # github.com, mail.google.com — the net's nervousness is overruled.
         return min(bert_score, _KNOWN_BRAND_SAFE_CAP), "rule-override"
@@ -324,7 +410,7 @@ class PhishingModel:
         """Deterministic scorer, used when the neural net is unavailable."""
         signals = _rule_signals(features, feat_dict)
         score = _rule_score(features)
-        level = _score_to_level(score)
+        level = _rule_score_to_level(score)
 
         return PredictResponse(
             url=raw_url,

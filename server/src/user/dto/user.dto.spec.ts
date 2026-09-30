@@ -49,4 +49,9 @@ describe('UserDto password update contract', () => {
 			pipe.transform({ name: 'Ada', legalVersion: 'older-version' }, metadata)
 		).rejects.toBeInstanceOf(BadRequestException)
 	})
+
+	it('requires the dedicated confirmation flow for email changes', async () => {
+		await expect(pipe.transform({ email: 'new@example.com' }, metadata))
+			.rejects.toBeInstanceOf(BadRequestException)
+	})
 })

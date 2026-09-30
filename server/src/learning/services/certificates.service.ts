@@ -3,6 +3,8 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common'
+import { randomUUID } from 'node:crypto'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma.service'
 import { Locale, pickLocalized } from '../../i18n/locale'
 
@@ -97,5 +99,97 @@ export class CertificatesService {
 			courseSlug: cert.course.slug,
 			issuedAt: cert.issuedAt.toISOString(),
 		}))
+	}
+
+	async checkAndIssueCertificate(
+		userId: string,
+		courseId: string
+	): Promise<string | null> {
+		const [
+			totalLessons,
+			completedLessons,
+			totalTasks,
+			solvedTasksData,
+			courseTests,
+			passedTestResults,
+		] = await this.prisma.$transaction([
+			this.prisma.lesson.count({
+				where: { courseId },
+			}),
+			this.prisma.completedLesson.count({
+				where: {
+					userId,
+					lesson: { courseId },
+				},
+			}),
+			this.prisma.task.count({
+				where: {
+					lesson: { courseId },
+				},
+			}),
+			this.prisma.taskAttempt.findMany({
+				where: {
+					userId,
+					task: {
+						lesson: { courseId },
+					},
+					isCorrect: true,
+				},
+				distinct: ['taskId'],
+				select: { taskId: true },
+			}),
+			this.prisma.test.findMany({
+				where: { courseId },
+				select: { id: true },
+			}),
+			this.prisma.testResult.findMany({
+				where: {
+					userId,
+					test: { courseId },
+					passed: true,
+				},
+				distinct: ['testId'],
+				select: { testId: true },
+			}),
+		])
+
+		const solvedTasks = solvedTasksData.length
+		const totalTests = courseTests.length
+		const passedTests = passedTestResults.length
+
+		// Check full course completion
+		if (totalLessons === 0 || completedLessons < totalLessons) {
+			return null
+		}
+
+		if (totalTasks === 0 || solvedTasks < totalTasks) {
+			return null
+		}
+
+		if (totalTests > 0 && passedTests < totalTests) {
+			return null
+		}
+
+		const where = { userId_courseId: { userId, courseId } }
+		try {
+			const certificate = await this.prisma.certificate.upsert({
+				where,
+				update: {},
+				create: {
+					userId,
+					courseId,
+					certificateNumber: `CERT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomUUID()}`,
+				},
+			})
+			return certificate.id
+		} catch (error) {
+			// Prisma may implement compound-key upserts as read + create. The
+			// database unique constraint still makes the concurrent loser safe.
+			if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+				const winner = await this.prisma.certificate.findUnique({ where })
+				if (winner) return winner.id
+			}
+			throw error
+		}
 	}
 }

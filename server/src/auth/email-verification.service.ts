@@ -20,10 +20,15 @@ export class EmailVerificationService {
 		return createHash('sha256').update(token).digest('hex')
 	}
 
-	async sendForUser(user: { id: string; email: string; legalLocale?: string | null }) {
+	async sendForUser(user: { id: string; email: string; authVersion: number; legalLocale?: string | null }) {
 		const token = randomBytes(TOKEN_BYTES).toString('hex')
 		const expiresAt = new Date(Date.now() + EXPIRY_MINUTES * 60_000)
-		await this.prisma.$transaction(async tx => {
+		const issued = await this.prisma.$transaction(async tx => {
+			const current = await tx.user.updateMany({
+				where: { id: user.id, email: user.email, authVersion: user.authVersion, emailVerifiedAt: null },
+				data: { authVersion: user.authVersion },
+			})
+			if (current.count !== 1) return false
 			await tx.emailVerificationToken.updateMany({
 				where: { userId: user.id, usedAt: null },
 				data: { usedAt: new Date() },
@@ -31,7 +36,9 @@ export class EmailVerificationService {
 			await tx.emailVerificationToken.create({
 				data: { userId: user.id, tokenHash: this.hashToken(token), expiresAt },
 			})
+			return true
 		})
+		if (!issued) return
 
 		const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000'
 		const link = `${frontendUrl}/?auth=verify&token=${token}`
@@ -50,7 +57,7 @@ export class EmailVerificationService {
 	async resend(email: string) {
 		const user = await this.prisma.user.findUnique({
 			where: { email: normalizeEmail(email) },
-			select: { id: true, email: true, legalLocale: true, emailVerifiedAt: true },
+			select: { id: true, email: true, legalLocale: true, emailVerifiedAt: true, authVersion: true },
 		})
 		if (user && !user.emailVerifiedAt) await this.sendForUser(user)
 		return { message: 'If an unverified account exists for that email, a link has been sent.' }
@@ -59,19 +66,26 @@ export class EmailVerificationService {
 	async verify(token: string) {
 		const now = new Date()
 		const updated = await this.prisma.$transaction(async tx => {
+			const tokenHash = this.hashToken(token)
+			const record = await tx.emailVerificationToken.findUnique({ where: { tokenHash } })
+			if (!record || record.usedAt || record.expiresAt <= new Date()) return null
+			// Take the same user lock as every credential transition before the
+			// final conditional claim. A reset/email change may invalidate this
+			// record while this request is waiting, so its timestamp write rolls
+			// back with the failed claim.
+			const user = await tx.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: now } })
+			const consumedAt = new Date()
 			const consumed = await tx.emailVerificationToken.updateMany({
-				where: { tokenHash: this.hashToken(token), usedAt: null, expiresAt: { gt: now } },
-				data: { usedAt: now },
+				where: { tokenHash, usedAt: null, expiresAt: { gt: consumedAt } },
+				data: { usedAt: consumedAt },
 			})
-			if (consumed.count !== 1) return null
-			const record = await tx.emailVerificationToken.findUnique({
-				where: { tokenHash: this.hashToken(token) },
-				select: { userId: true },
+			if (consumed.count !== 1) throw new BadRequestException('Invalid or expired verification link')
+			await tx.emailVerificationToken.updateMany({
+				where: { userId: record.userId, usedAt: null }, data: { usedAt: consumedAt },
 			})
-			if (!record) return null
-			return tx.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: now } })
+			return user
 		})
 		if (!updated) throw new BadRequestException('Invalid or expired verification link')
-		return { message: 'Email verified.', userId: updated.id }
+		return { message: 'Email verified.', userId: updated.id, authVersion: updated.authVersion }
 	}
 }

@@ -1,7 +1,11 @@
 import { Type } from 'class-transformer'
 import {
 	IsArray,
+	ArrayMaxSize,
 	IsIn,
+	IsInt,
+	Min,
+	MinLength,
 	IsOptional,
 	IsString,
 	MaxLength,
@@ -16,8 +20,17 @@ export class SelectedSpanDto {
 	location: (typeof RED_FLAG_LOCATIONS)[number]
 
 	@IsString()
+	@MinLength(1)
 	@MaxLength(MAX_SELECTION_LENGTH)
 	text: string
+
+	@IsInt()
+	@Min(0)
+	start: number
+
+	@IsInt()
+	@Min(1)
+	end: number
 }
 
 export class AnswerTaskDto {
@@ -31,13 +44,14 @@ export class AnswerTaskDto {
 
 	/**
 	 * What the learner highlighted in a PHISHING_EMAIL / PHISHING_SITE
-	 * simulator, as raw text plus which part of the message it came from.
+	 * simulator, as raw text, source offsets, and which field it came from.
 	 *
 	 * Not red flag ids: the client is never sent the id list, because that list
 	 * is the answer key.
 	 */
 	@IsOptional()
 	@IsArray()
+	@ArrayMaxSize(30)
 	@ValidateNested({ each: true })
 	@Type(() => SelectedSpanDto)
 	selectedSpans?: SelectedSpanDto[]

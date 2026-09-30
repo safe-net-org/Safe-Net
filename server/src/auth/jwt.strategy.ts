@@ -44,7 +44,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		}
 
 		const user = await this.userService.getById(payload.id)
-		if (!user || user.status === UserStatus.BLOCKED || !user.emailVerifiedAt) {
+		if (!user || user.status === UserStatus.BLOCKED || !user.emailVerifiedAt ||
+			payload.authVersion !== user.authVersion) {
 			throw new UnauthorizedException('Invalid access token')
 		}
 

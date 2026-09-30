@@ -9,8 +9,9 @@ homoglyphs we need to catch, so every `xn--` label is decoded back first.
 
 import math
 import re
+import ipaddress
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlparse
 
 import tldextract
 
@@ -92,24 +93,32 @@ TOP_RU_BRANDS: list[str] = [
 BRAND_SET = set(TOP_RU_BRANDS)
 
 SUSPICIOUS_WORDS: set[str] = {
-    "login", "account", "secure", "verify", "bank", "payment",
-    "paypal", "ebay", "amazon", "update", "confirm", "signin",
-    "signup", "auth", "credential", "password", "recovery",
-    "support", "help", "service", "official", "безопасность",
-    "вход", "подтверди", "личный", "кабинет",
+    "login", "signin", "account", "secure", "security", "verify", "verification",
+    "update", "confirm", "password", "passwd", "credential", "banking", "bank",
+    "payment", "pay", "billing", "invoice", "wallet", "card", "credit", "debit",
+    "support", "help", "service", "center", "official", "auth", "authenticate",
+    "recovery", "restore", "unlock", "reset", "activate",
+    "vhod", "vход", "lichniy", "kabinet", "oplata", "platezh",
 }
 
 SUSPICIOUS_TLDS: set[str] = {
-    "tk", "ml", "ga", "cf", "gq", "xyz", "top", "club",
-    "online", "site", "website", "space", "fun", "icu",
-    "buzz", "click", "link", "work", "rest",
+    "tk", "ml", "ga", "cf", "gq", "xyz", "top", "club", "online",
+    "site", "website", "space", "fun", "host", "click", "link", "work",
+    "uno", "rest", "bid", "trade", "loan", "win", "racing", "review",
+    "download", "accountant", "date", "faith", "men", "party",
 }
 
 FREE_HOSTING_DOMAINS: set[str] = {
-    "github.io", "netlify.app", "vercel.app", "pages.dev",
-    "firebaseapp.com", "web.app", "herokuapp.com",
-    "glitch.me", "repl.co", "surge.sh",
+    "github.io", "gitlab.io", "netlify.app", "vercel.app", "pages.dev",
+    "web.app", "firebaseapp.com", "glitch.me", "000webhostapp.com",
+    "weebly.com", "wixsite.com", "wordpress.com", "blogspot.com",
+    "neocities.org", "surge.sh", "render.com", "railway.app",
+    "pythonanywhere.com", "repl.co", "replit.dev",
 }
+
+URL_SHORTENERS = {"bit.ly", "goo.gl", "t.co", "tinyurl.com", "ow.ly", "is.gd", "buff.ly", "clck.ru", "vk.cc", "cutt.ly", "rb.gy", "shorturl.at", "t.me", "u.to"}
+DANGEROUS_EXTENSIONS = {".exe", ".scr", ".bat", ".cmd", ".pif", ".msi", ".apk", ".dmg", ".jar", ".vbs", ".ps1", ".hta", ".lnk"}
+CREDENTIAL_PARAMS = {"token", "password", "passwd", "pwd", "auth", "session", "sessionid", "key", "secret", "access_token", "api_key", "apikey", "otp", "pin"}
 
 
 @dataclass
@@ -171,6 +180,17 @@ class UrlFeatures:
     # google.com). Lets the scorer refuse to let a nervous neural net block a
     # site everyone uses.
     registrable_is_brand: bool
+
+    credential_in_query: bool = False
+    dangerous_extension: bool = False
+    is_url_shortener: bool = False
+    is_tld_swap: bool = False
+    has_hex_encoding: bool = False
+    has_base64_in_path: bool = False
+    non_standard_port: bool = False
+    has_data_uri: bool = False
+    has_suspicious_scheme: bool = False
+    is_encoded_ip: bool = False
 
 
 def punycode_to_unicode(host: str) -> str:
@@ -363,7 +383,14 @@ def extract_features(raw_url: str) -> UrlFeatures:
         parsed = urlparse("https://unknown")
 
     raw_host = (parsed.hostname or "").lower()
-    has_punycode = "xn--" in raw_host
+    # WHATWG URL canonicalizes decimal and hex IPv4 spellings before the TS
+    # scorer sees them. urllib does not, so normalize them here as well.
+    if re.fullmatch(r"\d{8,12}|0x[0-9a-f]+", raw_host):
+        try:
+            raw_host = str(ipaddress.IPv4Address(int(raw_host, 0 if raw_host.startswith("0x") else 10)))
+        except (ValueError, OverflowError):
+            pass
+    has_punycode = "xn--" in raw_host or "xn--" in raw_host.encode("idna").decode("ascii")
     unicode_host = punycode_to_unicode(raw_host)
     path = parsed.path or ""
     query = parsed.query or ""
@@ -382,18 +409,26 @@ def extract_features(raw_url: str) -> UrlFeatures:
 
     has_ip = bool(re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", raw_host))
     is_https = parsed.scheme == "https"
-    subdomain_parts = extracted.subdomain.split(".") if extracted.subdomain else []
-    subdomain_depth = len([p for p in subdomain_parts if p])
+    subdomain_depth = max(0, len(unicode_host.split(".")) - 2)
 
     url_lower = raw_url.lower()
     susp_in_url = sum(1 for w in SUSPICIOUS_WORDS if w in url_lower)
     susp_in_path = sum(1 for w in SUSPICIOUS_WORDS if w in path.lower())
 
     domain_pattern = re.compile(r"[a-z0-9-]+\.[a-z]{2,}", re.IGNORECASE)
-    domain_matches = domain_pattern.findall(path + query)
+    domain_matches = domain_pattern.findall(raw_url)
     multiple_domains = len(domain_matches) > 1
 
-    free = any(raw_url.endswith(fh) or f".{fh}" in raw_url for fh in FREE_HOSTING_DOMAINS)
+    free = any(unicode_host.endswith(fh) for fh in FREE_HOSTING_DOMAINS)
+    registrable_domain = ".".join(unicode_host.split(".")[-2:])
+    port = parsed.port
+    dangerous_extension = any(path.lower().endswith(ext) for ext in DANGEROUS_EXTENSIONS)
+    has_base64_in_path = any(
+        len(segment) >= 24 and re.fullmatch(r"[A-Za-z0-9+/_-]+={0,2}", segment)
+        and re.search(r"[A-Z]", segment) and re.search(r"[a-z]", segment)
+        and re.search(r"[0-9]", segment)
+        for segment in re.split(r"[/?&=]", path)
+    )
 
     registrable_core = re.sub(r"[^a-z0-9]", "", transliterate(domain).lower())
     registrable_is_brand = registrable_core in BRAND_SET
@@ -417,12 +452,12 @@ def extract_features(raw_url: str) -> UrlFeatures:
         has_ip=has_ip,
         is_https=is_https,
         url_length=len(raw_url),
-        domain_length=len(full_domain),
+        domain_length=len(unicode_host),
         path_length=len(path),
         subdomain_depth=subdomain_depth,
         dot_count=raw_host.count("."),
-        hyphen_count=domain.count("-"),
-        domain_entropy=shannon_entropy(domain),
+        hyphen_count=unicode_host.count("-"),
+        domain_entropy=shannon_entropy(unicode_host.replace(".", "")),
         has_at_sign="@" in raw_url,
         has_double_slash_redirect="//" in path,
         suspicious_word_count=susp_in_url,
@@ -431,10 +466,20 @@ def extract_features(raw_url: str) -> UrlFeatures:
         tld=tld,
         tld_suspicious=tld in SUSPICIOUS_TLDS,
         free_hosting=free,
-        has_port=parsed.port is not None,
+        has_port=port is not None,
         query_param_count=len(query.split("&")) if query else 0,
         fragment_present=bool(parsed.fragment),
         registrable_is_brand=registrable_is_brand,
+        credential_in_query=any(name.lower() in CREDENTIAL_PARAMS for name, _ in parse_qsl(query, keep_blank_values=True)),
+        dangerous_extension=dangerous_extension,
+        is_url_shortener=registrable_domain in URL_SHORTENERS,
+        is_tld_swap=typo_dist == 0 and tld in SUSPICIOUS_TLDS,
+        has_hex_encoding=bool(re.search(r"%[0-9a-fA-F]{2}", raw_url)),
+        has_base64_in_path=has_base64_in_path,
+        non_standard_port=port is not None and port not in (80, 443),
+        has_data_uri=raw_url.startswith("data:"),
+        has_suspicious_scheme=parsed.scheme not in ("http", "https"),
+        is_encoded_ip=bool(re.fullmatch(r"0x[0-9a-f]+|\d{8,12}", raw_host)),
     )
 
 

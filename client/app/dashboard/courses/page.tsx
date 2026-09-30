@@ -5,6 +5,9 @@ import { ROUTES } from '@/config/pages-url.config'
 import { useCourses } from '@/hooks/learning/useCourses'
 import { useProfile } from '@/hooks/user/useProfile'
 import { useI18n } from '@/i18n/LocaleProvider'
+import { learningService } from '@/services/learning/learning.service'
+import { useQuery } from '@tanstack/react-query'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { AppleButton } from '@/app/dashboard/components/AppleButton'
 import { AppleCourseCard } from '@/app/dashboard/components/AppleCourseCard'
@@ -14,7 +17,7 @@ import { EmptyState } from '@/app/dashboard/components/EmptyState'
 import { TabButton } from '@/app/dashboard/components/TabButton'
 
 export default function CoursesPage() {
-	const { t } = useI18n()
+	const { locale, t } = useI18n()
 	const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>(
 		'active'
 	)
@@ -24,6 +27,16 @@ export default function CoursesPage() {
 		useCourses('active')
 	const { courses: completedCourses, isLoading: isCompletedLoading } =
 		useCourses('completed')
+	const catalog = useQuery({
+		queryKey: ['learning', 'catalog', locale],
+		queryFn: async () => {
+			const stages = await learningService.getStages()
+			return Promise.all(stages.map(async stage => ({
+				stage,
+				courses: await learningService.getCoursesByStage(stage.slug),
+			})))
+		},
+	})
 
 	const stats = useMemo(() => {
 		const allCourses = [...activeCourses, ...completedCourses]
@@ -131,7 +144,7 @@ export default function CoursesPage() {
 									title={t.dashboardCourses.empty.noActiveTitle}
 									description={t.dashboardCourses.empty.noActiveDesc}
 									actionLabel={t.dashboardCourses.empty.openCatalog}
-									actionHref={ROUTES.COURSES}
+									actionHref='#catalog'
 								/>
 							) : (
 								<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'>
@@ -158,7 +171,7 @@ export default function CoursesPage() {
 									title={t.dashboardCourses.empty.noCompletedTitle}
 									description={t.dashboardCourses.empty.noCompletedDesc}
 									actionLabel={t.dashboardCourses.empty.openCatalog}
-									actionHref={ROUTES.COURSES}
+									actionHref='#catalog'
 								/>
 							) : (
 								<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'>
@@ -185,7 +198,7 @@ export default function CoursesPage() {
 									title={t.dashboardCourses.empty.noneTitle}
 									description={t.dashboardCourses.empty.noneDesc}
 									actionLabel={t.dashboardCourses.empty.selectCourse}
-									actionHref={ROUTES.COURSES}
+									actionHref='#catalog'
 								/>
 							) : (
 								<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'>
@@ -201,6 +214,35 @@ export default function CoursesPage() {
 						</>
 					)}
 				</div>
+
+				<section id='catalog' className='space-y-8 scroll-mt-8' aria-labelledby='catalog-title'>
+					<h2 id='catalog-title' className='text-3xl font-bold'>
+						{t.dashboardCourses.cta.catalog}
+					</h2>
+					{catalog.isLoading && <AppleLoadingGrid />}
+					{catalog.isError && (
+						<p role='alert' className='text-red-400'>
+							{t.dashboardHome.dataStates.pathErrorDescription}
+						</p>
+					)}
+					{catalog.data?.map(({ stage, courses }) => (
+						<div key={stage.id} className='space-y-4'>
+							<h3 className='text-xl font-semibold'>{stage.title}</h3>
+							<div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+								{courses.map(course => (
+									<Link
+										key={course.id}
+										href={`${ROUTES.COURSES}/${course.slug}`}
+										className='rounded-2xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-blue-400/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400'
+									>
+										<h4 className='font-semibold'>{course.title}</h4>
+										<p className='mt-2 text-sm text-slate-400'>{course.description}</p>
+									</Link>
+								))}
+							</div>
+						</div>
+					))}
+				</section>
 
 				{/* CTA Section */}
 				{stats.totalCourses > 0 && (
@@ -220,7 +262,7 @@ export default function CoursesPage() {
 									</p>
 								</div>
 								<div className='flex flex-wrap gap-4'>
-									<AppleButton href={ROUTES.COURSES} variant='primary'>
+									<AppleButton href='#catalog' variant='primary'>
 										{t.dashboardCourses.cta.catalog}
 										<ArrowUpRight className='w-4 h-4 ml-2' />
 									</AppleButton>
