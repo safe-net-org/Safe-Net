@@ -202,7 +202,7 @@ jobs:
         run: bun run test:package
 
       - name: Upload extension zip
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: safenet-guard-chrome
           if-no-files-found: error
