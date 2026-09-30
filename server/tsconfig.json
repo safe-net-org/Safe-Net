@@ -17,7 +17,8 @@
 		"strictBindCallApply": false,
 		"forceConsistentCasingInFileNames": false,
 		"noFallthroughCasesInSwitch": false,
-		"typeRoots": ["./node_modules/@types", "./src/types"]
+		"typeRoots": ["./node_modules/@types", "../node_modules/@types", "./src/types"],
+		"types": ["node", "jest"]
 	},
 	// content-pipeline is a standalone content authoring tool with its own
 	// dependencies and its own install; compiling it as part of the API build
