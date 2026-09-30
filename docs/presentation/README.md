@@ -30,4 +30,4 @@ Original layout: Helvetica Neue, warm paper backgrounds, navy and green accents.
 
 AI assistance supported implementation, copy editing and deck preparation. The deck was authored with the bundled Artifact Tool. The presenter should explain the decisions and code they reviewed, and distinguish their contribution from external dependencies. The BERT checkpoint is third-party; its provenance is recorded in `ml-service/MODEL_CARD.md`.
 
-PPTX package and layout validation passed. All 15 final slides were rendered and visually reviewed. The PDF contains 15 pages. Native PowerPoint compatibility was not independently checked. Source-note references identify the reviewed local implementation; unpublished changes may not yet be visible on GitHub.
+PPTX package and layout validation passed. All 15 final slides were rendered and visually reviewed. The PDF contains 15 pages. Native PowerPoint compatibility was not independently checked. The reviewed implementation is published on GitHub in `upd/portfolio-localization`. The outreach draft links to source commit `6679bd4c1742827be796d098ee3c4f9c531c99df`.
