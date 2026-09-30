@@ -76,16 +76,23 @@ export class PasswordResetService {
 			const token = randomBytes(TOKEN_BYTES).toString('hex')
 			const expiresAt = new Date(Date.now() + EXPIRY_MINUTES * MS_PER_MINUTE)
 
-			await this.prisma.passwordResetToken.create({
-				data: {
-					userId: user.id,
-					tokenHash: this.hashToken(token),
-					expiresAt,
-				},
+			const issued = await this.prisma.$transaction(async tx => {
+				// This no-op write locks the user row and rejects an email/password
+				// snapshot superseded while the request was preparing its token.
+				const current = await tx.user.updateMany({
+					where: { id: user.id, authVersion: user.authVersion },
+					data: { authVersion: user.authVersion },
+				})
+				if (current.count !== 1) return false
+				await tx.passwordResetToken.create({
+					data: { userId: user.id, tokenHash: this.hashToken(token), expiresAt },
+				})
+				return true
 			})
+			if (!issued) return { message: 'If an account exists for that email, a reset link has been sent.' }
 
 			const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000'
-			const link = `${frontendUrl}/reset-password?token=${token}`
+			const link = `${frontendUrl}/?auth=reset&token=${token}`
 			let delivered = false
 			try {
 				delivered = await this.mailer.sendResetLink(
@@ -128,37 +135,52 @@ export class PasswordResetService {
 		token: string,
 		newPassword: string
 	): Promise<{ message: string }> {
-		const record = await this.prisma.passwordResetToken.findUnique({
-			where: { tokenHash: this.hashToken(token) },
-		})
+		const tokenHash = this.hashToken(token)
+		const now = new Date()
+		const passwordHash = await hash(newPassword)
 
-		if (!record || record.usedAt || record.expiresAt < new Date()) {
-			throw new BadRequestException('Invalid or expired reset link')
-		}
-
-		// Mark used and update the password together, so a token can never be
-		// replayed even if two requests race.
-		await this.prisma.$transaction([
-			this.prisma.user.update({
+		// Lock the user before claiming the token. All credential transitions
+		// take this lock first, preventing competing links from surviving or
+		// deadlocking by each holding a different token row.
+		await this.prisma.$transaction(async tx => {
+			const record = await tx.passwordResetToken.findUnique({
+				where: { tokenHash },
+			})
+			if (!record || record.usedAt || record.expiresAt <= new Date()) {
+				throw new BadRequestException('Invalid or expired reset link')
+			}
+			await tx.user.update({
 				where: { id: record.userId },
-				data: { password: await hash(newPassword) },
-			}),
-			this.prisma.passwordResetToken.update({
-				where: { id: record.id },
-				data: { usedAt: new Date() },
-			}),
-			// Invalidate any other outstanding tokens for this user.
-			this.prisma.passwordResetToken.updateMany({
+				data: { authVersion: { increment: 1 } },
+			})
+			const consumedAt = new Date()
+			const consumed = await tx.passwordResetToken.updateMany({
+				where: { tokenHash, usedAt: null, expiresAt: { gt: consumedAt } },
+				data: { usedAt: consumedAt },
+			})
+			if (consumed.count !== 1) {
+				throw new BadRequestException('Invalid or expired reset link')
+			}
+
+			await tx.user.update({
+				where: { id: record.userId },
+				data: { password: passwordHash },
+			})
+			await tx.passwordResetToken.updateMany({
 				where: { userId: record.userId, usedAt: null },
-				data: { usedAt: new Date() },
-			}),
-			// Password changes are a security boundary: every signed-in device
-			// must authenticate again with the new password.
-			this.prisma.refreshSession.updateMany({
+				data: { usedAt: now },
+			})
+			await tx.refreshSession.updateMany({
 				where: { userId: record.userId, revokedAt: null },
-				data: { revokedAt: new Date() },
-			}),
-		])
+				data: { revokedAt: now },
+			})
+			await tx.emailChangeToken.updateMany({
+				where: { userId: record.userId, usedAt: null }, data: { usedAt: now },
+			})
+			await tx.emailVerificationToken.updateMany({
+				where: { userId: record.userId, usedAt: null }, data: { usedAt: now },
+			})
+		})
 
 		return { message: 'Password has been reset. You can now sign in.' }
 	}

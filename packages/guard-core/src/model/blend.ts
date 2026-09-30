@@ -1,4 +1,5 @@
 import type { AnalysisResult, RiskSignal, UrlFeatures } from './types'
+import { riskLevelForScore } from './risk-level'
 
 /**
  * Blend a local rule verdict with a neural-network probability.
@@ -19,8 +20,8 @@ export interface BlendResult {
 	method: BlendMethod
 }
 
-const DANGER_THRESHOLD = 70
-const WARN_THRESHOLD = 40
+const DANGER_RULE_FLOOR = 70
+const KNOWN_BRAND_RULE_CAP = 31
 const ML_WEIGHT = 0.6
 const KNOWN_BRAND_SAFE_CAP = 20
 
@@ -33,12 +34,6 @@ function hardDanger(f: UrlFeatures): boolean {
 		(f.isTyposquat && f.levenshteinDistance <= 2) ||
 		(f.hasBrandToken && f.brandTokenViaLeet)
 	)
-}
-
-function toLevel(score: number): BlendResult['level'] {
-	if (score >= DANGER_THRESHOLD) return 'danger'
-	if (score >= WARN_THRESHOLD) return 'suspicious'
-	return 'safe'
 }
 
 /**
@@ -56,26 +51,26 @@ export function blendWithMl(
 	if (hardDanger(f)) {
 		// Rules are certain: never let the net argue a homograph down.
 		const score = Math.max(rule, bertScore)
-		return { score, level: toLevel(score), method: 'rule-override' }
+		return { score, level: riskLevelForScore(score), method: 'rule-override' }
 	}
 
-	if (f.registrableIsBrand && rule < WARN_THRESHOLD) {
+	if (f.registrableIsBrand && rule < KNOWN_BRAND_RULE_CAP) {
 		// github.com, mail.google.com — the net's nervousness is overruled.
 		const score = Math.min(bertScore, KNOWN_BRAND_SAFE_CAP)
-		return { score, level: toLevel(score), method: 'rule-override' }
+		return { score, level: riskLevelForScore(score), method: 'rule-override' }
 	}
 
-	if (rule >= DANGER_THRESHOLD) {
+	if (rule >= DANGER_RULE_FLOOR) {
 		// Rules already say danger; the net can only raise it.
 		const score = Math.max(rule, bertScore)
-		return { score, level: toLevel(score), method: 'rules' }
+		return { score, level: riskLevelForScore(score), method: 'rules' }
 	}
 
 	// Uncertain middle — where the model earns its keep on novel phishing.
 	const blended = Math.round(ML_WEIGHT * bertScore + (1 - ML_WEIGHT) * rule)
 	const score = Math.max(blended, rule)
 	const method: BlendMethod = bertScore > rule ? 'ml' : 'blend'
-	return { score, level: toLevel(score), method }
+	return { score, level: riskLevelForScore(score), method }
 }
 
 /**

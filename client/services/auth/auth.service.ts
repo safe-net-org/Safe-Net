@@ -1,15 +1,10 @@
 import { axiosClassic } from '@/api/axios'
-import { removeFromStorage, saveTokenStorage } from '@/services/auth/auth.helper'
+import { removeFromStorage } from '@/services/auth/auth.helper'
 import { IFormData, IUser } from '@/services/auth/auth.types'
 
 
 interface IAuthResponse {
-	accessToken: string
 	user: IUser
-}
-export enum EnumTokens {
-	'ACCESS_TOKEN' = 'accessToken',
-	'REFRESH_TOKEN' = 'refreshToken'
 }
 class AuthService {
 	async main(type: 'login' | 'register', data: IFormData, token?: string | null) {
@@ -18,28 +13,18 @@ class AuthService {
 				recaptcha: token
 			}
 		})
-		if (response.data.accessToken) saveTokenStorage(response.data.accessToken)
 		return response
 	}
 	async getNewTokens() {
-		const response = await axiosClassic.post<IAuthResponse>('/auth/login/access-token')
-		if (response.data.accessToken) saveTokenStorage(response.data.accessToken)
-		return response
-	}
-	async getNewTokensByRefresh(refreshToken: string) {
 		const response = await axiosClassic.post<IAuthResponse>(
 			'/auth/login/access-token',
-			{},
-			{
-				headers: {
-					Cookie: `refreshToken=${refreshToken}`
-				}
-			}
+			undefined,
+			{ timeout: 30_000 }
 		)
-		return response.data
+		return response
 	}
 	async logout() {
-		const response = await axiosClassic.post<boolean>('/auth/logout')
+		const response = await axiosClassic.post<{ message: string }>('/auth/logout')
 		if (response.data) removeFromStorage()
 		return response
 	}
@@ -55,6 +40,18 @@ class AuthService {
 			'/auth/password/reset',
 			{ token, password }
 		)
+		return response.data
+	}
+	async verifyEmail(token: string) {
+		const response = await axiosClassic.post<{ message: string }>('/auth/email/verify', { token })
+		return response.data
+	}
+	async resendVerification(email: string) {
+		const response = await axiosClassic.post<{ message: string }>('/auth/email/resend', { email })
+		return response.data
+	}
+	async confirmEmailChange(token: string) {
+		const response = await axiosClassic.post<{ message: string }>('/auth/email/change/confirm', { token })
 		return response.data
 	}
 }

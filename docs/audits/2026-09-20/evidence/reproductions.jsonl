@@ -1,0 +1,5 @@
+{"test":"email-change-without-reverification","changed":true,"verifiedStillPresent":true,"jwtAccepted":true}
+{"test":"duplicate-question","repetitions":1,"score":20,"passed":false}
+{"test":"duplicate-question","repetitions":5,"score":100,"passed":true}
+{"test":"duplicate-question","repetitions":6,"score":120,"passed":true}
+{"test":"whole-message-highlight","isCorrect":true,"foundFlagIds":["one","two"],"missedFlagIds":[],"falsePositives":[]}

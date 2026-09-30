@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma.service'
 import {
 	ACHIEVEMENTS,
@@ -109,18 +110,25 @@ export class AchievementsService {
 			return false
 		}
 
-		await this.prisma.$transaction([
-			this.prisma.userAchievement.create({
-				data: {
-					userId,
-					achievementId: achievement.id,
-				},
-			}),
-			this.prisma.user.update({
-				where: { id: userId },
-				data: { bonusXp: { increment: achievement.xpReward } },
-			}),
-		])
+		try {
+			await this.prisma.$transaction([
+				this.prisma.userAchievement.create({
+					data: {
+						userId,
+						achievementId: achievement.id,
+					},
+				}),
+				this.prisma.user.update({
+					where: { id: userId },
+					data: { bonusXp: { increment: achievement.xpReward } },
+				}),
+			])
+		} catch (error) {
+			// Another progress request can award the same achievement after the
+			// read above. The unique award and XP increment roll back together.
+			if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') return false
+			throw error
+		}
 
 		return true
 	}

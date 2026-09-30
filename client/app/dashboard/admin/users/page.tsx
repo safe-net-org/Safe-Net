@@ -160,6 +160,14 @@ export default function UsersPage() {
 		}
 	}
 
+	const toSafeCsvCell = (value: unknown) => {
+		const cell = String(value)
+		// Spreadsheet applications evaluate these initial characters as formulas,
+		// even when the value is quoted in CSV.
+		const prefix = /^[=+\-@\t\r]/.test(cell) ? "'" : ''
+		return `"${prefix}${cell.replace(/"/g, '""')}"`
+	}
+
 	const handleExportCSV = () => {
 		try {
 			const headers = [
@@ -179,9 +187,9 @@ export default function UsersPage() {
 				format(new Date(user.createdAt), 'dd.MM.yyyy HH:mm'),
 			])
 			const csvContent = [
-				headers.join(','),
+				headers.map(toSafeCsvCell).join(','),
 				...rows.map(row =>
-					row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+					row.map(toSafeCsvCell).join(',')
 				),
 			].join('\n')
 			const blob = new Blob(['\ufeff' + csvContent], {

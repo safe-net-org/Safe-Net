@@ -1,5 +1,6 @@
 'use client'
 
+import { useI18n } from '@/i18n/LocaleProvider'
 import {
 	ILesson,
 	ITask,
@@ -18,20 +19,8 @@ type LessonWithNav = ILesson & {
 	nextLessonId?: string | null
 }
 
-// ✅ Utility for working with localStorage
-const getCompletedTasks = (): Set<string> => {
-	if (typeof window === 'undefined') return new Set()
-	const stored = localStorage.getItem('completedTasks')
-	return stored ? new Set(JSON.parse(stored)) : new Set()
-}
-
-const saveCompletedTask = (taskId: string) => {
-	const completed = getCompletedTasks()
-	completed.add(taskId)
-	localStorage.setItem('completedTasks', JSON.stringify([...completed]))
-}
-
 export function useLessonDetail() {
+	const { t } = useI18n()
 	const params = useParams()
 	const router = useRouter()
 	const queryClient = useQueryClient()
@@ -47,16 +36,8 @@ export function useLessonDetail() {
 		queryFn: async () => {
 			const data = await learningService.getLessonDetail(lessonId)
 
-			// ✅ Apply the saved completed state from localStorage
-			const completedTasks = getCompletedTasks()
-			const tasksWithCompleted = data.tasks?.map(task => ({
-				...task,
-				completed: task.completed || completedTasks.has(task.id),
-			}))
-
 			return {
 				...data,
-				tasks: tasksWithCompleted,
 				courseTitle: data.courseTitle,
 				courseSlug: data.courseSlug,
 				estimatedDuration: data.estimatedDuration || 15,
@@ -77,7 +58,7 @@ export function useLessonDetail() {
 			taskId: string
 			selectedOptionIds: string[]
 			textAnswer?: string
-			selectedSpans?: { location: string; text: string }[]
+			selectedSpans?: { location: string; text: string; start: number; end: number }[]
 		}) =>
 			learningService.answerTask(payload.taskId, {
 				selectedOptionIds: payload.selectedOptionIds,
@@ -85,11 +66,6 @@ export function useLessonDetail() {
 				selectedSpans: payload.selectedSpans,
 			}),
 		onSuccess: (res: ITaskAnswerResponse, variables) => {
-			// ✅ Save to localStorage if the answer is correct
-			if (res.isCorrect) {
-				saveCompletedTask(variables.taskId)
-			}
-
 			// Update the lesson cache
 			queryClient.setQueryData<LessonWithNav>(['lesson', lessonId], prev => {
 				if (!prev || !prev.tasks) return prev
@@ -97,7 +73,7 @@ export function useLessonDetail() {
 					...prev,
 					tasks: prev.tasks.map((task: ITask) =>
 						task.id === variables.taskId
-							? { ...task, completed: res.isCorrect }
+							? { ...task, completed: task.completed || res.isCorrect }
 							: task
 					),
 				}
@@ -105,30 +81,28 @@ export function useLessonDetail() {
 
 			// ✅ Show the result with an explanation
 			if (res.isCorrect) {
-				toast.success(`Correct! +${res.awardedXp} XP`)
+				toast.success(t.dashboardLesson.toasts.correctTemplate.replace('{xp}', String(res.awardedXp)))
 			} else {
-				toast.error('Incorrect. Try again!')
+				toast.error(t.dashboardLesson.toasts.incorrect)
 			}
 
 			// If the lesson is complete
 			if (res.lessonCompleted) {
-				toast.success('Lesson completed!')
+				toast.success(t.dashboardLesson.toasts.lessonCompleted)
 			}
 
 			// If a certificate was issued
 			if (res.certificateIssued) {
-				toast.success('Certificate earned!')
+				toast.success(t.dashboardLesson.toasts.certificateEarned)
 			}
 
 			// ✅ If there are new achievements
 			if (res.newAchievements && res.newAchievements.length > 0) {
-				res.newAchievements.forEach(achievement => {
-					toast.success(`Achievement unlocked: ${achievement.title}`)
-				})
+				toast.success(t.dashboardLesson.toasts.achievementsTemplate.replace('{count}', String(res.newAchievements.length)))
 			}
 		},
 		onError: error => {
-			toast.error('Error submitting answer')
+			toast.error(t.dashboardLesson.toasts.submitError)
 			console.error(error)
 		},
 	})
@@ -139,7 +113,7 @@ export function useLessonDetail() {
 		payload: {
 			selectedOptionIds: string[]
 			textAnswer?: string
-			selectedSpans?: { location: string; text: string }[]
+			selectedSpans?: { location: string; text: string; start: number; end: number }[]
 		}
 	): Promise<ITaskAnswerResponse> => {
 		return answerMutation.mutateAsync({ taskId, ...payload })

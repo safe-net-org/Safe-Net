@@ -24,6 +24,8 @@ function userFixture(overrides: Record<string, unknown> = {}) {
 		password: 'password-hash',
 		rights: [],
 		status: UserStatus.ACTIVE,
+		emailVerifiedAt: new Date(),
+		authVersion: 0,
 		...overrides,
 	}
 }
@@ -63,7 +65,7 @@ describe('JwtStrategy', () => {
 
 	function signAccess(overrides: Record<string, unknown> = {}) {
 		return jwt.sign(
-			{ id: 'user-1', type: JWT_TOKEN_TYPE.ACCESS, ...overrides },
+			{ id: 'user-1', type: JWT_TOKEN_TYPE.ACCESS, authVersion: 0, ...overrides },
 			{
 				secret: ACCESS_SECRET,
 				expiresIn: '1h',
@@ -152,10 +154,16 @@ describe('JwtStrategy', () => {
 		const user = await strategy.validate({
 			id: 'user-1',
 			type: JWT_TOKEN_TYPE.ACCESS,
+			authVersion: 0,
 		})
 
 		expect(user).toMatchObject({ id: 'user-1', email: 'user@example.com' })
 		expect(user).not.toHaveProperty('password')
+	})
+
+	it('rejects an access token issued before a credential change', async () => {
+		const { strategy } = createStrategy(userFixture({ authVersion: 1 }))
+		await expect(authenticate(strategy, signAccess())).rejects.toBeInstanceOf(UnauthorizedException)
 	})
 
 	it('accepts a correctly scoped access token end to end', async () => {

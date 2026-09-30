@@ -1,0 +1,1 @@
+{"test":"download-zip-fresh-install-privacy","network":"mocked-no-real-network","requestCount":1,"requests":[{"endpoint":"http://localhost:8000/predict","body":{"url":"https://synthetic-user:synthetic-password@example.com/private?token=SYNTHETIC_CANARY#SYNTHETIC_FRAGMENT"}}],"fullUrlLeaked":true}

@@ -1,11 +1,11 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param } from '@nestjs/common'
+import { Auth } from 'src/auth/decorators/auth.decorator'
 import { CurrentUser } from 'src/auth/decorators/user.decorator'
-import { JwtAuthGuard } from 'src/auth/guard/jwt.guard'
 import { AchievementsService } from '../services/achievements.service'
 import { CurrentLocale, Locale } from '../../i18n/locale'
 
 @Controller('learning/achievements')
-@UseGuards(JwtAuthGuard)
+@Auth()
 export class AchievementsController {
 	constructor(private readonly achievementsService: AchievementsService) {}
 

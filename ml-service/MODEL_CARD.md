@@ -48,8 +48,8 @@ must be treated as potentially sensitive operational data.
 
 ## Decision policy
 
-- `0–39`: safe
-- `40–69`: suspicious
+- `0–30`: safe
+- `31–69`: suspicious
 - `70–100`: danger
 - BERT/rules blend: 60% model and 40% rules in the uncertain middle
 - Deterministic high-confidence attacks override a lower model score

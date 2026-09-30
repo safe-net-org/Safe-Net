@@ -36,6 +36,23 @@ async function bootstrap() {
 		exposedHeaders: 'set-cookie',
 	})
 
+	// HttpOnly auth cookies are not readable by XSS, so reject unsafe browser
+	// requests from origins other than the configured frontend as CSRF defense.
+	app.use((req, res, next) => {
+		if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next()
+		const origin = req.get('origin')
+		const hasAuthCookie = Boolean(
+			req.cookies?.access_token || req.cookies?.refresh_token
+		)
+		if (
+			(origin && !frontendOrigins.includes(origin)) ||
+			(!origin && hasAuthCookie)
+		) {
+			return res.status(403).json({ message: 'Untrusted request origin' })
+		}
+		next()
+	})
+
 	await app.listen(process.env.PORT ?? DEFAULT_PORT)
 }
 bootstrap()

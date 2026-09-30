@@ -169,14 +169,29 @@ export class AdminUsersService {
 		}
 	}
 	async updateUser(id: string, dto: AdminUpdateUserDto) {
-		const user = await this.prisma.user.update({
-			where: { id },
-			data: {
-				email: dto.email,
-				name: dto.name,
-				status: dto.status,
-				rights: dto.rights,
-			},
+		const user = await this.prisma.$transaction(async tx => {
+			const current = await tx.user.findUniqueOrThrow({
+				where: { id },
+				select: { status: true },
+			})
+			const statusChanged = dto.status !== undefined && dto.status !== current.status
+			const updated = await tx.user.update({
+				where: { id },
+				data: {
+					email: dto.email,
+					name: dto.name,
+					status: dto.status,
+					rights: dto.rights,
+					...(statusChanged ? { authVersion: { increment: 1 } } : {}),
+				},
+			})
+			if (statusChanged) {
+				await tx.refreshSession.updateMany({
+					where: { userId: id, revokedAt: null },
+					data: { revokedAt: new Date() },
+				})
+			}
+			return updated
 		})
 		const { password, ...rest } = user
 		return rest

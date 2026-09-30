@@ -36,6 +36,8 @@ Start here depending on what you want to evaluate:
 | The shared scoring logic | [`guard-core`](packages/guard-core/README.md) |
 | How course content is structured and validated | [Content format](server/content/README.md) |
 | Security, privacy, and product trade-offs | [Hardening plan](docs/PRODUCT_HARDENING_PLAN.md) |
+| Verified behavior and remaining gaps | [Evidence and limitations](docs/EVIDENCE_AND_LIMITATIONS.md) |
+| Early academic feedback | [Professor brief draft](docs/PROFESSOR_BRIEF_DRAFT.md) |
 | A concise project narrative for an academic or portfolio reviewer | [Project story](docs/PROJECT_STORY.md) |
 
 ## Architecture at a glance
@@ -61,11 +63,30 @@ The complete component map and the important data flows are documented in
 
 **Prerequisites:** [Bun](https://bun.sh), Docker, and Python 3.12 only if you
 want to run the optional ML layer.
+Install dependencies from the repository root; `bun.lock` there is the single
+workspace lockfile.
 
 ```bash
-bun run setup      # install dependencies, start PostgreSQL, migrate, and seed
-bun run dev        # start web, API, database, and optional ML service
+bun run setup:demo  # fresh local database only: configure, migrate, seed verified demo users
+bun run dev:no-ml   # start web, API, and database without the optional model
 ```
+
+`bun run setup` installs dependencies, creates local environment files only when
+missing, starts PostgreSQL, and applies migrations. It preserves existing users
+and progress. `setup:demo` additionally loads curriculum and demo accounts, but
+the seed refuses a nonempty database and is disabled in production. Back up an
+existing database and use a separate empty database for a new demo; do not use
+the seed as a content-update command. If you already have `server/.env`, setup
+checks that it contains `DATABASE_URL` and two distinct JWT secrets without
+overwriting it. For email delivery, configure a real provider or local SMTP as
+described in [email delivery](docs/EMAIL_DELIVERY.md).
+
+The certificate uniqueness migration stops if an existing database contains
+multiple certificates for the same learner and course. It keeps all records;
+reconcile those duplicates before retrying the migration.
+
+For account safety, changing a password or email and signing out end all active
+sessions for that account. Sign in again on other devices afterward.
 
 | Service | Local URL | Purpose |
 | --- | --- | --- |
@@ -74,8 +95,8 @@ bun run dev        # start web, API, database, and optional ML service
 | ML | <http://localhost:8000> | Optional FastAPI/BERT opinion |
 | PostgreSQL | `localhost:5433` | Local Docker database |
 
-Without Python, run `bun run dev:no-ml`. The local rule engine continues to work
-without the ML service.
+Run `bun run setup:ml` and `bun run dev` only when you want the optional ML
+service. The local rule engine works without it.
 
 **Demo accounts** (development only; password `password123`):
 
@@ -94,8 +115,9 @@ network options.
 3. In Chrome, open `chrome://extensions`, enable **Developer mode**, then choose
    **Load unpacked** and select the unzipped folder.
 
-To build it from source, run `bun run build:ext`; the unpacked build is written to
-`extension/.output/chrome-mv3`. Run `bun run package:ext` to refresh the download.
+To build it from source, run `bun run package:ext`; the unpacked build is written
+to `extension/.output/chrome-mv3`, and the downloadable ZIP, checksum, and
+release details are refreshed together.
 
 ## Detection model
 
@@ -130,9 +152,11 @@ Run the checks independently or use the full local matrix:
 ```bash
 bun run typecheck         # API, web, extension, and shared engine
 bun run check             # typecheck, lint, and EN/RU parity
-bun run test              # API, rule-engine, and ML scoring/parity tests
+bun run test              # API, rule engine, ML scoring/privacy/parity, extension privacy
 bun run validate:content  # validates lesson and test source material
 bun run build             # production builds for API, web, and extension
+bun run test:package      # checksum, locales, and first-run privacy of the downloaded ZIP
+bun run test:http         # requires a separate empty safenet_e2e_* PostgreSQL database
 ```
 
 The repository also includes CI checks for content structure, localization parity,

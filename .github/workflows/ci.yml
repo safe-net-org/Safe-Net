@@ -4,21 +4,64 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
+  secret-files:
+    name: Reject tracked secret files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: node tools/check-secret-files.cjs
+
+  dependency-audit:
+    name: Runtime dependency advisories
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+      - name: Block high and critical runtime advisories
+        run: bun audit --prod --audit-level=high
+
   client:
     name: Client — lint, locales, typecheck & build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.2.8'
 
       - name: Install dependencies
-        working-directory: client
         run: bun install --frozen-lockfile
+
+      - name: Package the exact extension downloaded by the web client
+        run: bun run package:ext
+
+      - name: Check packaged extension privacy
+        run: bun run test:package
 
       - name: Lint
         working-directory: client
@@ -47,15 +90,22 @@ jobs:
   server:
     name: Server — typecheck & tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/safenet_ci_schema?schema=public
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.2.8'
 
       - name: Install dependencies
-        working-directory: server
         run: bun install --frozen-lockfile
 
       # The Prisma client is generated code; without it the types the server
@@ -86,12 +136,16 @@ jobs:
   guard:
     name: Guard engine — tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.2.8'
+
+      - name: Install workspace dependencies
+        run: bun install --frozen-lockfile
 
       # The rule engine is pure and dependency-free, so it needs no install.
       # These tests are the contract between what the courses teach and what
@@ -103,15 +157,24 @@ jobs:
   extension:
     name: Extension — privacy, locales, typecheck & build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.2.8'
 
       - name: Install dependencies
-        working-directory: extension
         run: bun install --frozen-lockfile
 
       - name: Check English and Russian catalogs
@@ -133,36 +196,40 @@ jobs:
       # The same zip `bun run package:ext` copies into client/public/downloads —
       # uploaded so every CI run has an installable build, no toolchain needed.
       - name: Package installable zip
-        working-directory: extension
-        run: bun run zip
+        run: bun run package:ext
+
+      - name: Check the installable zip
+        run: bun run test:package
 
       - name: Upload extension zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: safenet-guard-chrome
-          path: extension/.output/*-chrome.zip
+          if-no-files-found: error
+          path: |
+            client/public/downloads/safenet-guard-chrome.zip
+            client/public/downloads/safenet-guard-release.json
+            client/public/downloads/safenet-guard-changelog.md
 
   ml:
     name: ML service — scoring tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.2.8'
 
-      # tldextract is the only import the rule layer needs; the BERT model is
-      # never loaded, so these tests are fast and offline. They assert the
-      # Python heuristics still agree with the TypeScript engine they were
-      # hand-ported from.
+      # The BERT checkpoint is never loaded, so these tests stay fast.
       - name: Install minimal deps
         working-directory: ml-service
-        run: pip install tldextract
+        run: pip install tldextract==5.1.3 pydantic==2.10.3
 
       - name: Test deterministic scoring
         working-directory: ml-service
@@ -182,3 +249,45 @@ jobs:
       - name: Cross-language detection-data parity
         working-directory: ml-service
         run: python scripts/test_parity.py
+
+  http-integration:
+    name: Isolated PostgreSQL and HTTP scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mailpit:
+        image: axllent/mailpit@sha256:d5ecbb067db3705fa953d79e1b7f81ef84038df67aba6c52825d8c02a1ea748a
+        ports:
+          - 1025:1025
+          - 8025:8025
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: safenet_e2e_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d safenet_e2e_ci"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SAFE_NET_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/safenet_e2e_ci?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/safenet_e2e_ci?schema=public
+      JWT_SECRET: ci-test-access-secret-not-for-production
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-not-for-production
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2.8'
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+        working-directory: server
+      - run: bun run build:api
+      - run: bun run test:http
+      - run: bun run test:mail

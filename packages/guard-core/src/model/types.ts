@@ -118,4 +118,5 @@ export type ExtensionMessage =
   | { type: 'CURRENT_RESULT'; result: AnalysisResult | null }
   | { type: 'TOGGLE_PANEL' }
   | { type: 'CLOSE_PANEL' }
-  | { type: 'TRUST_SITE'; host: string }
+  | { type: 'TRUST_ACTIVE_SITE' }
+  | { type: 'UNTRUST_HOST'; host: string }

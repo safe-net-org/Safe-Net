@@ -24,4 +24,5 @@ export class TestResultResponseDto {
 	correctAnswers: number
 	passed: boolean
 	certificateIssued: boolean
+	answers: { questionId: string; isCorrect: boolean }[]
 }

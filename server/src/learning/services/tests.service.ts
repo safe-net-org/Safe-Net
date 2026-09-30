@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { TaskType } from '@prisma/client'
 import { PrismaService } from 'src/prisma.service'
 import { SubmitTestDto } from '../dto/submit-test.dto'
 import { TestDetailsDto, TestResultResponseDto } from '../dto/test-question.dto'
+import { CertificatesService } from './certificates.service'
 import { AchievementsService } from './achievements.service'
 import { Locale, pickLocalized } from '../../i18n/locale'
 
@@ -10,7 +11,8 @@ import { Locale, pickLocalized } from '../../i18n/locale'
 export class TestsService {
 	constructor(
 		private AchievementsService: AchievementsService,
-		private prisma: PrismaService
+		private prisma: PrismaService,
+		private readonly certificatesService: CertificatesService
 	) {}
 
 	async getTests() {
@@ -97,10 +99,29 @@ export class TestsService {
 		})
 
 		if (!test) throw new NotFoundException('Test not found')
-		if (!dto.time) throw new NotFoundException('Time should be provided')
+		if (dto.time === undefined) throw new BadRequestException('Time should be provided')
 		if (!test.course) throw new NotFoundException('Course not found')
 
 		const questionsMap = new Map(test.questions.map(q => [q.id, q]))
+		const answeredIds = new Set<string>()
+		for (const answer of dto.answers) {
+			if (answeredIds.has(answer.questionId)) {
+				throw new BadRequestException('A question may be answered only once')
+			}
+			answeredIds.add(answer.questionId)
+			const question = questionsMap.get(answer.questionId)
+			if (!question) throw new BadRequestException('Question does not belong to this test')
+			if (question.type !== TaskType.SINGLE_CHOICE && question.type !== TaskType.MULTI_CHOICE) {
+				throw new BadRequestException('Unsupported test question type')
+			}
+			const selected = answer.selectedOptionIds ?? []
+			if (answer.textAnswer !== undefined ||
+				(question.type === TaskType.SINGLE_CHOICE && selected.length > 1) ||
+				new Set(selected).size !== selected.length ||
+				selected.some(optionId => !question.options.some(option => option.id === optionId))) {
+				throw new BadRequestException('Invalid answer options')
+			}
+		}
 
 		let correct = 0
 
@@ -148,7 +169,7 @@ export class TestsService {
 		// ✅ NEW: Check and issue certificate after passing the test
 		let certificateIssued = false
 		if (passed) {
-			const certificateId = await this.checkAndIssueCertificate(
+			const certificateId = await this.certificatesService.checkAndIssueCertificate(
 				userId,
 				test.course.id
 			)
@@ -193,133 +214,9 @@ export class TestsService {
 			totalQuestions: result.totalQuestions,
 			correctAnswers: result.correctAnswers,
 			passed: result.passed,
-			certificateIssued, // ✅ Add the flag
+			certificateIssued,
+			answers: answerDetails,
 		}
 	}
 
-	// ✅ FIXED LOGIC: Certificate only at 100% completion
-	private async checkAndIssueCertificate(
-		userId: string,
-		courseId: string
-	): Promise<string | null> {
-		const [
-			totalLessons,
-			completedLessons,
-			totalTasks,
-			solvedTasksData,
-			courseTests,
-			passedTestResults,
-		] = await this.prisma.$transaction([
-			this.prisma.lesson.count({
-				where: { courseId },
-			}),
-			this.prisma.completedLesson.count({
-				where: {
-					userId,
-					lesson: { courseId },
-				},
-			}),
-			this.prisma.task.count({
-				where: {
-					lesson: { courseId },
-				},
-			}),
-			this.prisma.taskAttempt.findMany({
-				where: {
-					userId,
-					task: {
-						lesson: { courseId },
-					},
-					isCorrect: true,
-				},
-				distinct: ['taskId'],
-				select: { taskId: true },
-			}),
-			this.prisma.test.findMany({
-				where: { courseId },
-				select: { id: true },
-			}),
-			this.prisma.testResult.findMany({
-				where: {
-					userId,
-					test: { courseId },
-					passed: true,
-				},
-				distinct: ['testId'],
-				select: { testId: true },
-			}),
-		])
-
-		const solvedTasks = solvedTasksData.length
-		const totalTests = courseTests.length
-		const passedTests = passedTestResults.length
-
-		// ✅ FIXED: Check that all parts of the course are completed
-		// 1. There must be lessons AND all must be completed
-		if (totalLessons === 0 || completedLessons < totalLessons) {
-			return null
-		}
-
-		// 2. There must be tasks AND all must be completed
-		if (totalTasks === 0 || solvedTasks < totalTasks) {
-			return null
-		}
-
-		// 3. If there are tests - all must be passed
-		if (totalTests > 0 && passedTests < totalTests) {
-			return null
-		}
-
-		// Check for an existing certificate
-		const existingCertificate = await this.prisma.certificate.findFirst({
-			where: { userId, courseId },
-		})
-
-		if (existingCertificate) {
-			return existingCertificate.id
-		}
-
-		// Generate and create a new certificate
-		const certificateNumber = await this.generateCertificateNumber()
-
-		const certificate = await this.prisma.certificate.create({
-			data: {
-				userId,
-				courseId,
-				certificateNumber,
-			},
-		})
-
-		return certificate.id
-	}
-
-	// ✅ Generate the certificate number
-	private async generateCertificateNumber(): Promise<string> {
-		let attempts = 0
-		const maxAttempts = 10
-
-		while (attempts < maxAttempts) {
-			const date = new Date()
-			const year = date.getFullYear()
-			const month = String(date.getMonth() + 1).padStart(2, '0')
-			const day = String(date.getDate()).padStart(2, '0')
-			const random = Math.floor(Math.random() * 100000)
-				.toString()
-				.padStart(5, '0')
-
-			const certificateNumber = `CERT-${year}${month}${day}-${random}`
-
-			const exists = await this.prisma.certificate.findUnique({
-				where: { certificateNumber },
-			})
-
-			if (!exists) {
-				return certificateNumber
-			}
-
-			attempts++
-		}
-
-		throw new Error('Failed to generate unique certificate number')
-	}
 }

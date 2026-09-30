@@ -30,29 +30,29 @@ export const messages = {
 				'A Chrome extension that scores every link before the page loads, using the same rule engine the Safe-Net courses teach.',
 		},
 		featuresSection: {
-			heading: 'Built for practice, not security theatre',
+			heading: 'Practise cybersecurity decisions',
 			subtitle:
-				'A transparent learning path, measurable progress, and a Guard that explains each signal.',
+				'Work through the courses, track your results, and see why Guard flags a link.',
 			items: [
 				{
-					title: 'Validated practice',
+					title: 'Practice tasks',
 					description:
 						'Eight learning stages contain 21 courses, 27 lessons, and 163 content-validated tasks.',
 					stats: '8 stages • 163 tasks',
 					highlight: 'Curriculum',
 				},
 				{
-					title: 'Evidence in context',
+					title: 'Sources and explanations',
 					description:
 						'Lessons connect attack patterns to sources and explain why each answer is safe or risky.',
 					stats: 'Sources inside lessons',
 					highlight: 'Explainable',
 				},
 				{
-					title: 'Progress you can inspect',
+					title: 'Your learning history',
 					description:
-						'Track completion, accuracy, attempts, achievements, and certificates without invented readiness scores.',
-					stats: 'Your history, not a guess',
+						'Track completed lessons, answer accuracy, attempts, achievements, and certificates.',
+					stats: 'Results saved to your account',
 					highlight: 'Progress',
 				},
 				{
@@ -63,10 +63,10 @@ export const messages = {
 					highlight: 'Learning',
 				},
 				{
-					title: 'Earnable achievements',
+					title: 'Achievements',
 					description:
-						'Thirty-six tested rules reward mastery, precision, consistency, and recovery—not empty clicks.',
-					stats: '36 achievement paths',
+						'Thirty-six tested rules award achievements for correct answers, consistent practice, and correcting mistakes.',
+					stats: '36 achievement rules',
 					highlight: 'Motivation',
 				},
 				{
@@ -79,7 +79,7 @@ export const messages = {
 			],
 			adaptive: {
 				title: 'A clear path',
-				body: 'Eight ordered stages make the next step visible without pretending to auto-personalize.',
+				body: 'Follow eight stages in order, with the next topic shown as you progress.',
 			},
 			alwaysWithYou: {
 				title: 'Works across screens',
@@ -89,7 +89,7 @@ export const messages = {
 		howItWorksSection: {
 			heading: 'How It Works',
 			subtitle:
-				'SafeNet combines theory and practice for effective cybersecurity training',
+				'Read an explanation, try a task, then review your answer.',
 			steps: [
 				{ title: 'Learn', description: 'Short cards with rules and examples of threats' },
 				{ title: 'Practice', description: 'Interactive tasks and realistic simulations' },
@@ -113,7 +113,7 @@ export const messages = {
 		testimonialsSection: {
 			heading: 'What you can practice today',
 			subtitle:
-				'Concrete, inspectable skills inside the current product preview—without invented testimonials.',
+				'Try these exercises in the current preview.',
 			items: [
 				{
 					text: 'Inspect sender identity, domains, urgency, forms, and payment requests before acting.',
@@ -166,17 +166,17 @@ export const messages = {
 			},
 		},
 		notFound: {
-			heading: 'Protection Not Found',
-			description: "Looks like this page went into secure storage. Let's get you back to a safe zone.",
+			heading: 'Page not found',
+			description: 'This page is unavailable. Go back or return to the home page.',
 			back: 'Back',
 			goHome: 'Go Home',
-			footer: 'SafeNet – Your safety matters',
+			footer: 'SafeNet · Cybersecurity practice',
 		},
 		nav: {
 			features: 'Features',
 			topics: 'Topics',
 			statistics: 'Statistics',
-			aiGuard: 'AI Guard',
+			aiGuard: 'Guard',
 			signIn: 'Sign in',
 			logout: 'Log out',
 			logoutSuccess: 'You have successfully logged out',
@@ -197,12 +197,12 @@ export const messages = {
 			darkTheme: 'Use dark theme',
 		},
 		hero: {
-			badge: 'A modern cybersecurity training platform',
+			badge: 'Cybersecurity practice',
 			title: 'Cybersecurity Simulator',
 			subtitle:
-				'Learn to spot phishing, malicious sites, and dangerous links in an interactive game. Complete levels, earn points, and become the guardian of your own data.',
+				'Practise spotting phishing messages, suspicious sites, and dangerous links. Complete tasks and review the explanation for each answer.',
 			startLearning: 'Start Learning',
-			tryGuard: 'Try AI Guard',
+			tryGuard: 'Try Guard',
 		},
 		demo: {
 			level: 'Level 1: Phishing',
@@ -216,7 +216,7 @@ export const messages = {
 			incorrect: 'Incorrect. This is a phishing email.',
 			hint: "Hint: Check the sender's address for domain misspellings.",
 			tryAnother: 'Try another — password security overview',
-			guardLink: 'See how AI Guard scores this automatically',
+			guardLink: 'See how Guard checks this link',
 		},
 		guard: {
 			badge: 'Browser extension · local-first',
@@ -226,11 +226,11 @@ export const messages = {
 			looksIdentical: 'Looks identical:',
 			cyrillicNote: 'The second а is Cyrillic. Guard scores it 100 / 100.',
 			sameEngine:
-				'Same engine the courses teach and the simulator tests — one implementation.',
+				'The web scanner and browser extension use the same URL rules.',
 			cta: 'Try the live scanner',
 			layers: {
 				local: 'Local rules',
-				localNote: '< 5 ms · offline · zero data',
+				localNote: 'Offline · no network request',
 				intel: 'Threat intel',
 				intelNote: 'blocklists · WHOIS · CT logs',
 				ml: 'Neural network',
@@ -239,17 +239,17 @@ export const messages = {
 				pageNote: 'forms · wallet drainers',
 			},
 			layersFootnote:
-				'Only the first layer is required. Everything else degrades gracefully — and layer one sends nothing anywhere.',
+				'Local rules work on their own and send no data. The other layers are optional.',
 		},
 		cta: {
 			title: 'Ready to test yourself?',
 			subtitle:
-				'Complete the first level and find out how safe you really are online.',
+				'Try the first level and see which warning signs you can spot.',
 		},
 		footer: {
-			tagline: 'Learn. Play. Stay Safe.',
+			tagline: 'Practise spotting online threats.',
 			description:
-				'An open product preview for practising cybersecurity decisions with transparent feedback.',
+				'A preview for practising cybersecurity decisions, with explanations after each task.',
 			navigation: 'Navigation',
 			legal: 'Trust & legal',
 			rights: 'All rights reserved.',
@@ -263,7 +263,7 @@ export const messages = {
 		guardPage: {
 			topBar: { badge: 'Browser extension · local-first' },
 			hero: {
-				title: 'Reads every link before you click.',
+				title: 'Check a link before opening it.',
 				subtitle:
 					'Guard starts with deterministic rules in your browser and explains each signal. Request the optional model separately only when you want a second opinion.',
 				badgeFast: 'Instant local rules',
@@ -272,31 +272,45 @@ export const messages = {
 				downloadCta: 'Download the extension',
 			},
 			engine: {
-				heading: 'One engine, three places',
+				heading: 'Shared URL checks',
 				nodes: {
-					course: { label: 'The course', note: 'teaches the rule' },
-					simulator: { label: 'The simulator', note: 'tests you learned it' },
-					extension: { label: 'The extension', note: 'enforces it live' },
+					course: { label: 'Web scanner', note: 'checks an address' },
+					simulator: { label: 'URL lab', note: 'shows how signals change' },
+					extension: { label: 'Browser extension', note: 'checks navigation' },
 				},
 				paragraphIntro: 'All three run',
 				paragraphMiddle:
-					'one implementation. That is not a slogan; it is the fix for a real bug. The rules were written twice and drifted: the courses taught',
+					'one implementation. Earlier, separate rule sets produced different results: the courses used',
 				paragraphExample:
-					'as the textbook example of phishing while the detector scored it 8/100, safe.',
+					'as a phishing example while the detector scored it 8/100, safe.',
 				paragraphOutro:
-					'Sharing the engine makes that contradiction impossible, and the tests now assert it.',
+					'The shared engine now returns the same result for this example, and a regression test checks it.',
 			},
 			scanner: {
 				heading: 'Try it',
 				subtitle:
-					'The real engine, running in your browser right now — not a recording.',
+					'Paste an address to run the checks in your browser.',
+			},
+			lab: {
+				heading: 'Change an address and see why the warning changes',
+				intro: 'Edit the parts below. Both scores come from the same local rules as the scanner. Nothing is opened or sent.',
+				protocol: 'Protocol', subdomain: 'Subdomain', domain: 'Main domain', path: 'Path',
+				benignExample: 'Legitimate subdomain', riskyExample: 'Brand hidden in a subdomain',
+				longExample: 'Long path on a reserved domain', idnExample: 'International subdomain',
+				exampleSubdomain: 'The main domain is google.com; mail is a subdomain. Read the domain from right to left.',
+				exampleLong: 'This reserved example domain has a long path. Length alone can raise a weak signal without proving phishing.',
+				exampleIdn: 'A non-Latin subdomain can be legitimate. Check the actual domain and any lookalike warning separately.',
+				exampleRisky: 'Here the main domain is verify-account.example; paypal.com is only a subdomain chosen by that owner.',
+				reference: 'Reference address', changed: 'Your changed address', invalid: 'Enter a valid address structure.',
+				added: 'New warning signals', removed: 'Signals that disappeared', none: 'None',
+				caution: 'A low rule score is not a guarantee that a site is safe. These are teaching examples, not live destinations.',
 			},
 			layers: {
 				heading: 'Four layers',
-				subtitle: 'Only the first is required. Everything else degrades gracefully.',
+				subtitle: 'Local rules work on their own. The other layers are optional.',
 				local: {
 					title: 'Local rules',
-					body: 'IDN homographs, typosquatting, leet-squatting, brand impersonation, URL structure. Under 5 ms, offline, zero data sent anywhere.',
+					body: 'IDN homographs, typosquatting, leet-squatting, brand impersonation, URL structure. These checks run offline and make no network request.',
 				},
 				intel: {
 					title: 'Threat intel',
@@ -315,19 +329,24 @@ export const messages = {
 				heading: 'Design rules',
 				localFirst: {
 					title: 'Local first',
-					body: 'Layer 1 sends nothing. A tool that inspects every page you open must not be the thing that leaks your browsing.',
+					body: 'Local rules process the address on your device and send no browsing data.',
 				},
 				precision: {
-					title: 'Precision over paranoia',
-					body: 'Flagging everything is not protection, it is noise — and noise gets uninstalled. mail.google.com must stay green.',
+					title: 'Limit false warnings',
+					body: 'The rules distinguish legitimate subdomains such as mail.google.com from addresses that impersonate a brand.',
 				},
 				explains: {
-					title: 'Explains itself',
-					body: 'Every verdict names the specific signal that caused it. A warning you cannot understand teaches nothing.',
+					title: 'Reasons for each warning',
+					body: 'Each verdict lists the signals behind it, so you can check what triggered the warning.',
 				},
 			},
 			install: {
 				heading: 'Install SafeNet Guard',
+				release: 'Version',
+				commit: 'Source',
+				checksum: 'SHA-256',
+				permissions: 'Browser permissions cover navigation, tabs, storage, the active tab, and page analysis on visited sites. External reputation and ML stay off until enabled.',
+				changelog: 'Release notes',
 				downloadCta: 'Download for Chrome',
 				downloadHint: 'Developer-preview build for manual installation.',
 				step1: 'Download the archive and unzip it.',
@@ -376,7 +395,7 @@ export const messages = {
 				vs: 'vs',
 				fakeLabel: 'Dangerous · Cyrillic “а”',
 				footnote:
-					'Same pixels. One letter is Cyrillic, and the local rule catches it before page load without making a network request.',
+					'The addresses look similar, but one uses a Cyrillic letter. The local rule flags it before page load and sends no data.',
 			},
 			urlScanner: {
 				examples: {
@@ -385,7 +404,7 @@ export const messages = {
 					digitOne: 'digit 1 for l',
 					zeroForO: 'zero for o',
 					brandSubdomain: 'brand as subdomain',
-					genuinelySafe: 'genuinely safe',
+					genuinelySafe: 'legitimate domain',
 				},
 				levels: {
 					danger: 'Dangerous',
@@ -408,17 +427,17 @@ export const messages = {
 				},
 				localVerdict: 'Local verdict',
 				noRedFlags:
-					'No red flags found. Recognising what is normal matters as much as spotting what is not.',
+					'No suspicious signals found by the local rules.',
 				neuralNetworkHeading: 'Optional model — second opinion',
 				bertSays: 'BERT says',
 				phishingHint: 'phishing',
 				rulesSay: 'Rules say',
 				final: 'Final',
 				ruleOverrideFlaggedButSafe:
-					'The model flagged this, but the deterministic rules recognised a known-safe site and overruled it.',
+					'The model flagged this address. A rule recognised the domain and took priority over the model score.',
 				ruleOverrideCertain:
-					'The rules are certain, so no model probability can argue this down.',
-				modelDecides: 'The model decides where the rules are silent.',
+					'This rule has priority over the model score.',
+				modelDecides: 'The model score is used when no rule takes priority.',
 				askModel: 'Request model opinion',
 				modelDisclosure:
 					'Nothing is sent automatically. If you continue, a sanitized URL is sent to the configured SafeNet model service.',
@@ -491,6 +510,25 @@ export const messages = {
 			student: 'Student',
 			feedback: 'Feedback',
 		},
+		account: {
+			manageLink: 'Account settings',
+			title: 'Account settings',
+			currentEmail: 'Current email',
+			newEmail: 'New email',
+			currentPassword: 'Current password',
+			description: 'Confirm the new address through a link sent to its inbox. Your current address stays active until then.',
+			request: 'Send confirmation link',
+			requesting: 'Sending…',
+			sent: 'Check the new inbox for a confirmation link. We also notified your current address.',
+			error: 'Could not request the change. Check the password and address, then try again.',
+			confirmTitle: 'Confirm your new email',
+			confirmDescription: 'Confirming changes your sign-in address and ends other sessions.',
+			confirm: 'Confirm email change',
+			confirming: 'Confirming…',
+			confirmed: 'Email changed. You can continue to your account.',
+			invalid: 'This link is invalid or has expired. Request a new link from Account settings.',
+			back: 'Go to account',
+		},
 		feedback: {
 			button: 'Send feedback',
 			title: 'Help us improve SafeNet',
@@ -502,7 +540,7 @@ export const messages = {
 			sending: 'Sending…',
 			success: 'Thank you — your feedback was sent.',
 			error: 'Could not send feedback. Please try again.',
-			signInRequired: 'Sign in to send feedback and help us follow up responsibly.',
+			signInRequired: 'Sign in to send feedback.',
 			signIn: 'Sign in',
 		},
 		feedbackLanding: {
@@ -539,7 +577,7 @@ export const messages = {
 			},
 			welcomeNotification: {
 				title: 'Welcome! 🎉',
-				description: 'Start your learning journey and earn rewards',
+				description: 'Choose a course to start practising.',
 			},
 			motivational: {
 				startFirst: 'Start your first course!',
@@ -561,13 +599,13 @@ export const messages = {
 				courseWordOne: 'course',
 				courseWordFew: 'courses',
 				courseWordMany: 'courses',
-				subtitleStart: 'Start your learning journey',
+				subtitleStart: 'Choose your first course',
 				viewAll: 'View all courses',
 			},
 			empty: {
 				title: 'No active courses',
 				description:
-					'Start your journey to new knowledge! Pick a course from the catalog below and gain your first experience.',
+					'Choose a course from the catalog below to start practising.',
 				cta: 'Select a course',
 			},
 			hi: 'Hi,',
@@ -622,7 +660,7 @@ export const messages = {
 			hiTemplate: 'Hi, {name}',
 			title: 'My Courses',
 			subtitle:
-				'Continue learning where you left off. Every step brings you closer to your goal.',
+				'Resume a course where you left off or choose another topic.',
 			stats: {
 				active: 'Active',
 				completed: 'Completed',
@@ -639,7 +677,7 @@ export const messages = {
 				noCompletedTitle: 'No completed courses yet',
 				noCompletedDesc: 'Complete your first course to earn a certificate',
 				noneTitle: 'No courses',
-				noneDesc: 'Start your learning journey right now',
+				noneDesc: 'Choose a course from the catalog.',
 				openCatalog: 'Open catalog',
 				selectCourse: 'Select a course',
 			},
@@ -695,6 +733,14 @@ export const messages = {
 		},
 		dashboardLesson: {
 			breadcrumbCourses: 'Courses',
+			toasts: {
+				correctTemplate: 'Correct! +{xp} XP',
+				incorrect: 'Incorrect. Try again!',
+				lessonCompleted: 'Lesson completed!',
+				certificateEarned: 'Certificate earned!',
+				achievementsTemplate: 'Achievements unlocked: {count}',
+				submitError: 'Could not submit the answer. Please try again.',
+			},
 			durationFallback: '15–20 min',
 			durationMinTemplate: '{minutes} min',
 			durationHourTemplate: '{hours} h{minutesSuffix}',
@@ -777,6 +823,15 @@ export const messages = {
 			alreadyFlagged: 'You already flagged that.',
 			flagSelectedTemplate: 'Flag "{text}"',
 			flagCta: 'Highlight text to flag it',
+			keyboardHint: 'Using a keyboard? Choose a field and type an exact phrase from it.',
+			keyboardField: 'Message field',
+			keyboardPhrase: 'Exact phrase to flag',
+			keyboardOccurrence: 'Occurrence',
+			keyboardAdd: 'Flag typed phrase',
+			keyboardNotFound: 'That phrase was not found in the selected field.',
+			bodyLabel: 'Message body',
+			urlLabel: 'URL',
+			pageLabel: 'Page text',
 			inbox: 'Inbox',
 			nameLabel: 'Name',
 			fromLabel: 'From',
@@ -852,7 +907,7 @@ export const messages = {
 			breadcrumb: 'Certificates',
 			title: 'My Certificates',
 			subtitleTemplate:
-				'Received {count} {certificateWord}. Each one confirms your professionalism and hard work.',
+				'You have {count} {certificateWord} for completed courses.',
 			certificateWordOne: 'certificate',
 			certificateWordFew: 'certificates',
 			certificateWordMany: 'certificates',
@@ -895,8 +950,8 @@ export const messages = {
 			footer: {
 				platform: 'SafeNet Education Platform',
 				disclaimer1:
-					'An official document confirming successful completion of the course.',
-				disclaimer2: 'This certificate is valid and can be verified by its number.',
+					'Issued by SafeNet when the course completion requirements are met.',
+				disclaimer2: 'The certificate records completion within this platform.',
 			},
 			notFound: {
 				title: 'Certificate Not Found',
@@ -914,7 +969,7 @@ export const messages = {
 				backToCourse: 'Back to course',
 				congratulations: 'Congratulations!',
 				tryAgain: 'Try again',
-				scoredTemplate: 'Scored {score} out of {total} points',
+				scoredTemplate: 'Score: {score}%',
 				accuracy: 'Accuracy',
 				correct: 'Correct',
 				resultsByQuestion: 'Results by question',
@@ -1846,29 +1901,29 @@ export const messages = {
 				'Расширение Chrome, которое оценивает каждую ссылку до загрузки страницы — с тем же движком правил, которому учат курсы Safe-Net.',
 		},
 		featuresSection: {
-			heading: 'Практика вместо иллюзии безопасности',
+			heading: 'Практика решений по кибербезопасности',
 			subtitle:
-				'Понятная траектория обучения, измеримый прогресс и Guard, который объясняет каждый сигнал.',
+				'Проходите курсы, следите за результатами и разбирайтесь, почему Guard помечает ссылку.',
 			items: [
 				{
-					title: 'Проверенная практика',
+					title: 'Практические задания',
 					description:
 						'В восьми этапах обучения собраны 21 курс, 27 уроков и 163 задания, прошедших проверку контента.',
 					stats: '8 этапов • 163 задания',
 					highlight: 'Программа',
 				},
 				{
-					title: 'Доказательства в контексте',
+					title: 'Источники и объяснения',
 					description:
 						'Уроки связывают приёмы атак с источниками и объясняют, почему каждый ответ безопасен или рискован.',
 					stats: 'Источники внутри уроков',
 					highlight: 'Объяснимо',
 				},
 				{
-					title: 'Проверяемый прогресс',
+					title: 'История обучения',
 					description:
-						'Следите за прохождением, точностью, попытками, достижениями и сертификатами без выдуманных рейтингов готовности.',
-					stats: 'Ваша история, а не догадка',
+						'Следите за пройденными уроками, точностью ответов, попытками, достижениями и сертификатами.',
+					stats: 'Результаты сохраняются в аккаунте',
 					highlight: 'Прогресс',
 				},
 				{
@@ -1879,10 +1934,10 @@ export const messages = {
 					highlight: 'Обучение',
 				},
 				{
-					title: 'Получаемые достижения',
+					title: 'Достижения',
 					description:
-						'Тридцать шесть проверенных правил награждают за мастерство, точность, постоянство и исправление ошибок.',
-					stats: '36 путей к достижениям',
+						'Тридцать шесть проверенных правил дают достижения за правильные ответы, регулярную практику и исправление ошибок.',
+					stats: '36 правил достижений',
 					highlight: 'Мотивация',
 				},
 				{
@@ -1895,7 +1950,7 @@ export const messages = {
 			],
 			adaptive: {
 				title: 'Понятный маршрут',
-				body: 'Восемь последовательных этапов показывают следующий шаг без ложных обещаний автоперсонализации.',
+				body: 'Проходите восемь этапов по порядку: по мере обучения будет видна следующая тема.',
 			},
 			alwaysWithYou: {
 				title: 'На любом экране',
@@ -1905,7 +1960,7 @@ export const messages = {
 		howItWorksSection: {
 			heading: 'Как это работает',
 			subtitle:
-				'SafeNet сочетает теорию и практику для эффективного обучения кибербезопасности',
+				'Прочитайте объяснение, выполните задание и разберите свой ответ.',
 			steps: [
 				{ title: 'Изучайте', description: 'Короткие карточки с правилами и примерами угроз' },
 				{ title: 'Практикуйтесь', description: 'Интерактивные задания и реалистичные симуляции' },
@@ -1929,7 +1984,7 @@ export const messages = {
 		testimonialsSection: {
 			heading: 'Что можно отработать уже сейчас',
 			subtitle:
-				'Конкретные, проверяемые навыки в текущей версии продукта — без выдуманных отзывов.',
+				'Попробуйте эти упражнения в текущей версии.',
 			items: [
 				{
 					text: 'Проверять отправителя, домен, срочность, формы и запросы оплаты до того, как действовать.',
@@ -1982,17 +2037,17 @@ export const messages = {
 			},
 		},
 		notFound: {
-			heading: 'Защита не найдена',
-			description: 'Похоже, эта страница отправилась в надёжное хранилище. Давайте вернём вас в безопасную зону.',
+			heading: 'Страница не найдена',
+			description: 'Эта страница недоступна. Вернитесь назад или на главную.',
 			back: 'Назад',
 			goHome: 'На главную',
-			footer: 'SafeNet – Ваша безопасность важна',
+			footer: 'SafeNet · Практика кибербезопасности',
 		},
 		nav: {
 			features: 'Возможности',
 			topics: 'Темы',
 			statistics: 'Статистика',
-			aiGuard: 'AI-защита',
+			aiGuard: 'Guard',
 			signIn: 'Войти',
 			logout: 'Выйти',
 			logoutSuccess: 'Вы успешно вышли из аккаунта',
@@ -2013,12 +2068,12 @@ export const messages = {
 			darkTheme: 'Использовать тёмную тему',
 		},
 		hero: {
-			badge: 'Современная платформа обучения кибербезопасности',
+			badge: 'Практика кибербезопасности',
 			title: 'Симулятор кибербезопасности',
 			subtitle:
-				'Учитесь распознавать фишинг, вредоносные сайты и опасные ссылки в интерактивной игре. Проходите уровни, зарабатывайте очки и станьте защитником своих данных.',
+				'Учитесь распознавать фишинговые письма, подозрительные сайты и опасные ссылки. Выполняйте задания и читайте объяснение каждого ответа.',
 			startLearning: 'Начать обучение',
-			tryGuard: 'Попробовать AI-защиту',
+			tryGuard: 'Попробовать Guard',
 		},
 		demo: {
 			level: 'Уровень 1: Фишинг',
@@ -2032,7 +2087,7 @@ export const messages = {
 			incorrect: 'Неверно. Это фишинговое письмо.',
 			hint: 'Подсказка: проверьте адрес отправителя на опечатки в домене.',
 			tryAnother: 'Ещё один пример — безопасность паролей',
-			guardLink: 'Посмотреть, как AI-защита оценивает это автоматически',
+			guardLink: 'Посмотреть, как Guard проверяет эту ссылку',
 		},
 		guard: {
 			badge: 'Расширение браузера · сначала локально',
@@ -2042,11 +2097,11 @@ export const messages = {
 			looksIdentical: 'Выглядит одинаково:',
 			cyrillicNote: 'Вторая «а» — кириллическая. Guard оценивает это в 100 / 100.',
 			sameEngine:
-				'Тот же движок, которому учат курсы и который проверяет тренажёр — одна реализация.',
+				'Веб-сканер и расширение браузера используют одни и те же правила проверки URL.',
 			cta: 'Попробовать сканер вживую',
 			layers: {
 				local: 'Локальные правила',
-				localNote: '< 5 мс · офлайн · ноль данных',
+				localNote: 'Офлайн · без сетевого запроса',
 				intel: 'Threat intel',
 				intelNote: 'блоклисты · WHOIS · CT-логи',
 				ml: 'Нейросеть',
@@ -2055,17 +2110,17 @@ export const messages = {
 				pageNote: 'формы · дрейнеры кошельков',
 			},
 			layersFootnote:
-				'Обязателен только первый слой. Остальное отключается плавно — а первый слой не отправляет никуда ничего.',
+				'Локальные правила работают самостоятельно и не передают данные. Остальные слои необязательны.',
 		},
 		cta: {
 			title: 'Готовы проверить себя?',
 			subtitle:
-				'Пройдите первый уровень и узнайте, насколько вы на самом деле защищены в сети.',
+				'Пройдите первый уровень и проверьте, какие признаки угрозы вы замечаете.',
 		},
 		footer: {
-			tagline: 'Учись. Играй. Будь в безопасности.',
+			tagline: 'Учитесь замечать угрозы в сети.',
 			description:
-				'Открытая предварительная версия продукта для практики решений по кибербезопасности с прозрачной обратной связью.',
+				'Предварительная версия для практики решений по кибербезопасности с разбором каждого задания.',
 			navigation: 'Навигация',
 			legal: 'Доверие и документы',
 			rights: 'Все права защищены.',
@@ -2079,7 +2134,7 @@ export const messages = {
 		guardPage: {
 			topBar: { badge: 'Расширение браузера · сначала локально' },
 			hero: {
-				title: 'Читает каждую ссылку до того, как вы по ней перейдёте.',
+				title: 'Проверьте ссылку перед переходом.',
 				subtitle:
 					'Guard начинает с детерминированных правил в браузере и объясняет каждый сигнал. Запрашивайте необязательную модель отдельно, только когда нужно второе мнение.',
 				badgeFast: 'Мгновенные локальные правила',
@@ -2088,31 +2143,45 @@ export const messages = {
 				downloadCta: 'Скачать расширение',
 			},
 			engine: {
-				heading: 'Один движок, три места',
+				heading: 'Общие правила проверки URL',
 				nodes: {
-					course: { label: 'Курс', note: 'учит правилу' },
-					simulator: { label: 'Симулятор', note: 'проверяет, усвоили ли вы его' },
-					extension: { label: 'Расширение', note: 'применяет его вживую' },
+					course: { label: 'Веб-сканер', note: 'проверяет адрес' },
+					simulator: { label: 'Лаборатория URL', note: 'показывает изменение сигналов' },
+					extension: { label: 'Расширение', note: 'проверяет переходы' },
 				},
 				paragraphIntro: 'Все три используют',
 				paragraphMiddle:
-					'одну реализацию. Это не лозунг — это исправление реальной ошибки. Правила были написаны дважды и разошлись: курсы учили на примере',
+					'одну реализацию. Раньше отдельные наборы правил давали разные результаты: курсы использовали',
 				paragraphExample:
-					'как хрестоматийном примере фишинга, а детектор оценивал его в 8/100 — безопасно.',
+					'как пример фишинга, а детектор оценивал его в 8/100 — безопасно.',
 				paragraphOutro:
-					'Общий движок делает это противоречие невозможным, и тесты теперь это проверяют.',
+					'Общий движок теперь даёт одинаковый результат для этого примера. Это проверяется регрессионным тестом.',
 			},
 			scanner: {
 				heading: 'Попробуйте',
 				subtitle:
-					'Настоящий движок, работающий прямо в вашем браузере — не запись.',
+					'Вставьте адрес, чтобы запустить проверку в браузере.',
+			},
+			lab: {
+				heading: 'Измените адрес и посмотрите, почему меняется предупреждение',
+				intro: 'Меняйте части адреса. Обе оценки рассчитываются теми же локальными правилами, что и в сканере. Сайт не открывается, данные не отправляются.',
+				protocol: 'Протокол', subdomain: 'Поддомен', domain: 'Основной домен', path: 'Путь',
+				benignExample: 'Настоящий поддомен', riskyExample: 'Бренд в чужом поддомене',
+				longExample: 'Длинный путь у резервного домена', idnExample: 'Международный поддомен',
+				exampleSubdomain: 'Основной домен — google.com, а mail — поддомен. Читайте домен справа налево.',
+				exampleLong: 'У этого резервного домена длинный путь. Длина может дать слабый сигнал, но сама по себе не доказывает фишинг.',
+				exampleIdn: 'Поддомен с нелатинскими буквами может быть настоящим. Отдельно проверьте основной домен и предупреждение о похожих символах.',
+				exampleRisky: 'Здесь основной домен — verify-account.example; paypal.com лишь поддомен, выбранный владельцем этого адреса.',
+				reference: 'Исходный адрес', changed: 'Изменённый адрес', invalid: 'Введите допустимую структуру адреса.',
+				added: 'Новые сигналы риска', removed: 'Исчезнувшие сигналы', none: 'Нет',
+				caution: 'Низкий балл по правилам не гарантирует безопасность сайта. Это учебные примеры, а не ссылки для перехода.',
 			},
 			layers: {
 				heading: 'Четыре слоя',
-				subtitle: 'Обязателен только первый. Всё остальное отключается плавно.',
+				subtitle: 'Локальные правила работают самостоятельно. Остальные слои необязательны.',
 				local: {
 					title: 'Локальные правила',
-					body: 'IDN-омоглифы, тайпсквоттинг, лит-сквоттинг, имитация брендов, структура URL. Менее 5 мс, офлайн, данные никуда не отправляются.',
+					body: 'IDN-омоглифы, тайпсквоттинг, лит-сквоттинг, имитация брендов, структура URL. Эти проверки работают офлайн и не делают сетевых запросов.',
 				},
 				intel: {
 					title: 'Threat intel',
@@ -2131,19 +2200,24 @@ export const messages = {
 				heading: 'Принципы дизайна',
 				localFirst: {
 					title: 'Сначала локально',
-					body: 'Слой 1 ничего не отправляет. Инструмент, который проверяет каждую страницу, не должен сам сливать вашу историю браузера.',
+					body: 'Локальные правила обрабатывают адрес на устройстве и не передают историю браузера.',
 				},
 				precision: {
-					title: 'Точность важнее паранойи',
-					body: 'Помечать всё подряд — это не защита, а шум, а шум удаляют. mail.google.com должен оставаться зелёным.',
+					title: 'Меньше ложных предупреждений',
+					body: 'Правила различают настоящие поддомены, например mail.google.com, и адреса, имитирующие бренд.',
 				},
 				explains: {
-					title: 'Объясняет себя',
-					body: 'Каждый вердикт называет конкретный сигнал, который его вызвал. Предупреждение, которое непонятно, ничему не учит.',
+					title: 'Причины предупреждений',
+					body: 'В каждом вердикте перечислены признаки, вызвавшие предупреждение. Их можно проверить самостоятельно.',
 				},
 			},
 			install: {
 				heading: 'Установить SafeNet Guard',
+				release: 'Версия',
+				commit: 'Исходники',
+				checksum: 'SHA-256',
+				permissions: 'Разрешения охватывают навигацию, вкладки, хранилище и анализ открытых страниц. Внешняя репутация и ML остаются выключенными до включения в настройках.',
+				changelog: 'История выпуска',
 				downloadCta: 'Скачать для Chrome',
 				downloadHint: 'Предварительная сборка для ручной установки.',
 				step1: 'Скачайте архив и распакуйте его.',
@@ -2192,7 +2266,7 @@ export const messages = {
 				vs: 'vs',
 				fakeLabel: 'Опасно · кириллическая «а»',
 				footnote:
-					'Одинаковые пиксели. Одна буква кириллическая — и локальное правило замечает это до загрузки страницы без сетевого запроса.',
+					'Адреса похожи, но в одном есть кириллическая буква. Локальное правило помечает его до загрузки страницы и не передаёт данные.',
 			},
 			urlScanner: {
 				examples: {
@@ -2201,7 +2275,7 @@ export const messages = {
 					digitOne: 'цифра 1 вместо l',
 					zeroForO: 'ноль вместо o',
 					brandSubdomain: 'бренд в поддомене',
-					genuinelySafe: 'действительно безопасно',
+					genuinelySafe: 'настоящий домен',
 				},
 				levels: {
 					danger: 'Опасно',
@@ -2224,17 +2298,17 @@ export const messages = {
 				},
 				localVerdict: 'Локальный вердикт',
 				noRedFlags:
-					'Подозрительных признаков не найдено. Распознавать, что нормально, так же важно, как замечать, что нет.',
+					'Локальные правила не нашли подозрительных признаков.',
 				neuralNetworkHeading: 'Необязательная модель — второе мнение',
 				bertSays: 'BERT говорит',
 				phishingHint: 'фишинг',
 				rulesSay: 'Правила говорят',
 				final: 'Итог',
 				ruleOverrideFlaggedButSafe:
-					'Модель пометила это, но детерминированные правила распознали заведомо безопасный сайт и отменили решение.',
+					'Модель пометила этот адрес. Правило распознало домен и получило приоритет над оценкой модели.',
 				ruleOverrideCertain:
-					'Правила уверены, так что никакая вероятность модели не может это опровергнуть.',
-				modelDecides: 'Модель решает там, где правила молчат.',
+					'Это правило имеет приоритет над оценкой модели.',
+				modelDecides: 'Оценка модели используется, когда ни одно правило не имеет приоритета.',
 				askModel: 'Запросить мнение модели',
 				modelDisclosure:
 					'Ничего не отправляется автоматически. После продолжения очищенный URL уйдёт в настроенный сервис модели SafeNet.',
@@ -2307,6 +2381,25 @@ export const messages = {
 			student: 'Студент',
 			feedback: 'Отзывы',
 		},
+		account: {
+			manageLink: 'Настройки аккаунта',
+			title: 'Настройки аккаунта',
+			currentEmail: 'Текущий email',
+			newEmail: 'Новый email',
+			currentPassword: 'Текущий пароль',
+			description: 'Подтверди новый адрес по ссылке из письма. До этого текущий адрес останется активным.',
+			request: 'Отправить ссылку',
+			requesting: 'Отправляем…',
+			sent: 'Проверь новый ящик. На текущий адрес также отправлено уведомление.',
+			error: 'Не удалось запросить смену. Проверь пароль и адрес, затем повтори попытку.',
+			confirmTitle: 'Подтверди новый email',
+			confirmDescription: 'После подтверждения адрес входа изменится, а другие сессии завершатся.',
+			confirm: 'Подтвердить смену email',
+			confirming: 'Подтверждаем…',
+			confirmed: 'Адрес изменён. Можно вернуться в аккаунт.',
+			invalid: 'Ссылка недействительна или срок её действия истёк. Запроси новую в настройках аккаунта.',
+			back: 'Перейти в аккаунт',
+		},
 		feedback: {
 			button: 'Написать отзыв',
 			title: 'Помогите улучшить SafeNet',
@@ -2355,7 +2448,7 @@ export const messages = {
 			},
 			welcomeNotification: {
 				title: 'Добро пожаловать! 🎉',
-				description: 'Начните свой путь обучения и зарабатывайте награды',
+				description: 'Выберите курс и начните практиковаться.',
 			},
 			motivational: {
 				startFirst: 'Начните свой первый курс!',
@@ -2377,13 +2470,13 @@ export const messages = {
 				courseWordOne: 'курс',
 				courseWordFew: 'курса',
 				courseWordMany: 'курсов',
-				subtitleStart: 'Начните свой путь обучения',
+				subtitleStart: 'Выберите первый курс',
 				viewAll: 'Смотреть все курсы',
 			},
 			empty: {
 				title: 'Нет активных курсов',
 				description:
-					'Начните путь к новым знаниям! Выберите курс из каталога ниже и получите первый опыт.',
+					'Выберите курс из каталога ниже, чтобы начать практиковаться.',
 				cta: 'Выбрать курс',
 			},
 			hi: 'Привет,',
@@ -2438,7 +2531,7 @@ export const messages = {
 			hiTemplate: 'Привет, {name}',
 			title: 'Мои курсы',
 			subtitle:
-				'Продолжайте обучение с того места, где остановились. Каждый шаг приближает вас к цели.',
+				'Продолжите курс с того места, где остановились, или выберите другую тему.',
 			stats: {
 				active: 'Активные',
 				completed: 'Завершено',
@@ -2455,7 +2548,7 @@ export const messages = {
 				noCompletedTitle: 'Пока нет завершённых курсов',
 				noCompletedDesc: 'Завершите первый курс, чтобы получить сертификат',
 				noneTitle: 'Нет курсов',
-				noneDesc: 'Начните свой путь обучения прямо сейчас',
+				noneDesc: 'Выберите курс из каталога.',
 				openCatalog: 'Открыть каталог',
 				selectCourse: 'Выбрать курс',
 			},
@@ -2511,6 +2604,14 @@ export const messages = {
 		},
 		dashboardLesson: {
 			breadcrumbCourses: 'Курсы',
+			toasts: {
+				correctTemplate: 'Верно! +{xp} XP',
+				incorrect: 'Неверно. Попробуйте ещё раз!',
+				lessonCompleted: 'Урок завершён!',
+				certificateEarned: 'Сертификат получен!',
+				achievementsTemplate: 'Получено достижений: {count}',
+				submitError: 'Не удалось отправить ответ. Попробуйте ещё раз.',
+			},
 			durationFallback: '15–20 мин',
 			durationMinTemplate: '{minutes} мин',
 			durationHourTemplate: '{hours} ч{minutesSuffix}',
@@ -2593,6 +2694,15 @@ export const messages = {
 			alreadyFlagged: 'Вы уже отметили это флагом.',
 			flagSelectedTemplate: 'Отметить «{text}»',
 			flagCta: 'Выделите текст, чтобы отметить его флагом',
+			keyboardHint: 'Работаете с клавиатуры? Выберите поле и введите точный фрагмент из него.',
+			keyboardField: 'Поле сообщения',
+			keyboardPhrase: 'Точный фрагмент для отметки',
+			keyboardOccurrence: 'Совпадение',
+			keyboardAdd: 'Отметить введённый фрагмент',
+			keyboardNotFound: 'Такой фрагмент не найден в выбранном поле.',
+			bodyLabel: 'Текст письма',
+			urlLabel: 'Адрес сайта',
+			pageLabel: 'Текст страницы',
 			inbox: 'Входящие',
 			nameLabel: 'Имя',
 			fromLabel: 'От кого',
@@ -2669,12 +2779,12 @@ export const messages = {
 			breadcrumb: 'Сертификаты',
 			title: 'Мои сертификаты',
 			subtitleTemplate:
-				'Получено {count} {certificateWord}. Каждый подтверждает ваш профессионализм и усердие.',
+				'У вас {count} {certificateWord} за завершённые курсы.',
 			certificateWordOne: 'сертификат',
 			certificateWordFew: 'сертификата',
 			certificateWordMany: 'сертификатов',
 			subtitleEmpty:
-				'Завершите курс, чтобы получить официальный сертификат об окончании',
+				'Завершите курс, чтобы получить сертификат SafeNet',
 			allActive: 'Все действительны',
 			xpTemplate: '{xp} XP',
 			stats: {
@@ -2695,7 +2805,7 @@ export const messages = {
 			emptyState: {
 				title: 'У вас пока нет сертификатов',
 				subtitle:
-					'Завершите любой курс, чтобы получить первый официальный сертификат',
+					'Завершите любой курс, чтобы получить первый сертификат SafeNet',
 				cta: 'Перейти к курсам',
 			},
 		},
@@ -2714,9 +2824,9 @@ export const messages = {
 			footer: {
 				platform: 'Образовательная платформа SafeNet',
 				disclaimer1:
-					'Официальный документ, подтверждающий успешное завершение курса.',
+					'Выдан SafeNet после выполнения условий завершения курса.',
 				disclaimer2:
-					'Этот сертификат действителен и может быть проверен по номеру.',
+					'Сертификат фиксирует завершение курса на этой платформе.',
 			},
 			notFound: {
 				title: 'Сертификат не найден',
@@ -2734,7 +2844,7 @@ export const messages = {
 				backToCourse: 'Назад к курсу',
 				congratulations: 'Поздравляем!',
 				tryAgain: 'Попробуйте снова',
-				scoredTemplate: 'Набрано {score} из {total} баллов',
+				scoredTemplate: 'Результат: {score}%',
 				accuracy: 'Точность',
 				correct: 'Верно',
 				resultsByQuestion: 'Результаты по вопросам',

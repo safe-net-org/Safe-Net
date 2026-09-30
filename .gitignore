@@ -16,6 +16,7 @@ Desktop.ini
 .wrangler/
 .cache/
 .planning/
+utils/
 task_plan.md
 findings.md
 progress.md

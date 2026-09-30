@@ -16,10 +16,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.features import extract_features  # noqa: E402
-from app.model import _blend, _rule_score  # noqa: E402
+from app.model import _blend, _rule_score, _rule_score_to_level, _score_to_level  # noqa: E402
 
 DANGER = 70
-WARN = 40
+WARN = 31
 
 # (url, min_score) — the deterministic rules alone must reach this, with no help
 # from the neural net, so detection survives the model being unavailable.
@@ -76,6 +76,17 @@ print("\nblend lets the net catch novel phishing the rules miss:")
 neutral = extract_features("https://some-unknown-domain-xyz.com")
 _, method = _blend(neutral, bert_score=95)
 check(method in ("ml", "blend"), f"unknown domain + high BERT -> via={method}")
+
+print("\nrule and blended verdict boundaries agree:")
+for score, expected in (
+    (30, "safe"), (31, "suspicious"), (39, "suspicious"),
+    (40, "suspicious"), (69, "suspicious"), (70, "danger"),
+    (71, "danger"),
+):
+    check(
+        _rule_score_to_level(score) == expected and _score_to_level(score) == expected,
+        f"score {score} -> {expected}",
+    )
 
 if failures:
     print(f"\n{len(failures)} failure(s).")

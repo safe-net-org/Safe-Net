@@ -47,6 +47,7 @@ describe('AuthService token and credential hardening', () => {
 				}: {
 					where: {
 						id?: string
+						userId?: string
 						familyId?: string
 						usedAt?: null
 						revokedAt?: null
@@ -58,6 +59,7 @@ describe('AuthService token and credential hardening', () => {
 					for (const session of sessions.values()) {
 						const matches =
 							(where.id === undefined || session.id === where.id) &&
+							(where.userId === undefined || session.userId === where.userId) &&
 							(where.familyId === undefined ||
 								session.familyId === where.familyId) &&
 							(where.usedAt === undefined || session.usedAt === where.usedAt) &&
@@ -76,9 +78,10 @@ describe('AuthService token and credential hardening', () => {
 		}
 		const prisma = {
 			refreshSession,
+			user: { update: jest.fn().mockResolvedValue({}), updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
 			$transaction: jest.fn(
-				async (callback: (transaction: { refreshSession: typeof refreshSession }) => unknown) =>
-					callback({ refreshSession })
+				async (callback: (transaction: { refreshSession: typeof refreshSession; user: { update: jest.Mock; updateMany: jest.Mock } }) => unknown) =>
+					callback({ refreshSession, user: prisma.user })
 			),
 		}
 		const userService = {
@@ -88,17 +91,19 @@ describe('AuthService token and credential hardening', () => {
 			...userOverrides,
 		}
 		const achievementsService = { awardAchievement: jest.fn() }
+		const emailVerificationService = { sendForUser: jest.fn().mockResolvedValue(undefined) }
 		const service = new AuthService(
 			jwt,
 			userService as unknown as UserService,
 			achievementsService as unknown as AchievementsService,
 			prisma as unknown as PrismaService,
+			emailVerificationService as never,
 			new ConfigService({
 				JWT_SECRET: ACCESS_SECRET,
 				JWT_REFRESH_SECRET: REFRESH_SECRET,
 			})
 		)
-		return { service, userService, achievementsService, prisma, sessions }
+		return { service, userService, achievementsService, emailVerificationService, prisma, sessions }
 	}
 
 	function userFixture(
@@ -112,6 +117,8 @@ describe('AuthService token and credential hardening', () => {
 			password,
 			rights: [],
 			status,
+			emailVerifiedAt: new Date(),
+			authVersion: 0,
 		}
 	}
 
@@ -212,6 +219,15 @@ describe('AuthService token and credential hardening', () => {
 		expect(result.user).not.toHaveProperty('password')
 	})
 
+	it('rejects a refresh token issued before credentials changed', async () => {
+		const { service, userService } = createService()
+		const user = userFixture(await hash('123456'))
+		userService.getByEmail.mockResolvedValue(user)
+		userService.getById.mockImplementation(async () => ({ ...user, authVersion: 1 }))
+		const { refreshToken } = await service.login({ email: user.email, password: '123456' })
+		await expect(service.getNewTokens(refreshToken)).rejects.toBeInstanceOf(UnauthorizedException)
+	})
+
 	it('rotates refresh sessions and revokes the whole family on replay', async () => {
 		const { service, userService } = createService()
 		const passwordHash = await hash('123456')
@@ -244,8 +260,8 @@ describe('AuthService token and credential hardening', () => {
 		)
 	})
 
-	it('revokes the current refresh session during logout', async () => {
-		const { service, userService } = createService()
+	it('revokes all refresh sessions and bumps auth version during logout', async () => {
+		const { service, userService, prisma } = createService()
 		const passwordHash = await hash('123456')
 		userService.getByEmail.mockResolvedValue(userFixture(passwordHash))
 		userService.getById.mockResolvedValue(userFixture(passwordHash))
@@ -255,9 +271,87 @@ describe('AuthService token and credential hardening', () => {
 			password: '123456',
 		})
 		await service.revokeRefreshToken(refreshToken)
+		expect(prisma.user.updateMany).toHaveBeenCalledWith({
+			where: { id: 'user-1', authVersion: 0 }, data: { authVersion: { increment: 1 } },
+		})
 
 		await expect(service.getNewTokens(refreshToken)).rejects.toBeInstanceOf(
 			UnauthorizedException
 		)
+	})
+
+	it('globally logs out with the consumed cookie when a refresh response is still in flight', async () => {
+		const { service, userService, prisma } = createService()
+		const user = userFixture(await hash('123456'))
+		userService.getByEmail.mockResolvedValue(user)
+		userService.getById.mockResolvedValue(user)
+		const initial = await service.login({ email: user.email, password: '123456' })
+		const rotated = await service.getNewTokens(initial.refreshToken)
+		await service.revokeRefreshToken(initial.refreshToken)
+		expect(prisma.user.updateMany).toHaveBeenCalledWith({
+			where: { id: user.id, authVersion: 0 }, data: { authVersion: { increment: 1 } },
+		})
+		await expect(service.getNewTokens(rotated.refreshToken)).rejects.toBeInstanceOf(UnauthorizedException)
+	})
+
+	it('does not let a stale logout token revoke sessions from a newer credential generation', async () => {
+		const { service, userService, prisma, sessions } = createService()
+		const user = userFixture(await hash('123456'))
+		userService.getByEmail.mockResolvedValue(user)
+		const initial = await service.login({ email: user.email, password: '123456' })
+		prisma.user.updateMany.mockResolvedValueOnce({ count: 0 })
+		await service.revokeRefreshToken(initial.refreshToken)
+		expect([...sessions.values()].every(session => session.revokedAt === null)).toBe(true)
+	})
+
+	it('creates a session immediately after a verified-email callback', async () => {
+		const { service, userService } = createService()
+		userService.getById.mockResolvedValue(userFixture('password-hash'))
+
+		const result = await service.createVerifiedSession('user-1', 0)
+
+		expect(result).toMatchObject({
+			user: expect.objectContaining({ id: 'user-1' }),
+			accessToken: expect.any(String),
+			refreshToken: expect.any(String),
+		})
+		expect(result.user).not.toHaveProperty('password')
+	})
+
+	it('does not mint a fresh session from a callback superseded by password recovery', async () => {
+		const { service, userService, prisma } = createService()
+		userService.getById.mockResolvedValue({ ...userFixture('password-hash'), authVersion: 1 })
+		await expect(service.createVerifiedSession('user-1', 0)).rejects.toBeInstanceOf(UnauthorizedException)
+		expect(prisma.refreshSession.create).not.toHaveBeenCalled()
+	})
+
+	it('allows exactly one of 100 simultaneous registrations for the same email', async () => {
+		const { service, userService, emailVerificationService } = createService()
+		const user = userFixture('password-hash')
+		let created = false
+		userService.create.mockImplementation(async () => {
+			if (created) {
+				throw Object.assign(new Error('unique constraint'), { code: 'P2002' })
+			}
+			created = true
+			return user
+		})
+		const dto = {
+			name: 'User',
+			email: 'user@example.com',
+			password: 'password123',
+			termsAccepted: true as const,
+			privacyAccepted: true as const,
+			legalVersion: '2026-07-26' as const,
+			legalLocale: 'en' as const,
+		}
+
+		const results = await Promise.allSettled(
+			Array.from({ length: 100 }, () => service.register(dto))
+		)
+
+		expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1)
+		expect(results.filter(result => result.status === 'rejected')).toHaveLength(99)
+		expect(emailVerificationService.sendForUser).toHaveBeenCalledTimes(1)
 	})
 })

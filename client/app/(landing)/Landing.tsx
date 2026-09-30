@@ -10,6 +10,8 @@ import Stats from '@/components/sections/Stats/Stats'
 import Testimonials from '@/components/sections/Testimonials'
 import Topics from '@/components/sections/Topics'
 import { LandingReveal } from '@/components/motion/LandingReveal'
+import { AuthDialog } from '@/components/Auth/AuthDialog'
+import { Suspense } from 'react'
 
 export default function Landing() {
 	return (
@@ -17,6 +19,9 @@ export default function Landing() {
 			id='top'
 			className='landing-motion-scope min-h-screen bg-landing text-landing-foreground'
 		>
+			<Suspense fallback={null}>
+				<AuthDialog urlDriven />
+			</Suspense>
 			<Navigation />
 			<LandingReveal>
 				<Hero />

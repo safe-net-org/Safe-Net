@@ -9,7 +9,7 @@ import { analyzeUrl, scoreUrl } from './index'
  * it protects nobody. These suites lock in both.
  */
 const DANGER_THRESHOLD = 70
-const WARN_THRESHOLD = 40
+const WARN_THRESHOLD = 31
 
 function score(url: string): number {
 	return scoreUrl(url, analyzeUrl(url)).score

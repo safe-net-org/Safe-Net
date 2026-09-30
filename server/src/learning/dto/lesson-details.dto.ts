@@ -41,6 +41,7 @@ export class LessonTaskDto {
 	question?: string | null
 	points: number
 	difficulty: Difficulty
+	completed?: boolean
 	options: LessonTaskOptionDto[]
 
 	/** Present only for PHISHING_EMAIL tasks. */

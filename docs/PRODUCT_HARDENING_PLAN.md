@@ -3,6 +3,11 @@
 Status: active
 Prepared: 2026-07-26
 
+Historical snapshot. The executive verdict below describes the July 2026 state
+and should not be read as a current finding. See [the 2026-09-29 evidence
+record](EVIDENCE_AND_LIMITATIONS.md) and [current task ledger](../FIX.md) for
+later changes, verification and unresolved work.
+
 ## Executive verdict
 
 Safe Net has a differentiated core: the course, simulator, web scanner, extension, and ML layer are intended to agree through one detection engine. The weakest parts are not the core idea; they are the trust boundary around it:

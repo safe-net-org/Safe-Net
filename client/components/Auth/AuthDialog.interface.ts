@@ -13,5 +13,6 @@ export interface IAuthDialog {
 	title?: string
 	description?: string
 	showNameField?: boolean
+	urlDriven?: boolean
 	children?: ReactNode
 }

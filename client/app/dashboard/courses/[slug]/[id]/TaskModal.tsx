@@ -197,16 +197,9 @@ export function TaskModal({
 		if (!isOpen) return
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (
-				event.key === 'Enter' &&
-				!hasSubmitted &&
-				hasAnswer &&
-				!isAnswering &&
-				!isTextTask
-			) {
-				void handleSubmit()
-			}
 			if (event.key === 'Escape') onClose()
+			const target = event.target as HTMLElement | null
+			if (target?.closest('button, input, textarea, select, [contenteditable="true"]')) return
 			if (event.key === 'ArrowRight' && hasSubmitted && !isLastTask) {
 				handleNext()
 			}
@@ -227,14 +220,10 @@ export function TaskModal({
 		handleNext,
 		handlePrev,
 		handleRetry,
-		handleSubmit,
-		hasAnswer,
 		hasSubmitted,
-		isAnswering,
 		isFirstTask,
 		isLastTask,
 		isOpen,
-		isTextTask,
 		onClose,
 	])
 

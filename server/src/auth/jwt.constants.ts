@@ -14,6 +14,7 @@ export interface AuthTokenPayload {
 	id: string
 	type: JwtTokenType
 	sessionId?: string
+	authVersion?: number
 }
 
 export interface JwtSecrets {

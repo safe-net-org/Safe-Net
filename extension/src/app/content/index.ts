@@ -30,13 +30,6 @@ function esc(text: string): string {
   )
 }
 
-function requestTrust(): void {
-  browser.runtime.sendMessage({
-    type: 'TRUST_SITE',
-    host: window.location.hostname,
-  } satisfies ExtensionMessage).catch(() => { /* extension reloaded */ })
-}
-
 function analyzeDom(): DomFeatures {
   const currentOrigin = window.location.origin
   const protocol = window.location.protocol
@@ -134,11 +127,6 @@ function showBanner(
       <div style="font-weight:700;font-size:15px">${isDanger ? '🔴' : '🟡'} SafeNet Guard — ${translate(locale, isDanger ? 'content.dangerSite' : 'content.suspiciousSite')}</div>
       ${signalsHtml}
     </div>
-    <button id="safenet-trust-btn" style="
-      background:transparent;border:1px solid rgba(255,255,255,0.25);color:inherit;
-      padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;
-      flex-shrink:0;margin-top:2px;opacity:0.8
-    ">${translate(locale, 'content.trust')}</button>
     <button id="safenet-close-btn" style="
       background:rgba(255,255,255,0.15);border:none;color:inherit;
       padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;
@@ -147,11 +135,6 @@ function showBanner(
   `
 
   document.body.prepend(banner)
-  banner.querySelector('#safenet-trust-btn')?.addEventListener('click', () => {
-    requestTrust()
-    banner.remove()
-    onClose()
-  })
   banner.querySelector('#safenet-close-btn')?.addEventListener('click', () => {
     banner.remove()
     onClose()
@@ -226,13 +209,6 @@ function showOverlay(
         ">${translate(locale, 'content.stay')}</button>
       </div>
 
-      <div style="text-align:center;margin-top:14px">
-        <button id="safenet-trust-btn" style="
-          background:none;border:none;cursor:pointer;font-size:12px;
-          color:rgba(255,255,255,0.35);text-decoration:underline;padding:4px;
-        ">${translate(locale, 'content.falsePositive')}</button>
-      </div>
-
       <div style="text-align:center;margin-top:8px;font-size:12px;opacity:0.35">
         SafeNet Guard • ${translate(locale, 'content.localAnalysis')}
       </div>
@@ -246,11 +222,6 @@ function showOverlay(
   })
   overlay.querySelector('#safenet-stay-btn')?.addEventListener('click', () => {
     rememberDismissed()
-    overlay.remove()
-    onDismiss()
-  })
-  overlay.querySelector('#safenet-trust-btn')?.addEventListener('click', () => {
-    requestTrust()
     overlay.remove()
     onDismiss()
   })

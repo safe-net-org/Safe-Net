@@ -1,10 +1,5 @@
-import type { AnalysisResult, RiskLevel, RiskSignal, UrlFeatures } from './types'
-
-function level(score: number): RiskLevel {
-	if (score <= 30) return 'safe'
-	if (score <= 70) return 'suspicious'
-	return 'danger'
-}
+import type { AnalysisResult, RiskSignal, UrlFeatures } from './types'
+import { riskLevelForScore } from './risk-level'
 
 export function scoreUrl(url: string, features: UrlFeatures): AnalysisResult {
 	let score = 0
@@ -241,7 +236,7 @@ export function scoreUrl(url: string, features: UrlFeatures): AnalysisResult {
 	return {
 		url,
 		score: finalScore,
-		level: level(finalScore),
+		level: riskLevelForScore(finalScore),
 		signals: signals.sort((a, b) => order[a.severity] - order[b.severity]),
 		features,
 		analyzedAt: Date.now(),

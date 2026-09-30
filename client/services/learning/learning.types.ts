@@ -40,6 +40,15 @@ export interface IUserCourse {
 	stageTitle?: string
 }
 
+export interface ICourseSummary {
+	id: string
+	slug: string
+	title: string
+	description: string
+	difficulty: Difficulty
+	lessonsCount: number
+}
+
 export interface ICourseDetail {
 	id: string
 	slug: string
@@ -140,13 +149,8 @@ export interface ITaskAnswerResponse {
 	courseProgress: number
 	lessonCompleted: boolean
 	certificateIssued: boolean
-	newAchievements?: Array<{
-		id: string
-		code: string
-		title: string
-		description: string
-		icon: string
-	}>
+	/** Codes of achievements awarded by this attempt. */
+	newAchievements?: string[]
 
 	/**
 	 * Only on PHISHING_EMAIL / PHISHING_SITE. Revealed after the attempt — the
@@ -192,7 +196,6 @@ export interface ITest {
 export interface ITestResult {
 	testId: string
 	score: number
-	totalPoints: number
 	passed: boolean
 	correctAnswers: number
 	totalQuestions: number

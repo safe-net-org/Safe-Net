@@ -2,7 +2,9 @@ import { Type } from 'class-transformer'
 import {
 	IsArray,
 	IsNotEmpty,
-	IsNumber,
+	IsInt,
+	Max,
+	Min,
 	IsOptional,
 	IsString,
 	ValidateNested,
@@ -28,7 +30,8 @@ export class SubmitTestDto {
 	@Type(() => AnswerItemDto)
 	answers: AnswerItemDto[]
 
-	@IsNumber()
-	@IsNotEmpty()
+	@IsInt()
+	@Min(0)
+	@Max(86400)
 	time: number
 }

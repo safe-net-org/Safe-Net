@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common'
+import { BadRequestException, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from 'src/prisma.service'
 import { PasswordResetMailer } from './password-reset-mailer.service'
@@ -28,17 +28,30 @@ describe('PasswordResetService reset-link logging', () => {
 	})
 
 	function createService(delivered = false) {
+		const transaction = {
+			user: { update: jest.fn().mockResolvedValue({ id: 'user-1' }), updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			passwordResetToken: {
+				create: jest.fn().mockResolvedValue({ id: 'token-1' }),
+				findUnique: jest.fn().mockResolvedValue({ userId: 'user-1', usedAt: null, expiresAt: new Date(Date.now() + 60_000) }),
+				updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+			},
+			refreshSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			emailChangeToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			emailVerificationToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+		}
 		const prisma = {
 			user: {
 				findUnique: jest.fn().mockResolvedValue({
 					id: 'user-1',
 					email: 'user@example.com',
 					legalLocale: 'en',
+					authVersion: 0,
 				}),
 			},
 			passwordResetToken: {
 				create: jest.fn().mockResolvedValue({ id: 'token-1' }),
 			},
+			$transaction: jest.fn(async callback => callback(transaction)),
 		}
 		const mailer = {
 			sendResetLink: jest.fn().mockResolvedValue(delivered),
@@ -49,6 +62,7 @@ describe('PasswordResetService reset-link logging', () => {
 				mailer as unknown as PasswordResetMailer
 			),
 			mailer,
+			transaction,
 		}
 	}
 
@@ -60,6 +74,55 @@ describe('PasswordResetService reset-link logging', () => {
 		await createService().service.requestReset(' USER@Example.COM ')
 
 		expect(warn).not.toHaveBeenCalled()
+	})
+
+	it('consumes a reset token atomically before changing the password', async () => {
+		const { service, transaction } = createService()
+
+		await service.resetPassword('a'.repeat(64), 'new-password')
+
+		expect(transaction.passwordResetToken.updateMany).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				where: expect.objectContaining({ usedAt: null }),
+			})
+		)
+		expect(transaction.user.update).toHaveBeenCalledTimes(2)
+		expect(transaction.emailChangeToken.updateMany).toHaveBeenCalledWith({
+			where: { userId: 'user-1', usedAt: null }, data: { usedAt: expect.any(Date) },
+		})
+		expect(transaction.emailVerificationToken.updateMany).toHaveBeenCalledWith({
+			where: { userId: 'user-1', usedAt: null }, data: { usedAt: expect.any(Date) },
+		})
+		expect(transaction.refreshSession.updateMany).toHaveBeenCalledWith(
+			expect.objectContaining({ where: { userId: 'user-1', revokedAt: null } })
+		)
+	})
+
+	it('rejects an already-consumed reset token before changing the password', async () => {
+		const { service, transaction } = createService()
+		transaction.passwordResetToken.findUnique.mockResolvedValueOnce({ userId: 'user-1', usedAt: new Date(), expiresAt: new Date(Date.now() + 60_000) })
+
+		await expect(service.resetPassword('a'.repeat(64), 'new-password')).rejects.toBeInstanceOf(
+			BadRequestException
+		)
+		expect(transaction.user.update).not.toHaveBeenCalled()
+	})
+
+	it('does not issue recovery to a stale email snapshot after credentials changed', async () => {
+		const { service, transaction, mailer } = createService()
+		transaction.user.updateMany.mockResolvedValueOnce({ count: 0 })
+		await expect(service.requestReset('user@example.com')).resolves.toHaveProperty('message')
+		expect(transaction.passwordResetToken.create).not.toHaveBeenCalled()
+		expect(mailer.sendResetLink).not.toHaveBeenCalled()
+	})
+
+	it('rolls back when another credential transition invalidated the link while waiting for the user lock', async () => {
+		const { service, transaction } = createService()
+		transaction.passwordResetToken.updateMany.mockResolvedValueOnce({ count: 0 })
+		await expect(service.resetPassword('a'.repeat(64), 'new-password')).rejects.toBeInstanceOf(BadRequestException)
+		expect(transaction.user.update).toHaveBeenCalledTimes(1)
+		expect(transaction.user.update).not.toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ password: expect.any(String) }) }))
 	})
 
 	it('requires an explicit debug flag outside production', async () => {
@@ -98,7 +161,7 @@ describe('PasswordResetService reset-link logging', () => {
 		expect(mailer.sendResetLink).toHaveBeenCalledWith(
 			'user@example.com',
 			expect.stringMatching(
-				/^http:\/\/localhost:3000\/reset-password\?token=[a-f0-9]{64}$/
+				/^http:\/\/localhost:3000\/\?auth=reset&token=[a-f0-9]{64}$/
 			),
 			'en'
 		)

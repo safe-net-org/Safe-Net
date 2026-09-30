@@ -1,11 +1,17 @@
 import { Transform } from 'class-transformer'
-import { IsEmail, IsString, MinLength } from 'class-validator'
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator'
 import { normalizeEmail } from 'src/common/email'
 
 export class ForgotPasswordDto {
 	@Transform(({ value }) => normalizeEmail(value))
 	@IsEmail()
 	email: string
+}
+
+export class VerifyEmailDto {
+	@IsString()
+	@Matches(/^[a-f0-9]{64}$/)
+	token: string
 }
 
 export class ResetPasswordDto {

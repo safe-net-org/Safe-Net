@@ -22,6 +22,8 @@ import { useI18n } from '@/i18n/LocaleProvider'
 import { GuardComparison } from '@/app/guard/GuardComparison'
 import { HomographReveal } from '@/app/guard/HomographReveal'
 import { UrlScanner } from '@/app/guard/UrlScanner'
+import { UrlLab } from '@/app/guard/UrlLab'
+import guardRelease from '@/public/downloads/safenet-guard-release.json'
 
 function Kbd({ children }: { children: React.ReactNode }) {
 	return (
@@ -165,6 +167,8 @@ export function GuardPageContent() {
 					</div>
 				</section>
 
+				<UrlLab />
+
 				{/* Layers */}
 				<section className='mb-20'>
 					<h2 className='text-3xl font-bold text-white sm:text-4xl'>
@@ -262,6 +266,12 @@ export function GuardPageContent() {
 							{t.guardPage.install.downloadHint}
 						</span>
 					</div>
+					<div className='mb-6 rounded-xl border border-slate-700 bg-slate-900/60 p-3 text-xs leading-6 text-slate-400'>
+						<p>{t.guardPage.install.release}: <span className='font-mono text-slate-200'>{guardRelease.version}</span> · {guardRelease.browser} · {t.guardPage.install.commit}: <span className='font-mono text-slate-200'>{guardRelease.sourceCommit}</span></p>
+						<p className='break-all'>{t.guardPage.install.checksum}: <span className='font-mono text-slate-200'>{guardRelease.sha256}</span></p>
+						<p>{t.guardPage.install.permissions}</p>
+						<a href='/downloads/safenet-guard-changelog.md' className='text-indigo-300 underline underline-offset-2'>{t.guardPage.install.changelog}</a>
+					</div>
 
 					<ol className='space-y-3 text-sm text-slate-300'>
 						<li className='flex gap-3'>
@@ -289,7 +299,7 @@ export function GuardPageContent() {
 					</ol>
 					<p className='mt-5 text-xs text-slate-500'>
 						{t.guardPage.install.sourcePrefix}{' '}
-						<Kbd>bun run build:ext</Kbd> {t.guardPage.install.sourceMiddle}{' '}
+						<Kbd>bun run package:ext</Kbd> {t.guardPage.install.sourceMiddle}{' '}
 						<Kbd>extension/.output/chrome-mv3</Kbd>
 					</p>
 					<p className='mt-2 text-xs text-slate-500'>

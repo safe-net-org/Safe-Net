@@ -7,12 +7,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useI18n } from '@/i18n/LocaleProvider'
 import { toast } from 'sonner'
 
 type TestState = 'loading' | 'not-started' | 'active' | 'completed' | 'error'
 type InteractiveTestState = Exclude<TestState, 'loading' | 'error'>
 
 export function useTestDetail() {
+	const { t } = useI18n()
 	const params = useParams()
 	const router = useRouter()
 	const queryClient = useQueryClient() // ✅ Added
@@ -44,6 +46,9 @@ export function useTestDetail() {
 			learningService.submitTest(testId, data.answers, data.time),
 		onSuccess: result => {
 			setTestState('completed')
+			queryClient.invalidateQueries({ queryKey: ['profile'] })
+			queryClient.invalidateQueries({ queryKey: ['user'] })
+			queryClient.invalidateQueries({ queryKey: ['user-courses'] })
 
 			// ✅ KEY: Invalidate the course cache to refresh progress
 			if (test?.courseSlug) {
@@ -56,19 +61,18 @@ export function useTestDetail() {
 			}
 
 			if (result.passed) {
-				toast.success('Test passed!')
+				toast.success(t.dashboardTests.completed.congratulations)
 				if (result.certificateIssued) {
-					toast.success('Certificate earned!', {
+					toast.success(t.dashboardLesson.toasts.certificateEarned, {
 						duration: 5000,
-						description: 'Congratulations on completing the course!',
 					})
 				}
 			} else {
-				toast.error(`Scored ${result.score}/${result.totalPoints} points`)
+				toast.error(t.dashboardTests.completed.scoredTemplate.replace('{score}', String(result.score)))
 			}
 		},
 		onError: () => {
-			toast.error('Error submitting test')
+			toast.error(t.dashboardLesson.toasts.submitError)
 			isSubmittingRef.current = false
 		},
 	})

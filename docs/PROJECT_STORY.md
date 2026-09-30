@@ -1,74 +1,75 @@
-# Safe-Net: project story
+# Safe-Net: project overview
 
-## One-minute overview
+## In one minute
 
-Safe-Net is a student-built cybersecurity learning product. Its question is not
-only “can a URL be labelled suspicious?” but “can a person learn why it is
-suspicious and then use the same reasoning while browsing?”
+Safe-Net connects cybersecurity lessons with phishing practice and URL warnings.
+The question behind it is whether a learner can use a cue explained in a lesson
+when deciding what to do with an unfamiliar link.
 
-The project joins four pieces that are usually separate: a bilingual LMS,
-interactive phishing simulations, a live URL scanner, and a Chrome extension.
-They share the same detection logic so that the educational examples and the
-protective tool do not contradict each other.
+The prototype includes English and Russian courses, interactive simulations,
+a web URL scanner and a Chrome extension. The scanner and extension use the
+same TypeScript rule engine. An optional Python service mirrors the rules;
+selected cases are checked for agreement between the two implementations.
 
-## Problem
+## Why build it?
 
-Most cybersecurity advice is either a static checklist or a black-box warning.
-Neither is enough to build judgement. People need a safe place to make mistakes,
-receive an explanation, and then recognise the same signal in a real context.
+A checklist can explain what to look for. A warning can flag a link. Safe-Net
+puts those steps into one learning flow: read an explanation, make a simulated
+decision and inspect the reasons behind a warning. Whether this sequence helps
+people beyond the examples they practised still needs to be measured.
 
 ## What I built
 
-- A Russian/English learning flow covering phishing, dangerous links, passwords,
-  malware, privacy, and more.
-- Server-graded phishing simulations that protect the answer key from the client.
+- An English/Russian learning flow covering phishing, dangerous links, passwords,
+  malware and privacy.
+- Phishing simulations graded on the server, with answer keys excluded from the
+  learner's payload.
 - A shared, dependency-free TypeScript engine for homographs, lookalike domains,
-  URL structure, and brand-impersonation signals.
-- A Chrome extension that applies the same engine during browsing.
-- An optional ML layer whose result is blended with deterministic rules rather
-  than replacing them.
-- Automated checks for content quality, English/Russian parity, TypeScript
-  correctness, and rule/ML parity.
+  URL structure and brand-impersonation signals.
+- A Chrome extension that applies that engine during browsing.
+- An optional model integration that combines its output with deterministic rules.
+- Automated checks for content quality, English/Russian coverage, TypeScript
+  correctness and selected TypeScript/Python rule cases.
 
-## Decisions that matter
+## Design decisions
 
-### Explainability over a score alone
+### Show the reasons behind a warning
 
-A number without a reason does not teach. The engine exposes signals behind its
-verdict, and the learning content uses those signals in context.
+The engine returns the signals behind its verdict. Lessons introduce those
+signals in context, so a learner can compare the warning with an explanation
+rather than relying on a score alone.
 
-### Local-first privacy
+### Run the initial analysis locally
 
-The initial URL analysis runs locally. Network-based intelligence and the ML
-service are separate optional layers, because a cybersecurity product should not
-quietly create a new privacy risk while trying to reduce another one.
+The first URL check runs locally. Network intelligence and the model service
+are optional layers, with separate data boundaries. This lets the basic
+scanner work without sending a URL to the model endpoint.
 
-### One implementation over duplicated rules
+### Share the web and extension rules
 
-The same `guard-core` package is consumed by the extension and web scanner. This
-reduces the chance that a learner is taught one rule but protected by another.
-The Python ML service mirrors the blend and has parity checks.
+Both clients import `guard-core`. A change to its rules can therefore reach
+both the web scanner and the extension. The optional Python service mirrors
+the rules and blend policy, with parity checks for selected cases.
 
-### Content treated as software
+### Version the teaching content
 
-Lessons and tests are source files, not opaque database edits. A schema validates
-their shape before they are seeded, and the repository checks localization and
-content quality alongside code.
+Lessons and tests are stored as source files. A schema checks their shape
+before database seeding. Localization and content checks run alongside code
+checks, making changes easier to review and reproduce.
 
 ## Evidence to inspect
 
 - [System architecture and data flows](ARCHITECTURE.md)
 - [Detection engine README](../packages/guard-core/README.md)
 - [Content source and format](../server/content/README.md)
-- [Hardening plan and known limits](PRODUCT_HARDENING_PLAN.md)
+- [Evidence and limitations](EVIDENCE_AND_LIMITATIONS.md)
+- [Current work ledger](../FIX.md)
 - [Repository entry point](../README.md)
 
-## What I would do next
+## Next steps
 
-Before presenting Safe-Net as a public security product, I would complete a
-production-readiness pass: deploy with real environment configuration, gather
-structured usability feedback, publish the extension only after a policy/privacy
-review, and measure false positives on a versioned evaluation set.
-
-This is intentionally a concrete next step, not a claim that those milestones
-already exist.
+Before offering a public security service, I would test the deployed
+configuration, gather structured usability feedback and review the extension's
+permissions and privacy policy. A versioned evaluation set would let me
+measure false positives and document where the detector fails. These steps
+are planned; the current evidence covers the local prototype.

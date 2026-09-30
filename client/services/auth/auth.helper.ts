@@ -1,21 +1,3 @@
-import Cookies from 'js-cookie'
-import { EnumTokens } from '@/services/auth/auth.service'
-
-export const getAccessToken = () => {
-	const accessToken = Cookies.get(EnumTokens.ACCESS_TOKEN)
-	return accessToken || null
-}
-export const saveTokenStorage = (accessToken: string) => {
-	Cookies.set(EnumTokens.ACCESS_TOKEN, accessToken, {
-		sameSite: 'strict',
-		expires: 1,
-		path: '/',
-	})
-}
-
-export const removeFromStorage = () => {
-	Cookies.remove(EnumTokens.ACCESS_TOKEN, {
-		sameSite: 'strict',
-		path: '/',
-	})
-}
+// Auth cookies are HttpOnly and therefore cannot be read or exfiltrated by
+// client-side JavaScript. The API clears them on logout.
+export const removeFromStorage = () => undefined

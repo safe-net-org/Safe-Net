@@ -150,8 +150,7 @@ export default function TestPage() {
 									</h1>
 									<p className='text-xl text-white/60'>
 										{t.dashboardTests.completed.scoredTemplate
-											.replace('{score}', String(result.score))
-											.replace('{total}', String(result.totalPoints))}
+											.replace('{score}', String(result.score))}
 									</p>
 								</div>
 

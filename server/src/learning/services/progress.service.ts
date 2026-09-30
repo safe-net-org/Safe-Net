@@ -18,6 +18,7 @@ import {
 	SIMULATOR_TASK_TYPES,
 	TEXT_TASK_TYPES,
 } from '../answers/task-answer.evaluator'
+import { CertificatesService } from './certificates.service'
 import { AchievementsService } from './achievements.service'
 import { Locale, pickLocalized } from '../../i18n/locale'
 
@@ -25,7 +26,8 @@ import { Locale, pickLocalized } from '../../i18n/locale'
 export class ProgressService {
 	constructor(
 		private readonly prisma: PrismaService,
-		private readonly achievementsService: AchievementsService
+		private readonly achievementsService: AchievementsService,
+		private readonly certificatesService: CertificatesService
 	) {}
 
 	async getLessonWithTasks(
@@ -58,6 +60,13 @@ export class ProgressService {
 
 		if (!course) throw new NotFoundException('Course not found')
 
+		const solvedTasks = await this.prisma.taskAttempt.findMany({
+			where: { userId, task: { lessonId }, isCorrect: true },
+			distinct: ['taskId'],
+			select: { taskId: true },
+		})
+		const completedTaskIds = new Set(solvedTasks.map(attempt => attempt.taskId))
+
 		return {
 			id: lesson.id,
 			courseTitle: pickLocalized(locale, course.title, course.titleRu),
@@ -79,6 +88,7 @@ export class ProgressService {
 				title: pickLocalized(locale, task.title, task.titleRu),
 				question: pickLocalized(locale, task.question, task.questionRu) ?? undefined,
 				points: task.points,
+				completed: completedTaskIds.has(task.id),
 				difficulty: task.difficulty,
 				...buildSimulatorContent(pickLocalized(locale, task.meta, task.metaRu)),
 				options: task.options.map(o => ({
@@ -152,85 +162,102 @@ export class ProgressService {
 		}
 
 		// XP is awarded only for the first correct answer
-		const awardedXp = isCorrect && !previousCorrectAttempt ? task.points : 0
+		let awardedXp = isCorrect && !previousCorrectAttempt ? task.points : 0
 
 		// Create the attempt record
-		await this.prisma.taskAttempt.create({
-			data: {
+		const attemptData = {
 				userId,
 				taskId: task.id,
 				selectedOptionIds: dto.selectedOptionIds || [],
 				textAnswer: dto.textAnswer,
 				isCorrect,
 				awardedXp,
-			},
-		})
+				xpAwardKey: awardedXp > 0 ? `${userId}:${task.id}` : null,
+			}
+		try {
+			await this.prisma.taskAttempt.create({ data: attemptData })
+		} catch (error) {
+			if (!attemptData.xpAwardKey || typeof error !== 'object' || error === null ||
+				!('code' in error) || error.code !== 'P2002') throw error
+			// Another request won the unique award key. Keep this attempt, with
+			// zero XP, so concurrent answers remain visible in the history.
+			awardedXp = 0
+			await this.prisma.taskAttempt.create({
+				data: { ...attemptData, awardedXp: 0, xpAwardKey: null },
+			})
+		}
 
-		// Recalculate course progress
-		const totalTasksInCourse = await this.prisma.task.count({
-			where: {
-				lesson: {
-					courseId: course.id,
-				},
-			},
-		})
-
-		const solvedCorrectTasks = await this.prisma.taskAttempt.findMany({
-			where: {
-				userId,
-				task: {
+		const { progressPercent, totalXp } = await this.prisma.$transaction(async tx => {
+			// Serialize snapshots for this learner. Otherwise a slower answer can
+			// overwrite a newer course total after answering a different task.
+			await tx.$queryRaw`SELECT "id" FROM "users" WHERE "id" = ${userId} FOR UPDATE`
+			// Recalculate course progress
+			const totalTasksInCourse = await tx.task.count({
+				where: {
 					lesson: {
 						courseId: course.id,
 					},
 				},
-				isCorrect: true,
-			},
-			distinct: ['taskId'],
-			select: { taskId: true },
-		})
+			})
 
-		const totalXpAgg = await this.prisma.taskAttempt.aggregate({
-			where: {
-				userId,
-				task: {
-					lesson: {
+			const solvedCorrectTasks = await tx.taskAttempt.findMany({
+				where: {
+					userId,
+					task: {
+						lesson: {
+							courseId: course.id,
+						},
+					},
+					isCorrect: true,
+				},
+				distinct: ['taskId'],
+				select: { taskId: true },
+			})
+
+			const totalXpAgg = await tx.taskAttempt.aggregate({
+				where: {
+					userId,
+					task: {
+						lesson: {
+							courseId: course.id,
+						},
+					},
+				},
+				_sum: {
+					awardedXp: true,
+				},
+			})
+
+			const progressPercent =
+				totalTasksInCourse > 0
+					? Math.min(
+							100,
+							Math.round((solvedCorrectTasks.length / totalTasksInCourse) * 100)
+						)
+					: 0
+
+			const totalXp = totalXpAgg._sum?.awardedXp ?? 0
+
+			// Update course progress
+			await tx.courseProgress.upsert({
+				where: {
+					userId_courseId: {
+						userId,
 						courseId: course.id,
 					},
 				},
-			},
-			_sum: {
-				awardedXp: true,
-			},
-		})
-
-		const progressPercent =
-			totalTasksInCourse > 0
-				? Math.min(
-						100,
-						Math.round((solvedCorrectTasks.length / totalTasksInCourse) * 100)
-					)
-				: 0
-
-		const totalXp = totalXpAgg._sum?.awardedXp ?? 0
-
-		// Update course progress
-		await this.prisma.courseProgress.upsert({
-			where: {
-				userId_courseId: {
+				create: {
 					userId,
 					courseId: course.id,
+					progress: progressPercent,
+					totalXp,
 				},
-			},
-			create: {
-				userId,
-				courseId: course.id,
-				progress: progressPercent,
-				totalXp,
-			},
-			update: {
-				progress: progressPercent,
-				totalXp,
-			},
+				update: {
+					progress: progressPercent,
+					totalXp,
+				},
+			})
+			return { progressPercent, totalXp }
 		})
 
 		// Check lesson completion
@@ -271,7 +298,7 @@ export class ProgressService {
 
 		// Check and issue certificate
 		let certificateIssued = false
-		const certificateId = await this.checkAndIssueCertificate(userId, course.id)
+		const certificateId = await this.certificatesService.checkAndIssueCertificate(userId, course.id)
 		certificateIssued = !!certificateId
 
 		// ✅ Check and award achievements
@@ -320,124 +347,4 @@ export class ProgressService {
 		}
 	}
 
-	async checkAndIssueCertificate(
-		userId: string,
-		courseId: string
-	): Promise<string | null> {
-		const [
-			totalLessons,
-			completedLessons,
-			totalTasks,
-			solvedTasksData,
-			courseTests,
-			passedTestResults,
-		] = await this.prisma.$transaction([
-			this.prisma.lesson.count({
-				where: { courseId },
-			}),
-			this.prisma.completedLesson.count({
-				where: {
-					userId,
-					lesson: { courseId },
-				},
-			}),
-			this.prisma.task.count({
-				where: {
-					lesson: { courseId },
-				},
-			}),
-			this.prisma.taskAttempt.findMany({
-				where: {
-					userId,
-					task: {
-						lesson: { courseId },
-					},
-					isCorrect: true,
-				},
-				distinct: ['taskId'],
-				select: { taskId: true },
-			}),
-			this.prisma.test.findMany({
-				where: { courseId },
-				select: { id: true },
-			}),
-			this.prisma.testResult.findMany({
-				where: {
-					userId,
-					test: { courseId },
-					passed: true,
-				},
-				distinct: ['testId'],
-				select: { testId: true },
-			}),
-		])
-
-		const solvedTasks = solvedTasksData.length
-		const totalTests = courseTests.length
-		const passedTests = passedTestResults.length
-
-		// Check full course completion
-		if (totalLessons === 0 || completedLessons < totalLessons) {
-			return null
-		}
-
-		if (totalTasks === 0 || solvedTasks < totalTasks) {
-			return null
-		}
-
-		if (totalTests > 0 && passedTests < totalTests) {
-			return null
-		}
-
-		// Check for an existing certificate
-		const existingCertificate = await this.prisma.certificate.findFirst({
-			where: { userId, courseId },
-		})
-
-		if (existingCertificate) {
-			return existingCertificate.id
-		}
-
-		// Generate and create a new certificate
-		const certificateNumber = await this.generateCertificateNumber()
-
-		const certificate = await this.prisma.certificate.create({
-			data: {
-				userId,
-				courseId,
-				certificateNumber,
-			},
-		})
-
-		return certificate.id
-	}
-
-	private async generateCertificateNumber(): Promise<string> {
-		let attempts = 0
-		const maxAttempts = 5
-
-		while (attempts < maxAttempts) {
-			const date = new Date()
-			const year = date.getFullYear()
-			const month = String(date.getMonth() + 1).padStart(2, '0')
-			const day = String(date.getDate()).padStart(2, '0')
-			const random = Math.floor(Math.random() * 100000)
-				.toString()
-				.padStart(5, '0')
-
-			const certificateNumber = `CERT-${year}${month}${day}-${random}`
-
-			const exists = await this.prisma.certificate.findUnique({
-				where: { certificateNumber },
-			})
-
-			if (!exists) {
-				return certificateNumber
-			}
-
-			attempts++
-		}
-
-		throw new Error('Failed to generate unique certificate number')
-	}
 }

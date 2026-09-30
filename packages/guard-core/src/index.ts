@@ -3,6 +3,7 @@ export type {
   DomFeatures, ExtensionMessage, IntelThreatPayload,
 } from './model/types'
 export { scoreUrl } from './model/score'
+export { riskLevelForScore } from './model/risk-level'
 export { analyzeUrl } from './lib/url-analyzer'
 export { detectIdnHomograph } from './lib/idn-detector'
 export { detectTyposquatting } from './lib/typosquatting'

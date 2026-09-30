@@ -21,7 +21,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		const { access } = getRequiredJwtSecrets(configService)
 
 		super({
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+			jwtFromRequest: ExtractJwt.fromExtractors([
+				ExtractJwt.fromAuthHeaderAsBearerToken(),
+				req => req?.cookies?.access_token ?? null,
+			]),
 			ignoreExpiration: false,
 			secretOrKey: access,
 			issuer: JWT_ISSUER,
@@ -41,7 +44,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		}
 
 		const user = await this.userService.getById(payload.id)
-		if (!user || user.status === UserStatus.BLOCKED) {
+		if (!user || user.status === UserStatus.BLOCKED || !user.emailVerifiedAt ||
+			payload.authVersion !== user.authVersion) {
 			throw new UnauthorizedException('Invalid access token')
 		}
 

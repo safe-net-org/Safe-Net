@@ -12,6 +12,8 @@ describe('UserService security-sensitive writes', () => {
 				findUnique: jest.fn(),
 				create: jest.fn(),
 				update: jest.fn(),
+				updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+				findUniqueOrThrow: jest.fn().mockResolvedValue({ name: 'Ada', email: 'ada@example.com' }),
 			},
 			course: {
 				findMany: jest.fn().mockResolvedValue([]),
@@ -19,7 +21,15 @@ describe('UserService security-sensitive writes', () => {
 			courseProgress: {
 				createMany: jest.fn().mockResolvedValue({ count: 0 }),
 			},
+			refreshSession: {
+				updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+			},
+			passwordResetToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			emailChangeToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			emailVerificationToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+			$transaction: jest.fn(),
 		}
+		prisma.$transaction.mockImplementation(async callback => callback(prisma))
 		return {
 			service: new UserService(prisma as unknown as PrismaService),
 			prisma,
@@ -63,6 +73,7 @@ describe('UserService security-sensitive writes', () => {
 		prisma.user.findUnique.mockResolvedValue({
 			id: 'user-1',
 			password: await hash('old-password'),
+			authVersion: 0,
 		})
 
 		await expect(
@@ -79,6 +90,7 @@ describe('UserService security-sensitive writes', () => {
 		prisma.user.findUnique.mockResolvedValue({
 			id: 'user-1',
 			password: await hash('old-password'),
+			authVersion: 0,
 		})
 		prisma.user.update.mockResolvedValue({
 			name: 'Ada',
@@ -86,15 +98,32 @@ describe('UserService security-sensitive writes', () => {
 		})
 
 		await service.update('user-1', {
-			email: ' ADA@Example.COM ',
 			password: 'new-password',
 			currentPassword: 'old-password',
 		})
 
-		const data = prisma.user.update.mock.calls[0][0].data
-		expect(data.email).toBe('ada@example.com')
+		const data = prisma.user.updateMany.mock.calls[0][0].data
+		expect(data.email).toBeUndefined()
+		expect(data.authVersion).toEqual({ increment: 1 })
 		expect(data.password).not.toBe('new-password')
 		expect(await verify(data.password, 'new-password')).toBe(true)
 		expect(data).not.toHaveProperty('currentPassword')
+		expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: { userId: 'user-1', revokedAt: null },
+			})
+		)
+		expect(prisma.passwordResetToken.updateMany).toHaveBeenCalledWith({ where: { userId: 'user-1', usedAt: null }, data: { usedAt: expect.any(Date) } })
+		expect(prisma.emailChangeToken.updateMany).toHaveBeenCalledWith({ where: { userId: 'user-1', usedAt: null }, data: { usedAt: expect.any(Date) } })
+		expect(prisma.emailVerificationToken.updateMany).toHaveBeenCalledWith({ where: { userId: 'user-1', usedAt: null }, data: { usedAt: expect.any(Date) } })
+	})
+
+	it('rejects a password verified before a concurrent credential transition', async () => {
+		const { service, prisma } = createService()
+		prisma.user.findUnique.mockResolvedValue({ id: 'user-1', password: await hash('old-password'), authVersion: 0 })
+		prisma.user.updateMany.mockResolvedValueOnce({ count: 0 })
+		await expect(service.update('user-1', { password: 'new-password', currentPassword: 'old-password' })).rejects.toBeInstanceOf(UnauthorizedException)
+		expect(prisma.refreshSession.updateMany).not.toHaveBeenCalled()
+		expect(prisma.passwordResetToken.updateMany).not.toHaveBeenCalled()
 	})
 })

@@ -71,10 +71,10 @@ export const legalMessages: Record<Locale, LegalCopy> = {
 			ariaLabel: 'Cookie and local storage notice',
 		},
 		auth: {
-			consentPrefix: 'I have read and accept the',
-			termsLink: 'Terms of use',
+			consentPrefix: 'I agree to the',
+			termsLink: 'Terms of Use',
 			consentAnd: 'and',
-			privacyLink: 'Privacy notice',
+			privacyLink: 'Privacy Notice',
 			consentVersion: 'Required documents, version {version}',
 			nameRequired: 'Enter your name.',
 			emailRequired: 'Enter your email address.',
@@ -255,7 +255,7 @@ export const legalMessages: Record<Locale, LegalCopy> = {
 			ariaLabel: 'Уведомление о cookie и локальном хранилище',
 		},
 		auth: {
-			consentPrefix: 'Я прочитал(а) и принимаю',
+			consentPrefix: 'Я принимаю',
 			termsLink: 'Условия использования',
 			consentAnd: 'и',
 			privacyLink: 'Уведомление о приватности',

@@ -35,8 +35,11 @@ const CONTENT_DIR = join(__dirname, '../content')
 const CONTENT_RU_DIR = join(__dirname, '../content-ru')
 
 async function main() {
-	// Parsed before the wipe: if the content is invalid, the existing database
-	// should survive untouched rather than be emptied for nothing.
+	if (process.env.NODE_ENV === 'production') {
+		throw new Error('Demo seed is disabled in production')
+	}
+	// Parse before opening the write transaction so invalid curriculum never
+	// reaches the database.
 	const { stages, stats } = loadContent(CONTENT_DIR, CONTENT_RU_DIR)
 	console.log(`📚 Loaded content: ${describeStats(stats)}`)
 
@@ -44,7 +47,13 @@ async function main() {
 
 	await prisma.$transaction(
 		async tx => {
-			await wipe(tx)
+			const [users, existingStages] = await Promise.all([
+				tx.user.count(),
+				tx.stage.count(),
+			])
+			if (users > 0 || existingStages > 0) {
+				throw new Error('Demo seed requires an empty database; existing users and content were preserved')
+			}
 			await createUsers(tx, hashedPassword)
 			await createAchievements(tx)
 
@@ -60,34 +69,12 @@ async function main() {
 
 type TransactionClient = Prisma.TransactionClient
 
-async function wipe(tx: TransactionClient) {
-	console.log('🧹 Cleaning database...')
-	// Order matters: children before parents, since not every relation
-	// cascades.
-	await tx.taskAttempt.deleteMany()
-	await tx.testResult.deleteMany()
-	await tx.completedLesson.deleteMany()
-	await tx.courseProgress.deleteMany()
-	await tx.userAchievement.deleteMany()
-	await tx.certificate.deleteMany()
-	await tx.taskOption.deleteMany()
-	await tx.testQuestionOption.deleteMany()
-	await tx.testQuestion.deleteMany()
-	await tx.task.deleteMany()
-	await tx.lessonBlock.deleteMany()
-	await tx.lesson.deleteMany()
-	await tx.test.deleteMany()
-	await tx.course.deleteMany()
-	await tx.stage.deleteMany()
-	await tx.user.deleteMany()
-	await tx.achievement.deleteMany()
-}
-
 async function createUsers(tx: TransactionClient, hashedPassword: string) {
 	console.log('👥 Creating users...')
 	await tx.user.create({
 		data: {
 			email: 'demo@safe.net',
+			emailVerifiedAt: new Date(),
 			name: 'Demo User',
 			password: hashedPassword,
 			rights: [Role.USER],
@@ -96,6 +83,7 @@ async function createUsers(tx: TransactionClient, hashedPassword: string) {
 	await tx.user.create({
 		data: {
 			email: 'admin@safe.net',
+			emailVerifiedAt: new Date(),
 			name: 'Admin',
 			password: hashedPassword,
 			rights: [Role.ADMIN, Role.USER],
